@@ -14,73 +14,129 @@ echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━�
 echo ""
 
 CLAUDE_DIR="${HOME}/.claude"
+AGENTS_DIR="${CLAUDE_DIR}/agents"
+COMMANDS_DIR="${CLAUDE_DIR}/commands"
 SKILLS_DIR="${CLAUDE_DIR}/skills"
-DOCORE_DIR="${SKILLS_DIR}/docore"
-GSTACK_DIR="${SKILLS_DIR}/gstack"
 
 DOCORE_REPO="https://github.com/DoCoreTeam/docore.git"
 GSTACK_REPO="https://github.com/garrytan/gstack.git"
 
-# ── 1. DOCORE ──────────────────────────────────
-echo -e "${BLUE}[1/3] Installing DOCORE...${NC}"
-mkdir -p "${SKILLS_DIR}"
+# ── 1. Clone docore to temp ─────────────────────
+echo -e "${BLUE}[1/4] Downloading DOCORE...${NC}"
+TMP_DIR=$(mktemp -d)
+trap "rm -rf $TMP_DIR" EXIT
 
-if [ -d "$DOCORE_DIR" ]; then
-    echo -e "${YELLOW}  ⟳ Already installed. Updating...${NC}"
-    git -C "$DOCORE_DIR" pull origin main --quiet
-else
-    # Clone full repo, then move the inner docore/ dir to skills
-    TMP_DIR=$(mktemp -d)
-    git clone --depth 1 "$DOCORE_REPO" "$TMP_DIR" --quiet
-    cp -r "$TMP_DIR/docore" "$DOCORE_DIR"
-    rm -rf "$TMP_DIR"
-fi
-echo -e "${GREEN}  ✅ DOCORE installed at $DOCORE_DIR${NC}"
+git clone --depth 1 "$DOCORE_REPO" "$TMP_DIR/docore-repo" --quiet
+SRC="${TMP_DIR}/docore-repo/docore"
+echo -e "${GREEN}  ✅ Downloaded${NC}"
 
-# ── 2. GSTACK ──────────────────────────────────
+# ── 2. Install agents → ~/.claude/agents/ ───────
 echo ""
-echo -e "${BLUE}[2/3] Installing gstack (Garry Tan's Claude Code setup)...${NC}"
+echo -e "${BLUE}[2/4] Installing agents → ${AGENTS_DIR}/${NC}"
+mkdir -p "$AGENTS_DIR"
 
-if [ -d "$GSTACK_DIR" ]; then
-    echo -e "${YELLOW}  ⟳ Already installed. Updating...${NC}"
-    git -C "$GSTACK_DIR" pull origin main --quiet
-else
-    git clone --depth 1 "$GSTACK_REPO" "$GSTACK_DIR" --quiet
-fi
-echo -e "${GREEN}  ✅ gstack installed at $GSTACK_DIR${NC}"
+for f in "${SRC}/agents/"*.md; do
+    name=$(basename "$f")
+    if [ -f "${AGENTS_DIR}/${name}" ]; then
+        echo -e "${YELLOW}  ⟳ ${name} (update)${NC}"
+    else
+        echo -e "${GREEN}  ✅ ${name}${NC}"
+    fi
+    cp "$f" "${AGENTS_DIR}/${name}"
+done
 
-# ── 3. Registries ──────────────────────────────
+# ── 3. Install commands → ~/.claude/commands/ ───
 echo ""
-echo -e "${BLUE}[3/3] Setting up registries...${NC}"
+echo -e "${BLUE}[3/4] Installing commands → ${COMMANDS_DIR}/${NC}"
+mkdir -p "$COMMANDS_DIR"
+
+for f in "${SRC}/commands/"*.md; do
+    name=$(basename "$f")
+    if [ -f "${COMMANDS_DIR}/${name}" ]; then
+        echo -e "${YELLOW}  ⟳ ${name} (update)${NC}"
+    else
+        echo -e "${GREEN}  ✅ ${name}${NC}"
+    fi
+    cp "$f" "${COMMANDS_DIR}/${name}"
+done
+
+# ── 4. Install skill → ~/.claude/skills/ceo-system/ ─
+echo ""
+echo -e "${BLUE}[4/4] Installing skills + registries...${NC}"
+mkdir -p "${SKILLS_DIR}/ceo-system"
+cp "${SRC}/skills/ceo-system/SKILL.md" "${SKILLS_DIR}/ceo-system/SKILL.md"
+echo -e "${GREEN}  ✅ skills/ceo-system/SKILL.md${NC}"
+
+# ── 5. CLAUDE.md → ~/.claude/CLAUDE.md ──────────
+if [ -f "${CLAUDE_DIR}/CLAUDE.md" ]; then
+    # Check if already installed
+    if grep -q "DOCORE v" "${CLAUDE_DIR}/CLAUDE.md" 2>/dev/null; then
+        echo -e "${YELLOW}  ⟳ CLAUDE.md — updating DOCORE section${NC}"
+        # Remove old DOCORE block and re-append
+        python3 - "${CLAUDE_DIR}/CLAUDE.md" "${SRC}/CLAUDE.md" <<'PYEOF'
+import sys
+
+existing = open(sys.argv[1]).read()
+docore_new = open(sys.argv[2]).read()
+
+# Remove old DOCORE block if present
+start_marker = "# DOCORE"
+if start_marker in existing:
+    idx = existing.index(start_marker)
+    existing = existing[:idx].rstrip() + "\n"
+
+with open(sys.argv[1], 'w') as out:
+    out.write(existing.rstrip() + "\n\n" + docore_new)
+PYEOF
+    else
+        echo -e "${YELLOW}  ⟳ Appending to existing CLAUDE.md${NC}"
+        echo "" >> "${CLAUDE_DIR}/CLAUDE.md"
+        cat "${SRC}/CLAUDE.md" >> "${CLAUDE_DIR}/CLAUDE.md"
+    fi
+else
+    cp "${SRC}/CLAUDE.md" "${CLAUDE_DIR}/CLAUDE.md"
+    echo -e "${GREEN}  ✅ CLAUDE.md created${NC}"
+fi
+
+# ── 6. Registries → ~/.claude/ ──────────────────
 mkdir -p "${CLAUDE_DIR}/reports"
 
 for file in error-registry skill-registry project-registry decision-log; do
     if [ ! -f "${CLAUDE_DIR}/${file}.md" ]; then
-        cp "${DOCORE_DIR}/templates/${file}.md" "${CLAUDE_DIR}/${file}.md"
-        echo -e "${GREEN}  ✅ ${file}.md created${NC}"
+        cp "${SRC}/templates/${file}.md" "${CLAUDE_DIR}/${file}.md"
+        echo -e "${GREEN}  ✅ ${file}.md${NC}"
     else
         echo -e "${YELLOW}  ⏭️  ${file}.md already exists, skipping${NC}"
     fi
 done
 
+# ── 7. gstack (skip if already installed) ───────
+GSTACK_DIR="${SKILLS_DIR}/gstack"
+if [ -d "$GSTACK_DIR" ]; then
+    echo -e "${YELLOW}  ⏭️  gstack already installed, skipping${NC}"
+else
+    echo -e "${GREEN}  Installing gstack...${NC}"
+    git clone --depth 1 "$GSTACK_REPO" "$GSTACK_DIR" --quiet
+    echo -e "${GREEN}  ✅ gstack installed${NC}"
+fi
+
 # ── Done ───────────────────────────────────────
 echo ""
 echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
-echo -e "${GREEN}  ✅ Installation complete!${NC}"
+echo -e "${GREEN}  ✅ DOCORE ADK installed successfully!${NC}"
 echo ""
-echo -e "  📁 DOCORE:  ${DOCORE_DIR}"
-echo -e "  📁 gstack:  ${GSTACK_DIR}"
-echo -e "  🤖 Agents:  16 (PLANNER + GENERATOR + EVALUATOR + SUPPORT)"
-echo ""
-echo -e "  ${YELLOW}Note:${NC} ECC (Everything Claude Code) skills are referenced by"
-echo -e "  agents at runtime. Install from: https://github.com/anthropics/ecc"
+echo -e "  Installed to:"
+echo -e "    ${YELLOW}~/.claude/agents/dc-*.md${NC}          ← 16 agents"
+echo -e "    ${YELLOW}~/.claude/commands/ceo*.md${NC}        ← slash commands"
+echo -e "    ${YELLOW}~/.claude/skills/ceo-system/${NC}      ← CEO orchestration"
+echo -e "    ${YELLOW}~/.claude/CLAUDE.md${NC}               ← auto-loaded by Claude Code"
 echo ""
 echo -e "  🚀 ${YELLOW}Getting started:${NC}"
 echo -e "     1. Open Claude Code in your project"
 echo -e "     2. ${YELLOW}/ceo-init${NC}               Initialize project"
 echo -e "     3. ${YELLOW}/ceo \"build a todo app\"${NC}   Start development"
 echo ""
-echo -e "  📋 All commands:"
+echo -e "  📋 Commands:"
 echo -e "     ${YELLOW}/ceo \"task\"${NC}      Full pipeline (all 16 agents)"
 echo -e "     ${YELLOW}/ceo-init${NC}        Project setup + harness"
 echo -e "     ${YELLOW}/ceo-status${NC}      Show current status"

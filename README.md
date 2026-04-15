@@ -121,24 +121,49 @@ curl -sSL https://raw.githubusercontent.com/DoCoreTeam/docore/main/docore/instal
 
 ---
 
+## What Gets Installed / 설치 후 구조
+
+**EN** — The installer places each file exactly where Claude Code expects it.
+
+**KO** — 설치 스크립트가 Claude Code가 인식하는 위치에 정확히 파일을 배치합니다.
+
+```
+~/.claude/
+├── CLAUDE.md                    ← Auto-loaded on every session / 세션마다 자동 로드
+├── agents/
+│   ├── dc-biz.md                ← Recognized as agents by Claude Code
+│   ├── dc-dev-be.md               Claude Code가 에이전트로 인식
+│   └── ... (16 total / 16개)
+├── commands/
+│   ├── ceo.md                   ← Becomes /ceo slash command
+│   ├── ceo-init.md                /ceo 슬래시 명령어로 등록
+│   └── ceo-status.md
+├── skills/
+│   ├── ceo-system/
+│   │   └── SKILL.md             ← CEO orchestration brain / CEO 오케스트레이션
+│   └── gstack/                  ← Auto-installed / 자동 설치
+├── error-registry.md            ← Gate 1 error pattern log
+├── skill-registry.md
+├── project-registry.md
+└── decision-log.md
+```
+
 ## Repository Structure / 저장소 구조
 
 ```
-docore/                          ← Copy to ~/.claude/skills/docore
-│                                   ~/.claude/skills/docore 에 복사
-├── CLAUDE.md                    ← Auto-loaded entry point / 자동 로드 진입점
+docore/                          ← Source package (repo)
+├── CLAUDE.md                    ← Copied to ~/.claude/CLAUDE.md
 ├── install.sh                   ← Installer / 설치 스크립트
-├── agents/                      ← 16 agent definitions / 16개 에이전트 정의
+├── agents/                      ← Copied to ~/.claude/agents/
 │   ├── dc-biz.md
-│   ├── dc-dev-be.md
 │   └── ... (16 total)
-├── commands/                    ← Slash command definitions / 슬래시 명령어
+├── commands/                    ← Copied to ~/.claude/commands/
 │   ├── ceo.md
 │   ├── ceo-init.md
 │   └── ceo-status.md
-├── skills/ceo-system/           ← CEO orchestration brain / CEO 오케스트레이션 핵심
+├── skills/ceo-system/           ← Copied to ~/.claude/skills/ceo-system/
 │   └── SKILL.md
-└── templates/                   ← Registry templates / 레지스트리 템플릿
+└── templates/                   ← Copied to ~/.claude/*.md
     ├── error-registry.md
     ├── skill-registry.md
     ├── project-registry.md
