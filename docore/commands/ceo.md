@@ -179,7 +179,7 @@ CEO가 아래를 순서대로 수행:
 
 ### PHASE 6: GATE + 최종 보고
 
-25. **GATE 1**: error-registry 금지 패턴 스캔
+25. **GATE 1**: error-registry 금지 패턴 스캔 + **파일 300줄 초과 감지 → 즉시 차단** (모듈 분리 지시)
 26. **GATE 2**: 완료 조건 충족 검증
 27. **GATE 3**: 버전 태그(v0.0.0) 포함 확인
 28. **GATE 4**: Builder ≠ Reviewer 역할 분리 확인
