@@ -31,6 +31,7 @@ description: >
 - 모든 산출물에 `v0.0.0` 형식 버전 태그 필수
 - 커밋을 항상 하고 `v0.0.0: 커밋메시지 내용` 형식으로 진행
 - 작업을 최초로 시작할때 https://github.com/garrytan/gstack 스킬을 셋업해서 활용한다. 기존 프로젝트에서도 설치가 안된경우 설치하고 시작한다. 설치가 이미 되어 있는경우는 패스 한다. 해당하는 에이전트가 스킬을 이용하도록 한다. 반드시!!
+- **Superpowers 활성화 필수**: `~/.claude/skills/superpowers/` 또는 플러그인으로 설치된 경우, 모든 PHASE에서 Superpowers 기능을 활용한다. 설치 여부를 PHASE 0에서 확인하고 미설치 시 사용자에게 안내한다.
 - 테스트 코드 작성 필수
 - 문서 업데이트 — API 문서에 변경사항 반영, 사용 예시 추가
 - 성능 모니터링 — 에러율 추적
@@ -46,6 +47,86 @@ description: >
 ---
 
 ## PHASE 0: 업무 수신 — Router
+
+### 0-0. 시스템 준비 확인 + MANDATORY Q&A
+
+**STEP A: 시스템 준비 확인 (Q&A 전 자동 실행)**
+
+CEO는 업무 수신 즉시 아래를 확인합니다:
+
+```bash
+# gstack 설치 확인
+[ -d ~/.claude/skills/gstack ] && echo "gstack: OK" || echo "gstack: MISSING"
+
+# superpowers 설치 확인
+[ -d ~/.claude/skills/superpowers ] && echo "superpowers: OK" || \
+  (claude plugin list 2>/dev/null | grep -q superpowers && echo "superpowers: OK (plugin)") || \
+  echo "superpowers: MISSING"
+```
+
+- `gstack: MISSING` → `git clone --depth 1 https://github.com/garrytan/gstack.git ~/.claude/skills/gstack`
+- `superpowers: MISSING` → 사용자에게 안내:
+  ```
+  ⚠️ Superpowers 미설치. Claude Code에서 실행하세요:
+  /plugin marketplace add obra/superpowers-marketplace
+  /plugin install superpowers@superpowers-marketplace
+  ```
+
+**STEP B: MANDATORY Q&A (항상 먼저 실행)**
+
+**PHASE 0-1 진입 전 반드시 사용자에게 질문해야 합니다.**
+질문 없이 바로 실행하는 것은 **절대 금지**입니다.
+
+CEO는 업무를 받으면 즉시 아래 Q&A를 실행합니다:
+
+1. 업무를 분석하여 불명확한 항목 파악 (15초 내부 분석)
+2. 관련 질문을 **3~7개** 선정하여 한 번에 사용자에게 제시
+3. 사용자 답변 대기 → 답변 수신 후 `[Q&A COMPLETE]` 출력 → 0-1로 진행
+
+**Q&A 항목 선택 기준:**
+
+| 항목 | 항상 묻는 것 | 해당 시 묻는 것 |
+|------|-------------|----------------|
+| 기술스택 | ✅ | - |
+| 타겟 플랫폼 | ✅ | - |
+| 완료 기준 | ✅ | - |
+| 기존 코드베이스 | - | 코드 작업 시 |
+| 우선순위/제약 | - | 복잡도 MEDIUM+ |
+| 범위/규모 | - | 기능이 불명확할 때 |
+| 참고자료 | - | UI/API 관련 시 |
+
+**Q&A 포맷:**
+
+```
+[CEO Q&A — 시작 전 확인사항]
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+업무: <요청 내용>
+
+PHASE 1을 시작하기 전에 아래 사항을 확인합니다.
+답변해 주시면 즉시 전체 파이프라인을 실행합니다.
+
+Q1. ...
+Q2. ...
+Q3. ...
+(필요 시 Q4~Q7)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+```
+
+**답변 수신 후:**
+
+```
+[Q&A COMPLETE]
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+✅ 확인된 사항:
+• 기술스택: <답변>
+• 플랫폼: <답변>
+• 완료 기준: <답변>
+• 주요 제약: <답변>
+→ PHASE 1 진입합니다
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+```
+
+---
 
 ### 0-1. Intake Report
 

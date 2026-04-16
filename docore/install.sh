@@ -141,6 +141,49 @@ else
     echo -e "${GREEN}  ✅ gstack installed${NC}"
 fi
 
+# ── 9. Superpowers ───────────────────────────────
+echo ""
+echo -e "${BLUE}[Extra] Installing Superpowers...${NC}"
+SUPERPOWERS_INSTALLED=false
+
+# Method 1: Claude Code plugin CLI (claude plugin command)
+if command -v claude &>/dev/null; then
+    # Add marketplace source if not already added
+    if claude plugin marketplace list 2>/dev/null | grep -q "obra/superpowers-marketplace"; then
+        echo -e "${YELLOW}  ⏭️  superpowers-marketplace already registered${NC}"
+    else
+        claude plugin marketplace add obra/superpowers-marketplace 2>/dev/null && \
+            echo -e "${GREEN}  ✅ Marketplace registered: obra/superpowers-marketplace${NC}" || \
+            echo -e "${YELLOW}  ⚠️  Marketplace registration skipped (check Claude version)${NC}"
+    fi
+
+    # Install superpowers plugin
+    if claude plugin list 2>/dev/null | grep -q "superpowers"; then
+        echo -e "${YELLOW}  ⏭️  superpowers already installed, skipping${NC}"
+        SUPERPOWERS_INSTALLED=true
+    else
+        claude plugin install superpowers@superpowers-marketplace 2>/dev/null && \
+            SUPERPOWERS_INSTALLED=true && \
+            echo -e "${GREEN}  ✅ superpowers installed via plugin system${NC}" || \
+            echo -e "${YELLOW}  ⚠️  Plugin install unavailable, trying fallback...${NC}"
+    fi
+fi
+
+# Method 2: Direct GitHub fallback
+if [ "$SUPERPOWERS_INSTALLED" = false ]; then
+    SUPERPOWERS_REPO="https://github.com/obra/superpowers.git"
+    SUPERPOWERS_DIR="${SKILLS_DIR}/superpowers"
+    if [ -d "$SUPERPOWERS_DIR" ]; then
+        echo -e "${YELLOW}  ⏭️  superpowers already present at ${SUPERPOWERS_DIR}${NC}"
+    else
+        git clone --depth 1 "$SUPERPOWERS_REPO" "$SUPERPOWERS_DIR" --quiet 2>/dev/null && \
+            echo -e "${GREEN}  ✅ superpowers cloned to ${SUPERPOWERS_DIR}${NC}" || \
+            echo -e "${YELLOW}  ⚠️  superpowers not available — install manually:${NC}"
+            echo -e "      ${YELLOW}/plugin marketplace add obra/superpowers-marketplace${NC}"
+            echo -e "      ${YELLOW}/plugin install superpowers@superpowers-marketplace${NC}"
+    fi
+fi
+
 # ── Done ─────────────────────────────────────────
 echo ""
 echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
@@ -153,6 +196,7 @@ echo -e "    ${YELLOW}~/.claude/skills/ceo-system/${NC}      ← CEO orchestrati
 echo -e "    ${YELLOW}~/.claude/skills/ecc:*/  ${NC}         ← 183 ECC skills"
 echo -e "    ${YELLOW}~/.claude/commands/ecc:* ${NC}         ← 79 ECC commands"
 echo -e "    ${YELLOW}~/.claude/skills/gstack/ ${NC}         ← gstack tools"
+echo -e "    ${YELLOW}~/.claude/skills/superpowers/${NC}     ← superpowers (or via plugin)"
 echo -e "    ${YELLOW}~/.claude/CLAUDE.md${NC}               ← auto-loaded by Claude Code"
 echo ""
 echo -e "  🚀 ${YELLOW}Getting started:${NC}"
