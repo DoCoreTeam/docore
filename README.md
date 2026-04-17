@@ -1,12 +1,12 @@
-# docrew — The AI Chief Executive for Claude Code
+# MACC — Multi-Agent Claude Crew
 
-> **EN** — You are the Founder. docrew runs your entire engineering team.
+> **EN** — You are the Founder. MACC runs your entire engineering team.
 >
-> **KO** — 당신은 창업자입니다. docrew가 당신의 전체 엔지니어링 팀을 운영합니다.
+> **KO** — 당신은 창업자입니다. MACC가 당신의 전체 엔지니어링 팀을 운영합니다.
 
-[![Version](https://img.shields.io/badge/version-1.4.2-brightgreen.svg)](https://github.com/DoCoreTeam/docrew/blob/main/docore/VERSION)
+[![Version](https://img.shields.io/badge/version-2.0.0-brightgreen.svg)](https://github.com/DoCoreTeam/macc/blob/main/macc/VERSION)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Claude Code](https://img.shields.io/badge/Claude%20Code-docrew-blue)](https://claude.ai/code)
+[![Claude Code](https://img.shields.io/badge/Claude%20Code-MACC-blue)](https://claude.ai/code)
 
 ---
 
@@ -16,15 +16,15 @@
 
 **EN** — Every serious software team needs specialists: a business strategist, researcher, database architect, frontend engineer, backend engineer, security auditor, QA lead, technical writer, DevOps engineer. Hiring all of them costs $2M+ per year.
 
-docrew gives you all 16 — orchestrated by an AI Chief Executive who never forgets a step, never skips a gate, and always asks the right questions before writing a single line of code.
+MACC gives you all 16 — orchestrated by an AI Chief Executive who never forgets a step, never skips a gate, and always asks the right questions before writing a single line of code.
 
 **KO** — 진지한 소프트웨어 팀에는 전문가가 필요합니다. 이들을 모두 고용하면 연간 20억 원 이상이 들고, 완벽하게 조율하는 것은 거의 불가능합니다.
 
-docrew는 이 16명 전부를 제공합니다 — 단 하나의 명령으로, 단 한 단계도 빠뜨리지 않고, 코드 한 줄 쓰기 전에 반드시 올바른 질문을 먼저 묻는 AI 최고경영자가 오케스트레이션합니다.
+MACC는 이 16명 전부를 제공합니다 — 단 하나의 명령으로, 단 한 단계도 빠뜨리지 않고, 코드 한 줄 쓰기 전에 반드시 올바른 질문을 먼저 묻는 AI 최고경영자가 오케스트레이션합니다.
 
 ```bash
 # Install once. Runs everywhere. / 한 번 설치. 어디서나 실행.
-curl -sSL https://raw.githubusercontent.com/DoCoreTeam/docrew/main/docore/install.sh | bash
+curl -sSL https://raw.githubusercontent.com/DoCoreTeam/macc/main/macc/install.sh | bash
 ```
 
 ```bash
@@ -35,13 +35,13 @@ curl -sSL https://raw.githubusercontent.com/DoCoreTeam/docrew/main/docore/instal
 
 ---
 
-## What makes docrew different / docrew가 다른 이유
+## What makes MACC different / MACC가 다른 이유
 
 ### 1. Asks before acting / 행동 전 반드시 묻습니다
 
-**EN** — Other AI tools start writing code the moment you press Enter. docrew asks up to 12 targeted questions — one at a time, step by step, adjusting each question based on your previous answer. Only after all questions are answered does the pipeline begin. No guessing. No wasted work.
+**EN** — Other AI tools start writing code the moment you press Enter. MACC asks up to 12 targeted questions — one at a time, step by step, adjusting each question based on your previous answer. Only after all questions are answered does the pipeline begin. No guessing. No wasted work.
 
-**KO** — 다른 AI 도구는 Enter를 누르는 순간 코드를 씁니다. docrew는 최대 12개 질문을 스텝바이스텝으로 묻습니다 — 앞 답변을 반영해 다음 질문을 조정하면서. 답변이 완전히 끝난 후에만 파이프라인이 시작됩니다.
+**KO** — 다른 AI 도구는 Enter를 누르는 순간 코드를 씁니다. MACC는 최대 12개 질문을 스텝바이스텝으로 묻습니다 — 앞 답변을 반영해 다음 질문을 조정하면서. 답변이 완전히 끝난 후에만 파이프라인이 시작됩니다.
 
 ---
 
@@ -63,24 +63,24 @@ curl -sSL https://raw.githubusercontent.com/DoCoreTeam/docrew/main/docore/instal
 
 ### 4. Gets smarter every session / 매 세션마다 더 똑똑해집니다
 
-**EN** — docrew maintains an error registry. Every mistake becomes a GATE pattern — so it never happens again. It learns your project's coding patterns as instincts. The longer you use it, the better it knows your codebase.
+**EN** — MACC maintains an error registry. Every mistake becomes a GATE pattern — so it never happens again. It learns your project's coding patterns as instincts. The longer you use it, the better it knows your codebase.
 
-**KO** — docrew는 오류 레지스트리를 유지합니다. 모든 실수는 GATE 패턴으로 기록되어 반복되지 않습니다. 프로젝트 코딩 패턴을 인스팅트로 학습합니다. 사용할수록 코드베이스를 더 잘 이해합니다.
+**KO** — MACC는 오류 레지스트리를 유지합니다. 모든 실수는 GATE 패턴으로 기록되어 반복되지 않습니다. 프로젝트 코딩 패턴을 인스팅트로 학습합니다. 사용할수록 코드베이스를 더 잘 이해합니다.
 
 ---
 
 ### 5. One command surface / 단일 커맨드 인터페이스
 
-**EN** — docrew installs and orchestrates best-in-class external tools internally. You don't need to learn them. You don't see them. You just use `/ceo-*` and docrew handles the rest.
+**EN** — MACC installs and orchestrates best-in-class external tools internally. You don't need to learn them. You don't see them. You just use `/ceo-*` and MACC handles the rest.
 
-**KO** — docrew는 최고의 외부 도구들을 내부적으로 설치하고 오케스트레이션합니다. 직접 배울 필요도, 볼 필요도 없습니다. `/ceo-*` 만 사용하면 docrew가 나머지를 처리합니다.
+**KO** — MACC는 최고의 외부 도구들을 내부적으로 설치하고 오케스트레이션합니다. 직접 배울 필요도, 볼 필요도 없습니다. `/ceo-*` 만 사용하면 MACC가 나머지를 처리합니다.
 
 ---
 
 ## Quick Install / 빠른 설치
 
 ```bash
-curl -sSL https://raw.githubusercontent.com/DoCoreTeam/docrew/main/docore/install.sh | bash
+curl -sSL https://raw.githubusercontent.com/DoCoreTeam/macc/main/macc/install.sh | bash
 ```
 
 **EN** — One command installs everything. Re-running always updates to the latest version.
@@ -94,12 +94,12 @@ curl -sSL https://raw.githubusercontent.com/DoCoreTeam/docrew/main/docore/instal
 /ceo-update
 
 # Terminal / 터미널에서
-curl -sSL https://raw.githubusercontent.com/DoCoreTeam/docrew/main/docore/install.sh | bash
+curl -sSL https://raw.githubusercontent.com/DoCoreTeam/macc/main/macc/install.sh | bash
 ```
 
 | What gets updated | Behavior |
 |-------------------|----------|
-| docrew agents, commands, SKILL.md | ✅ Always overwritten to latest |
+| MACC agents, commands, SKILL.md | ✅ Always overwritten to latest |
 | Orchestrated tools (ECC, gstack, Superpowers) | ✅ Full replacement |
 | Registries (error-registry etc.) | ⏭️ Preserved — your data stays |
 
@@ -222,7 +222,7 @@ curl -sSL https://raw.githubusercontent.com/DoCoreTeam/docrew/main/docore/instal
 |------|-------|
 | GATE 1 | Error registry scan + **300-line file limit** (auto-blocked) |
 | GATE 2 | All completion criteria verified |
-| GATE 3 | Version tag matches `docore/VERSION` |
+| GATE 3 | Version tag matches `macc/VERSION` |
 | GATE 4 | Builder ≠ Reviewer (enforced) |
 | GATE 5 | Breaking changes blocked without approval |
 
@@ -280,4 +280,4 @@ MIT — see [LICENSE](LICENSE)
 
 ---
 
-*Built by **docrew** / CEO of KDC*
+*Built by **MACC** / CEO of KDC*

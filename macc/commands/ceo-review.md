@@ -61,5 +61,5 @@ CEO orchestrates all tools in this order:
 | `/refactor-clean` | ECC | 데드코드 감지 |
 | `/quality-gate` | ECC | 5개 게이트 통과 확인 |
 | `/review` | gstack | 실용적 코드 검토 |
-| DC-SEC | DOCORE | 보안 전문 에이전트 |
-| DC-REV | DOCORE | 코드 리뷰 전문 에이전트 |
+| DC-SEC | MACC | 보안 전문 에이전트 |
+| DC-REV | MACC | 코드 리뷰 전문 에이전트 |

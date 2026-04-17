@@ -8,7 +8,7 @@
 [CEO STATUS]
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 📁 프로젝트: <프로젝트명>
-🏷️ 현재 버전: <docore/VERSION 파일 읽어서 표시>
+🏷️ 현재 버전: <macc/VERSION 파일 읽어서 표시>
 📊 상태: PLANNING / ACTIVE / REVIEW / DONE
 
 [레지스트리]

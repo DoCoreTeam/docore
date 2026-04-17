@@ -2,7 +2,7 @@
 
 **EN** — Full quality pipeline: health check → coverage → refactor → security → performance. Combines gstack's health tools with ECC's quality suite and DOCORE evaluators.
 
-**KO** — 헬스 체크 → 커버리지 → 리팩터 → 보안 → 성능 전체 품질 파이프라인. gstack 헬스 도구 + ECC 품질 스위트 + DOCORE 평가자를 결합합니다.
+**KO** — 헬스 체크 → 커버리지 → 리팩터 → 보안 → 성능 전체 품질 파이프라인. gstack 헬스 도구 + ECC 품질 스위트 + MACC 평가자를 결합합니다.
 
 ## 사용법 / Usage
 
@@ -67,6 +67,6 @@
 | `/security-review` | ECC | 보안 스캔 |
 | `/perf-check` | ECC | 성능 분석 |
 | `/santa-loop` | ECC | 이중 리뷰 |
-| DC-SEC | DOCORE | 보안 전문 에이전트 |
-| DC-QA | DOCORE | QA 전문 에이전트 |
-| DC-REV | DOCORE | 리뷰 전문 에이전트 |
+| DC-SEC | MACC | 보안 전문 에이전트 |
+| DC-QA | MACC | QA 전문 에이전트 |
+| DC-REV | MACC | 리뷰 전문 에이전트 |

@@ -49,7 +49,7 @@
 🚀 배포 (Deploy):             SUCCESS — <환경>
 🖥️  배포 후 QA (Post-Deploy): PASS / FAIL
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-🏷️  버전 (Version): v{VERSION} (docore/VERSION 파일 기준)
+🏷️  버전 (Version): v{VERSION} (macc/VERSION 파일 기준)
 🔗 배포 URL: <url>
 📋 커밋: <commit hash>
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -69,6 +69,6 @@
 | `/land-and-deploy` | gstack | 랜딩 + 배포 |
 | `/review` | gstack | 배포 전 리뷰 |
 | `/qa` | gstack | 배포 후 QA |
-| DC-DEV-OPS | DOCORE | DevOps 전문 에이전트 |
-| DC-REV | DOCORE | 최종 리뷰 에이전트 |
-| DC-QA | DOCORE | QA 전문 에이전트 |
+| DC-DEV-OPS | MACC | DevOps 전문 에이전트 |
+| DC-REV | MACC | 최종 리뷰 에이전트 |
+| DC-QA | MACC | QA 전문 에이전트 |

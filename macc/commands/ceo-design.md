@@ -64,4 +64,4 @@
 | `/design` | ECC | 디자인 코드 생성 |
 | `design-system` | ECC skill | 디자인 시스템 |
 | `liquid-glass-design` | ECC skill | Liquid Glass 효과 |
-| DC-DEV-FE | DOCORE | 프론트엔드 에이전트 |
+| DC-DEV-FE | MACC | 프론트엔드 에이전트 |

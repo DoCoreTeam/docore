@@ -59,5 +59,5 @@
 | `/update-docs` | ECC | 프로젝트 문서 |
 | `/docs` | ECC | Context7 문서 조회 |
 | `/report` | ECC | 상태 보고서 |
-| DC-DOC | DOCORE | 문서 작성 에이전트 |
-| DC-SEO | DOCORE | SEO 최적화 에이전트 |
+| DC-DOC | MACC | 문서 작성 에이전트 |
+| DC-SEO | MACC | SEO 최적화 에이전트 |

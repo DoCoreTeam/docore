@@ -206,19 +206,19 @@ CEO가 아래를 순서대로 수행:
 
 25. **GATE 1**: error-registry 금지 패턴 스캔 + **파일 300줄 초과 감지 → 즉시 차단** (모듈 분리 지시)
 26. **GATE 2**: 완료 조건 충족 검증
-27. **GATE 3**: 버전 태그 포함 확인 — `docore/VERSION` 파일의 현재 버전과 일치 여부
+27. **GATE 3**: 버전 태그 포함 확인 — `macc/VERSION` 파일의 현재 버전과 일치 여부
 28. **GATE 4**: Builder ≠ Reviewer 역할 분리 확인
 29. **GATE 5**: 파괴적 변경 감지 → 있으면 사용자 승인 필요
 30. **DC-TOK** → 컨텍스트 사용량 보고 (agents/dc-tok.md 참조)
 31. **CEO 자가점검** 최종 실행
-32. **git commit** -m "v$(cat docore/VERSION 2>/dev/null || cat VERSION 2>/dev/null || echo "??"): $ARGUMENTS"
+32. **git commit** -m "v$(cat macc/VERSION 2>/dev/null || cat VERSION 2>/dev/null || echo "??"): $ARGUMENTS"
 33. **CEO REPORT** 출력:
 
 ```
 [CEO REPORT]
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ✅ 업무 완료: $ARGUMENTS
-🏷️ 버전: v{VERSION} (docore/VERSION 파일 기준)
+🏷️ 버전: v{VERSION} (macc/VERSION 파일 기준)
 👥 투입: CORE 12명 + EXTENDED <n>명
 ⏱️ 실행: PLANNER→GENERATOR(병렬)→EVALUATOR(3-way)→GATE
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

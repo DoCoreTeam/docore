@@ -11,7 +11,7 @@ AGENTS_DIR="${CLAUDE_DIR}/agents"
 COMMANDS_DIR="${CLAUDE_DIR}/commands"
 SKILLS_DIR="${CLAUDE_DIR}/skills"
 
-DOCORE_REPO="https://github.com/DoCoreTeam/docrew.git"
+MACC_REPO="https://github.com/DoCoreTeam/macc.git"
 GSTACK_REPO="https://github.com/garrytan/gstack.git"
 ECC_REPO="https://github.com/affaan-m/everything-claude-code.git"
 
@@ -36,19 +36,19 @@ git_update_or_clone() {
     fi
 }
 
-# ── 1. DOCORE ──────────────────────────────────
-echo -e "${BLUE}[1/5] Downloading DOCORE...${NC}"
-git clone --depth 1 "$DOCORE_REPO" "$TMP_DIR/docore-repo" --quiet
-SRC="${TMP_DIR}/docore-repo/docore"
-DOCREW_VERSION=$(cat "${SRC}/VERSION" 2>/dev/null || echo "unknown")
+# ── 1. MACC ──────────────────────────────────
+echo -e "${BLUE}[1/5] Downloading MACC...${NC}"
+git clone --depth 1 "$MACC_REPO" "$TMP_DIR/macc-repo" --quiet
+SRC="${TMP_DIR}/macc-repo/macc"
+MACC_VERSION=$(cat "${SRC}/VERSION" 2>/dev/null || echo "unknown")
 
 echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
-echo -e "${GREEN}  👔 docrew Installer v${DOCREW_VERSION}${NC}"
+echo -e "${GREEN}  👔 MACC Installer v${MACC_VERSION}${NC}"
 echo -e "${GREEN}  The AI Chief Executive for Claude Code${NC}"
 echo -e "${GREEN}  16 Agents. 15 Commands. Full Pipeline.${NC}"
 echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
 echo ""
-echo -e "${GREEN}  ✅ Downloaded v${DOCREW_VERSION}${NC}"
+echo -e "${GREEN}  ✅ Downloaded v${MACC_VERSION}${NC}"
 
 # ── 2. Agents → ~/.claude/agents/ ───────────────
 echo ""
@@ -81,14 +81,14 @@ echo -e "${GREEN}  ✅ ceo-system/SKILL.md${NC}"
 echo ""
 echo -e "${BLUE}[5/5] Updating CLAUDE.md...${NC}"
 if [ -f "${CLAUDE_DIR}/CLAUDE.md" ]; then
-    if grep -qE "^# (docrew|DOCORE|CEO) v" "${CLAUDE_DIR}/CLAUDE.md" 2>/dev/null; then
-        echo -e "${YELLOW}  ⟳ CLAUDE.md — updating docrew section${NC}"
+    if grep -qE "^# (docrew|DOCORE|MACC|CEO) v" "${CLAUDE_DIR}/CLAUDE.md" 2>/dev/null; then
+        echo -e "${YELLOW}  ⟳ CLAUDE.md — updating MACC section${NC}"
         python3 - "${CLAUDE_DIR}/CLAUDE.md" "${SRC}/CLAUDE.md" <<'PYEOF'
 import sys, re
 existing = open(sys.argv[1]).read()
 docore_new = open(sys.argv[2]).read()
 # Match any of the possible section headers
-match = re.search(r'^# (docrew|DOCORE|CEO) v', existing, re.MULTILINE)
+match = re.search(r'^# (docrew|DOCORE|MACC|CEO) v', existing, re.MULTILINE)
 if match:
     existing = existing[:match.start()].rstrip() + "\n"
 with open(sys.argv[1], 'w') as out:
@@ -200,7 +200,7 @@ echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━�
 echo -e "${GREEN}  ✅ CEO installed/updated successfully!${NC}"
 echo ""
 echo -e "  Updated:"
-echo -e "    ${YELLOW}~/.claude/agents/dc-*.md${NC}          ← 16 DOCORE agents"
+echo -e "    ${YELLOW}~/.claude/agents/dc-*.md${NC}          ← 16 MACC agents"
 echo -e "    ${YELLOW}~/.claude/commands/ceo*.md${NC}        ← /ceo /ceo-init /ceo-status"
 echo -e "    ${YELLOW}~/.claude/skills/ceo-system/${NC}      ← CEO orchestration brain"
 echo -e "    ${YELLOW}~/.claude/skills/ecc:*/  ${NC}         ← 183 ECC skills (no commands — use /ceo-*)"

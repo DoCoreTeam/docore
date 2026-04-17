@@ -59,4 +59,4 @@
 | `/go-test` `/rust-test` `/cpp-test` etc. | ECC | 언어별 TDD |
 | `/test` | gstack | gstack 테스트 |
 | `/qa` | gstack | 브라우저 QA |
-| DC-QA | DOCORE | QA 전문 에이전트 |
+| DC-QA | MACC | QA 전문 에이전트 |

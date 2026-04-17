@@ -1,11 +1,11 @@
-# 👔 docrew — The AI Chief Executive for Claude Code
+# 👔 MACC — Multi-Agent Claude Crew
 
-> You are the Founder. docrew runs your entire engineering team.
-> 당신은 창업자입니다. docrew가 당신의 전체 엔지니어링 팀을 운영합니다.
+> You are the Founder. MACC runs your entire engineering team.
+> 당신은 창업자입니다. MACC가 당신의 전체 엔지니어링 팀을 운영합니다.
 
 ```bash
 # Install / 설치
-curl -sSL https://raw.githubusercontent.com/DoCoreTeam/docrew/main/docore/install.sh | bash
+curl -sSL https://raw.githubusercontent.com/DoCoreTeam/macc/main/macc/install.sh | bash
 
 # Give orders. CEO handles the rest. / 지시만 내려주세요.
 /ceo "Build a SaaS app with auth, payments, and a dashboard"
@@ -125,14 +125,14 @@ curl -sSL https://raw.githubusercontent.com/DoCoreTeam/docrew/main/docore/instal
 |------|------------|---------------|
 | GATE 1 | Error patterns + **300-line limit** (auto-blocked) | 오류 패턴 + **300줄 초과 자동 차단** |
 | GATE 2 | All completion criteria met | 완료 조건 충족 |
-| GATE 3 | Version tag matches `docore/VERSION` | 버전 태그 존재 |
+| GATE 3 | Version tag matches `macc/VERSION` | 버전 태그 존재 |
 | GATE 4 | Builder ≠ Reviewer (enforced) | 빌더 ≠ 리뷰어 강제 |
 | GATE 5 | No breaking changes without approval | 승인 없는 브레이킹 체인지 차단 |
 
 ## Structure / 구조
 
 ```
-docore/
+macc/
 ├── CLAUDE.md                    ← CEO brain entry point / CEO 두뇌 진입점
 ├── install.sh                   ← One-line installer / 원라인 설치 스크립트
 ├── agents/                      ← 16 agent definitions / 16개 에이전트 정의

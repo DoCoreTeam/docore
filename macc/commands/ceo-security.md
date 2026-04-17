@@ -71,6 +71,6 @@
 | `/security-review` | ECC | OWASP + API 보안 |
 | `security-scan` | ECC skill | 자동 스캔 |
 | `security-bounty-hunter` | ECC skill | 버그 바운티 스타일 탐색 |
-| DC-SEC | DOCORE | 보안 전문 에이전트 |
-| DC-DEV-BE | DOCORE | 백엔드 취약점 수정 |
-| DC-DEV-FE | DOCORE | 프론트엔드 취약점 수정 |
+| DC-SEC | MACC | 보안 전문 에이전트 |
+| DC-DEV-BE | MACC | 백엔드 취약점 수정 |
+| DC-DEV-FE | MACC | 프론트엔드 취약점 수정 |

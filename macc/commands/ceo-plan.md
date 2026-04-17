@@ -1,8 +1,8 @@
 # /ceo-plan — 기획 오케스트레이터 / Plan Orchestrator
 
-**EN** — Full planning pipeline with Q&A: business validation → research → OSS scouting → implementation plan. Combines gstack's Q&A-driven plan with ECC's PRP system and DOCORE's planning agents.
+**EN** — Full planning pipeline with Q&A: business validation → research → OSS scouting → implementation plan. Combines gstack's Q&A-driven plan with ECC's PRP system and MACC's planning agents.
 
-**KO** — Q&A 기반 전체 기획 파이프라인: 사업 타당성 → 리서치 → 오픈소스 탐색 → 구현 계획. gstack Q&A 플랜 + ECC PRP + DOCORE 기획 에이전트를 결합합니다.
+**KO** — Q&A 기반 전체 기획 파이프라인: 사업 타당성 → 리서치 → 오픈소스 탐색 → 구현 계획. gstack Qgstack Q&A 플랜 + ECC PRP + DOCORE 기획A 플랜 + ECC PRP + MACC 기획 에이전트를 결합합니다.
 
 ## 사용법 / Usage
 
@@ -69,6 +69,6 @@
 | `/plan` | ECC | 단계별 계획 |
 | `/spec` | ECC | 기술 명세 |
 | `/evaluate-oss` | ECC | 오픈소스 평가 |
-| DC-BIZ | DOCORE | 사업 타당성 에이전트 |
-| DC-RES | DOCORE | 리서치 에이전트 |
-| DC-OSS | DOCORE | 오픈소스 탐색 에이전트 |
+| DC-BIZ | MACC | 사업 타당성 에이전트 |
+| DC-RES | MACC | 리서치 에이전트 |
+| DC-OSS | MACC | 오픈소스 탐색 에이전트 |
