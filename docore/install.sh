@@ -6,13 +6,6 @@ BLUE='\033[0;34m'
 YELLOW='\033[1;33m'
 NC='\033[0m'
 
-echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
-echo -e "${GREEN}  👔 docrew Installer v1.0.0${NC}"
-echo -e "${GREEN}  The AI Chief Executive for Claude Code${NC}"
-echo -e "${GREEN}  16 Agents. 15 Commands. Full Pipeline.${NC}"
-echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
-echo ""
-
 CLAUDE_DIR="${HOME}/.claude"
 AGENTS_DIR="${CLAUDE_DIR}/agents"
 COMMANDS_DIR="${CLAUDE_DIR}/commands"
@@ -47,7 +40,15 @@ git_update_or_clone() {
 echo -e "${BLUE}[1/5] Downloading DOCORE...${NC}"
 git clone --depth 1 "$DOCORE_REPO" "$TMP_DIR/docore-repo" --quiet
 SRC="${TMP_DIR}/docore-repo/docore"
-echo -e "${GREEN}  ✅ Downloaded${NC}"
+DOCREW_VERSION=$(cat "${SRC}/VERSION" 2>/dev/null || echo "unknown")
+
+echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+echo -e "${GREEN}  👔 docrew Installer v${DOCREW_VERSION}${NC}"
+echo -e "${GREEN}  The AI Chief Executive for Claude Code${NC}"
+echo -e "${GREEN}  16 Agents. 15 Commands. Full Pipeline.${NC}"
+echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+echo ""
+echo -e "${GREEN}  ✅ Downloaded v${DOCREW_VERSION}${NC}"
 
 # ── 2. Agents → ~/.claude/agents/ ───────────────
 echo ""

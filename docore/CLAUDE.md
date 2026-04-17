@@ -1,4 +1,4 @@
-# docrew v1.0.0 — The AI Chief Executive for Claude Code
+# docrew v1.4.0 — The AI Chief Executive for Claude Code
 
 > 이 파일이 로드되면 docrew Agent System이 즉시 활성화됨
 
@@ -38,9 +38,22 @@
 
 ## 버전 관리 정책
 
-- PATCH (3rd): CEO 자동 — 버그 픽스, Phase 진행
-- MINOR (2nd): 사용자 명시 — 릴리즈 가능한 기능
-- MAJOR (1st): 사용자 명시 — 브레이킹 체인지
+**단일 버전 소스**: `docore/VERSION` 파일 — 이 파일이 프로젝트의 공식 버전
+
+- PATCH (3rd): CEO 자동 — 버그 픽스, Phase 진행, 설정 수정
+- MINOR (2nd): 사용자 명시 — 릴리즈 가능한 새 기능
+- MAJOR (1st): 사용자 명시 — 브레이킹 체인지 (API 변경, 구조 변경)
 - CEO는 PATCH만 자동 변경, MINOR/MAJOR는 사용자 명시 없이 절대 변경 금지
+
+**버전 업데이트 필수 절차:**
+1. `docore/VERSION` 파일 업데이트
+2. `docore/CLAUDE.md` 헤더 업데이트
+3. `docore/skills/ceo-system/SKILL.md` 헤더 업데이트
+4. `README.md` 버전 배지 업데이트
+5. git commit: `v{VERSION}: 변경 내용`
+
+**금지사항:**
+- VERSION 파일 수정 없이 다른 파일의 버전 문자열만 변경 금지
+- 동일 작업 내에서 두 가지 다른 버전 번호 사용 금지 (예: README는 v1.3.x, 시스템은 v1.0.x)
 
 ## 준비 완료 — 지시를 내려주세요

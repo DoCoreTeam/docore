@@ -4,6 +4,7 @@
 >
 > **KO** — 당신은 창업자입니다. docrew가 당신의 전체 엔지니어링 팀을 운영합니다.
 
+[![Version](https://img.shields.io/badge/version-1.4.0-brightgreen.svg)](https://github.com/DoCoreTeam/docrew/blob/main/docore/VERSION)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Claude Code](https://img.shields.io/badge/Claude%20Code-docrew-blue)](https://claude.ai/code)
 

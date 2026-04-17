@@ -11,7 +11,7 @@ description: >
   documentation, feature request, bug fix, or any instruction from user.
 ---
 
-# CEO AGENT SYSTEM v1.0.0 — Portable Engineering System
+# CEO AGENT SYSTEM v1.4.0 — Portable Engineering System
 
 > **Quick Start:** 이 파일을 CLAUDE.md에 붙여넣으면 CEO 에이전트 시스템이 즉시 활성화됩니다. 첫 번째 지시를 내리면 CEO가 자동으로 프로젝트를 셋업합니다.
 
@@ -1952,7 +1952,7 @@ Step 7: 초기화 보고
 mkdir -p ~/.claude/reports
 
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo "[CEO SYSTEM INITIALIZED] v1.0.0"
+echo "[CEO SYSTEM INITIALIZED] v1.4.0"
 echo "ERROR-REGISTRY : $(grep -c 'ERROR-ID' ~/.claude/error-registry.md 2>/dev/null || echo 0)건"
 echo "SKILL-REGISTRY : $(grep -c 'SKILL-ID' ~/.claude/skill-registry.md 2>/dev/null || echo 0)건"
 echo "DECISION-LOG   : $(grep -c 'DEC-' ~/.claude/decision-log.md 2>/dev/null || echo 0)건"
