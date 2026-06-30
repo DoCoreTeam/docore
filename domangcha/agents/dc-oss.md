@@ -24,7 +24,13 @@ description: "OSS Scout — discovers top 3 external libraries and tools for the
 `ecc:evaluate-oss`, `ecc:exa-search`
 
 ## CONTEXT 스킬
-`ecc:deep-research`, `ecc:repo-scan`
+`ecc:deep-research`, `ecc:repo-scan`, `insane-search`
+
+## 외부 페이지 수집 — insane-search 우선
+GitHub·npm·PyPI·crates.io·릴리즈 노트 등 후보 조사 페이지의 **본문을 가져올 땐
+WebFetch보다 `insane-search` 엔진을 먼저** 쓴다 (차단 여부 무관, 단일 진입점):
+`cd ~/.claude/skills/insane-search && python3 -m engine "<URL>"` — 즉흥 우회 금지,
+실패 시 `untried_routes` 소진 전 포기 금지. 키워드 탐색은 `gh search`·WebSearch로.
 
 ## 출력 포맷
 ```

@@ -9,7 +9,7 @@ description: >
   DC-ANA is EXTENDED PLANNER — auto-triggered by keywords or LARGE/HEAVY scope.
 ---
 
-# CEO AGENT SYSTEM v2.0.56 — Router
+# CEO AGENT SYSTEM v2.0.57 — Router
 
 > 이 파일은 라우터입니다. 세부 지침은 아래 서브스킬을 참조합니다.
 

@@ -4,7 +4,7 @@ description: >
   CEO Sprint — Phase 9: Harness sprint system, ECC skill routing, evaluator protocols.
   Load this for sprint workflow and evaluator scoring.
 ---
-# CEO SPRINT SYSTEM v2.0.56
+# CEO SPRINT SYSTEM v2.0.57
 
 ## PHASE 9: HARNESS SPRINT SYSTEM
 

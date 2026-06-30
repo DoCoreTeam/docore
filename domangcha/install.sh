@@ -137,6 +137,14 @@ mkdir -p "${SKILLS_DIR}/ceo-system"
 cp "${SRC}/skills/ceo-system/SKILL.md" "${SKILLS_DIR}/ceo-system/SKILL.md"
 echo -e "  ${GREEN}✔${NC}  ceo-system/SKILL.md  ${DIM}→ ~/.claude/skills/ceo-system/${NC}"
 
+# insane-search (vendored, MIT — fivetaku/insane-search): 차단 사이트 우회 리더
+if [ -d "${SRC}/skills/insane-search" ]; then
+    rm -rf "${SKILLS_DIR}/insane-search"
+    mkdir -p "${SKILLS_DIR}/insane-search"
+    cp -r "${SRC}/skills/insane-search/"* "${SKILLS_DIR}/insane-search/"
+    echo -e "  ${GREEN}✔${NC}  insane-search/  ${DIM}→ ~/.claude/skills/insane-search/ (DC-RES·DC-OSS 차단 우회)${NC}"
+fi
+
 # ── 5. CLAUDE.md ──────────────────────────────────
 step "CLAUDE.md 업데이트" "Updating CLAUDE.md"
 if [ -f "${CLAUDE_DIR}/CLAUDE.md" ]; then

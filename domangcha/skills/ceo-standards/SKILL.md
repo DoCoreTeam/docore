@@ -646,7 +646,7 @@ Step 7: 초기화 보고
 mkdir -p ~/.claude/reports
 
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo "[CEO SYSTEM INITIALIZED] v2.0.56"
+echo "[CEO SYSTEM INITIALIZED] v2.0.57"
 echo "ERROR-REGISTRY : $(grep -c 'ERROR-ID' ~/.claude/error-registry.md 2>/dev/null || echo 0)건"
 echo "SKILL-REGISTRY : $(grep -c 'SKILL-ID' ~/.claude/skill-registry.md 2>/dev/null || echo 0)건"
 echo "DECISION-LOG   : $(grep -c 'DEC-' ~/.claude/decision-log.md 2>/dev/null || echo 0)건"

@@ -16,7 +16,7 @@ One command orchestrates 18 AI specialists: spec → code → tests → security
 
 *Your AI getaway car from development hell.*
 
-[![Version](https://img.shields.io/badge/version-2.0.56-brightgreen?style=for-the-badge&logo=github)](https://github.com/DoCoreTeam/domangcha/blob/main/domangcha/VERSION)
+[![Version](https://img.shields.io/badge/version-2.0.57-brightgreen?style=for-the-badge&logo=github)](https://github.com/DoCoreTeam/domangcha/blob/main/domangcha/VERSION)
 [![npm](https://img.shields.io/npm/v/domangcha?style=for-the-badge&logo=npm&color=CB3837)](https://www.npmjs.com/package/domangcha)
 [![License](https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge)](https://opensource.org/licenses/MIT)
 [![Claude Code](https://img.shields.io/badge/Claude%20Code-Required-5865F2?style=for-the-badge)](https://claude.ai/code)
@@ -399,6 +399,7 @@ DC-REV  ✔  Fix is surgical and correct. Raw buffer pattern is the documented S
 
 | Version | Feature |
 |---|---|
+| **v2.0.57** | **insane-search vendored — blocked-site bypass for research agents** — the [insane-search](https://github.com/fivetaku/insane-search) skill (MIT) is now vendored into `skills/insane-search/` and installed to `~/.claude/skills/`. 🟦 DC-RES and 🟦 DC-OSS now use its Phase 0→3 adaptive engine (`python3 -m engine`, curl_cffi TLS impersonation + Playwright) as the **default reader for fetching any external URL body** — not just an on-block fallback. Phase 0 tries official public APIs first (X/Reddit/YouTube/HN/arXiv), so plain URLs cost nothing extra, and WAF/bot-walled sites (Naver, Medium, StackOverflow, LinkedIn…) get bypassed automatically. Keyword discovery still goes through WebSearch/`gh search`; only URL-body fetching routes through the engine. Upstream plugin's GitHub-star/`${CLAUDE_PLUGIN_ROOT}` Step-0 hook stripped for vendored use. |
 | **v2.0.56** | **Model tier re-assignment — dev on Opus, planning on Fable** — code-writing agents 🟩 DC-DEV-BE/FE/DB/OPS/MOB/INT now run on **`claude-opus-4-8`** (top coding model), and planning/judgment agents 🟦 DC-BIZ/RES/OSS run on **`claude-fable-5`** (fast). 🟥 DC-SEC/REV stay on `claude-opus-4-7`; 🟦 DC-ANA/KNW + 🟥 DC-QA stay on `claude-sonnet-4-6`; 🟩 DC-WRT/DOC/SEO + 🟨 DC-TOK stay on Haiku. Applied to all 9 agent frontmatters and the model-assignment table in root/global/project CLAUDE.md and `ceo-system` SKILL. |
 | **v2.0.55** | **Feature Implementation Defaults baked in** — "build feature X" now auto-includes the full entity lifecycle by default. Every feature ships **full CRUD** (Create/Read/Update/Delete, soft-delete default), and collection entities get a **List** with four affordances built in: **search, sort, filter, and performant loading (server pagination by default; cursor for large sets; infinite-scroll via Q&A)**. List state (search/sort/filter/page) syncs to the URL. Encoded in `ceo-standards`, the 🟩 DC-DEV-BE/FE/DB agents, and CEO core rule 3-2 — DOC-FIRST completion criteria auto-expand these and 🟥 DC-REV/QA fail the sprint if any are missing. Opt out only by explicitly excluding in Q&A. |
 | **v2.0.54** | **Ralph Loop is now a real engine, not a prompt** — `/ceo-ralph` used to be markdown instructions with no driver, so it stopped mid-task. v2.0.54 adds `domangcha-ralph-loop.py`, a **blocking Stop hook** that re-reads `.ralph/status.json` and forces continuation (`exit 2`) while `active && !exit_signal && loop_count < max_loops && breaker CLOSED`. Safety guards: `active` flag (zero effect outside a ralph loop), `max_loops` (default 30, hard ceiling 100), Circuit Breaker, atomic status writes. The CEO enforcer no longer injects the conflicting one-shot pipeline block for `/ceo-ralph` — it injects a ralph-specific reminder (max 2 Q&A, never stop, autonomous decisions). The loop now actually runs to completion. |
@@ -534,7 +535,7 @@ Re-running always pulls the latest. Your registries (errors, instincts, history)
 
 *개발 지옥에서 도망쳐 — 돔황차🚗💨*
 
-[![Version](https://img.shields.io/badge/version-2.0.56-brightgreen?style=for-the-badge&logo=github)](https://github.com/DoCoreTeam/domangcha/blob/main/domangcha/VERSION)
+[![Version](https://img.shields.io/badge/version-2.0.57-brightgreen?style=for-the-badge&logo=github)](https://github.com/DoCoreTeam/domangcha/blob/main/domangcha/VERSION)
 [![npm](https://img.shields.io/npm/v/domangcha?style=for-the-badge&logo=npm&color=CB3837)](https://www.npmjs.com/package/domangcha)
 [![License](https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge)](https://opensource.org/licenses/MIT)
 [![Claude Code](https://img.shields.io/badge/Claude%20Code-필수-5865F2?style=for-the-badge)](https://claude.ai/code)
@@ -798,6 +799,7 @@ DC-REV  ✔  수정 정확. undefined 방어 패턴은 카카오페이 공식 �
 
 | 버전 | 기능 |
 |---|---|
+| **v2.0.57** | **insane-search 내장 — 리서치 에이전트 차단 우회** — [insane-search](https://github.com/fivetaku/insane-search) 스킬(MIT)을 `skills/insane-search/`로 vendoring하고 `~/.claude/skills/`에 설치. 🟦 DC-RES·🟦 DC-OSS가 외부 URL 본문 수집 시 Phase 0→3 적응형 엔진(`python3 -m engine`, curl_cffi TLS 임퍼소네이션 + Playwright)을 **차단 여부와 무관하게 기본 리더로 우선 사용**(fallback 아님). Phase 0가 공식 공개 API(X·Reddit·YouTube·HN·arXiv)를 먼저 시도해 일반 URL도 손해 없고, WAF/봇 차단 사이트(Naver·Medium·StackOverflow·LinkedIn 등)는 자동 우회. 키워드 탐색은 WebSearch·`gh search`, URL 본문 수집만 엔진 경유. 업스트림 플러그인의 GitHub-star/`${CLAUDE_PLUGIN_ROOT}` Step-0 훅은 vendoring용으로 제거. |
 | **v2.0.56** | **모델 티어 재배정 — 개발은 Opus, 기획은 Fable** — 코드 개발 에이전트 🟩 DC-DEV-BE/FE/DB/OPS/MOB/INT을 **`claude-opus-4-8`**(최고 코딩 모델)로, 기획/판단 에이전트 🟦 DC-BIZ/RES/OSS를 **`claude-fable-5`**(고속)로 전환. 🟥 DC-SEC/REV는 `claude-opus-4-7` 유지, 🟦 DC-ANA/KNW + 🟥 DC-QA는 `claude-sonnet-4-6` 유지, 🟩 DC-WRT/DOC/SEO + 🟨 DC-TOK는 Haiku 유지. 에이전트 frontmatter 9개와 루트/글로벌/프로젝트 CLAUDE.md·`ceo-system` SKILL의 배정 테이블에 일괄 반영. |
 | **v2.0.55** | **기능 구현 기본 정책 내장 (Feature Defaults)** — "X 기능 만들어줘"만 해도 엔티티 수명주기 전체가 기본 포함됨. 모든 기능에 **CRUD 전체**(생성/조회/수정/삭제, 소프트삭제 기본), 컬렉션 엔티티엔 **List + 4어포던스 기본 탑재**: **검색·정렬·필터 + 성능 로딩(기본 서버 페이지네이션, 대용량 cursor, 피드형은 Q&A로 무한스크롤)**. 검색/정렬/필터/페이지 상태는 URL에 동기화. `ceo-standards`·🟩 DC-DEV-BE/FE/DB 에이전트·CEO 핵심규칙 3-2에 내장 — DOC-FIRST 완료기준에 자동 전개되고 🟥 DC-REV/QA가 누락 시 FAIL. Q&A에서 명시 제외해야만 빠짐. |
 | **v2.0.54** | **Ralph Loop이 진짜 엔진이 됨 (프롬프트 → 코드)** — 기존 `/ceo-ralph`는 드라이버 없는 마크다운 지침이라 중간에 멈췄음. v2.0.54에서 **Stop hook 루프 엔진** `domangcha-ralph-loop.py` 추가: `.ralph/status.json`을 읽어 `active && !exit_signal && loop_count<max_loops && breaker CLOSED`면 `exit 2`로 재진입을 강제해 **끝까지 루프**. 안전가드 — `active` 플래그(루프 밖 세션엔 무영향), `max_loops`(기본30·절대상한100), Circuit Breaker, atomic status 쓰기. enforcer는 `/ceo-ralph`에 충돌하던 1회성 파이프라인 블록 대신 **ralph 전용 reminder**(질문 최대2·멈춤금지·자율결정) 주입. 이제 루프가 실제로 완료까지 돈다. |
