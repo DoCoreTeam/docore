@@ -12,7 +12,7 @@ description: >
   documentation, feature request, bug fix, or any instruction from user.
 ---
 
-# CEO AGENT SYSTEM v2.0.57 — Portable Engineering System
+# CEO AGENT SYSTEM v2.0.58 — Portable Engineering System
 
 > **Quick Start:** 이 파일을 CLAUDE.md에 붙여넣으면 CEO 에이전트 시스템이 즉시 활성화됩니다. 첫 번째 지시를 내리면 CEO가 자동으로 프로젝트를 셋업합니다.
 

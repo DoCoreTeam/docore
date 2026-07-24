@@ -16,7 +16,7 @@ One command orchestrates 18 AI specialists: spec → code → tests → security
 
 *Your AI getaway car from development hell.*
 
-[![Version](https://img.shields.io/badge/version-2.0.57-brightgreen?style=for-the-badge&logo=github)](https://github.com/DoCoreTeam/domangcha/blob/main/domangcha/VERSION)
+[![Version](https://img.shields.io/badge/version-2.0.58-brightgreen?style=for-the-badge&logo=github)](https://github.com/DoCoreTeam/domangcha/blob/main/domangcha/VERSION)
 [![npm](https://img.shields.io/npm/v/domangcha?style=for-the-badge&logo=npm&color=CB3837)](https://www.npmjs.com/package/domangcha)
 [![License](https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge)](https://opensource.org/licenses/MIT)
 [![Claude Code](https://img.shields.io/badge/Claude%20Code-Required-5865F2?style=for-the-badge)](https://claude.ai/code)
@@ -399,6 +399,7 @@ DC-REV  ✔  Fix is surgical and correct. Raw buffer pattern is the documented S
 
 | Version | Feature |
 |---|---|
+| **v2.0.58** | **Browser verification now Chrome-extension-first** — app real-screen/visual/interaction QA now defaults to the Claude-in-Chrome extension (`mcp__claude-in-chrome__*`) instead of Playwright, since the extension verifies directly in the user's live Chrome session with no separate driver. New **"브라우저 검증 정책"** [BV-1]/[BV-2] in `ceo-standards`: [BV-1] Chrome extension = default; [BV-2] Playwright = fallback only (headless CI / regression suites / extension unavailable). Reflected in `/ceo-test` (STEP 4), `/ceo-debug` (STEP 4), `/ceo-ship` (STEP 5), 🟥 DC-QA, 🟩 DC-DEV-FE, and the install Playwright setup (repositioned as fallback). **Unaffected:** the `insane-search` engine's Playwright, which is for external URL-body scraping (WAF bypass), not app verification. |
 | **v2.0.57** | **insane-search vendored — blocked-site bypass for research agents** — the [insane-search](https://github.com/fivetaku/insane-search) skill (MIT) is now vendored into `skills/insane-search/` and installed to `~/.claude/skills/`. 🟦 DC-RES and 🟦 DC-OSS now use its Phase 0→3 adaptive engine (`python3 -m engine`, curl_cffi TLS impersonation + Playwright) as the **default reader for fetching any external URL body** — not just an on-block fallback. Phase 0 tries official public APIs first (X/Reddit/YouTube/HN/arXiv), so plain URLs cost nothing extra, and WAF/bot-walled sites (Naver, Medium, StackOverflow, LinkedIn…) get bypassed automatically. Keyword discovery still goes through WebSearch/`gh search`; only URL-body fetching routes through the engine. Upstream plugin's GitHub-star/`${CLAUDE_PLUGIN_ROOT}` Step-0 hook stripped for vendored use. |
 | **v2.0.56** | **Model tier re-assignment — dev on Opus, planning on Fable** — code-writing agents 🟩 DC-DEV-BE/FE/DB/OPS/MOB/INT now run on **`claude-opus-4-8`** (top coding model), and planning/judgment agents 🟦 DC-BIZ/RES/OSS run on **`claude-fable-5`** (fast). 🟥 DC-SEC/REV stay on `claude-opus-4-7`; 🟦 DC-ANA/KNW + 🟥 DC-QA stay on `claude-sonnet-4-6`; 🟩 DC-WRT/DOC/SEO + 🟨 DC-TOK stay on Haiku. Applied to all 9 agent frontmatters and the model-assignment table in root/global/project CLAUDE.md and `ceo-system` SKILL. |
 | **v2.0.55** | **Feature Implementation Defaults baked in** — "build feature X" now auto-includes the full entity lifecycle by default. Every feature ships **full CRUD** (Create/Read/Update/Delete, soft-delete default), and collection entities get a **List** with four affordances built in: **search, sort, filter, and performant loading (server pagination by default; cursor for large sets; infinite-scroll via Q&A)**. List state (search/sort/filter/page) syncs to the URL. Encoded in `ceo-standards`, the 🟩 DC-DEV-BE/FE/DB agents, and CEO core rule 3-2 — DOC-FIRST completion criteria auto-expand these and 🟥 DC-REV/QA fail the sprint if any are missing. Opt out only by explicitly excluding in Q&A. |
@@ -535,7 +536,7 @@ Re-running always pulls the latest. Your registries (errors, instincts, history)
 
 *개발 지옥에서 도망쳐 — 돔황차🚗💨*
 
-[![Version](https://img.shields.io/badge/version-2.0.57-brightgreen?style=for-the-badge&logo=github)](https://github.com/DoCoreTeam/domangcha/blob/main/domangcha/VERSION)
+[![Version](https://img.shields.io/badge/version-2.0.58-brightgreen?style=for-the-badge&logo=github)](https://github.com/DoCoreTeam/domangcha/blob/main/domangcha/VERSION)
 [![npm](https://img.shields.io/npm/v/domangcha?style=for-the-badge&logo=npm&color=CB3837)](https://www.npmjs.com/package/domangcha)
 [![License](https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge)](https://opensource.org/licenses/MIT)
 [![Claude Code](https://img.shields.io/badge/Claude%20Code-필수-5865F2?style=for-the-badge)](https://claude.ai/code)
@@ -799,6 +800,7 @@ DC-REV  ✔  수정 정확. undefined 방어 패턴은 카카오페이 공식 �
 
 | 버전 | 기능 |
 |---|---|
+| **v2.0.58** | **브라우저 검증 기본을 Chrome 확장 우선으로 전환** — 실행 중인 앱의 실화면·시각·인터랙션 QA를 Playwright 대신 **Claude-in-Chrome 확장**(`mcp__claude-in-chrome__*`) 기본으로 변경. 확장은 사용자 실제 Chrome 세션에서 별도 드라이버 없이 바로 검증 가능. `ceo-standards`에 **"브라우저 검증 정책"** [BV-1]/[BV-2] 신설: [BV-1] Chrome 확장=기본, [BV-2] Playwright=폴백(헤드리스 CI·회귀 스위트·확장 미가용 시에만). `/ceo-test`(STEP 4)·`/ceo-debug`(STEP 4)·`/ceo-ship`(STEP 5)·🟥 DC-QA·🟩 DC-DEV-FE 및 install Playwright 셋업(폴백으로 재포지셔닝)에 일괄 반영. **무관·유지:** `insane-search` 엔진의 Playwright는 외부 URL 본문 스크래핑(WAF 우회)용으로 본 정책과 별개. |
 | **v2.0.57** | **insane-search 내장 — 리서치 에이전트 차단 우회** — [insane-search](https://github.com/fivetaku/insane-search) 스킬(MIT)을 `skills/insane-search/`로 vendoring하고 `~/.claude/skills/`에 설치. 🟦 DC-RES·🟦 DC-OSS가 외부 URL 본문 수집 시 Phase 0→3 적응형 엔진(`python3 -m engine`, curl_cffi TLS 임퍼소네이션 + Playwright)을 **차단 여부와 무관하게 기본 리더로 우선 사용**(fallback 아님). Phase 0가 공식 공개 API(X·Reddit·YouTube·HN·arXiv)를 먼저 시도해 일반 URL도 손해 없고, WAF/봇 차단 사이트(Naver·Medium·StackOverflow·LinkedIn 등)는 자동 우회. 키워드 탐색은 WebSearch·`gh search`, URL 본문 수집만 엔진 경유. 업스트림 플러그인의 GitHub-star/`${CLAUDE_PLUGIN_ROOT}` Step-0 훅은 vendoring용으로 제거. |
 | **v2.0.56** | **모델 티어 재배정 — 개발은 Opus, 기획은 Fable** — 코드 개발 에이전트 🟩 DC-DEV-BE/FE/DB/OPS/MOB/INT을 **`claude-opus-4-8`**(최고 코딩 모델)로, 기획/판단 에이전트 🟦 DC-BIZ/RES/OSS를 **`claude-fable-5`**(고속)로 전환. 🟥 DC-SEC/REV는 `claude-opus-4-7` 유지, 🟦 DC-ANA/KNW + 🟥 DC-QA는 `claude-sonnet-4-6` 유지, 🟩 DC-WRT/DOC/SEO + 🟨 DC-TOK는 Haiku 유지. 에이전트 frontmatter 9개와 루트/글로벌/프로젝트 CLAUDE.md·`ceo-system` SKILL의 배정 테이블에 일괄 반영. |
 | **v2.0.55** | **기능 구현 기본 정책 내장 (Feature Defaults)** — "X 기능 만들어줘"만 해도 엔티티 수명주기 전체가 기본 포함됨. 모든 기능에 **CRUD 전체**(생성/조회/수정/삭제, 소프트삭제 기본), 컬렉션 엔티티엔 **List + 4어포던스 기본 탑재**: **검색·정렬·필터 + 성능 로딩(기본 서버 페이지네이션, 대용량 cursor, 피드형은 Q&A로 무한스크롤)**. 검색/정렬/필터/페이지 상태는 URL에 동기화. `ceo-standards`·🟩 DC-DEV-BE/FE/DB 에이전트·CEO 핵심규칙 3-2에 내장 — DOC-FIRST 완료기준에 자동 전개되고 🟥 DC-REV/QA가 누락 시 FAIL. Q&A에서 명시 제외해야만 빠짐. |

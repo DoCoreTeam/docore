@@ -35,7 +35,8 @@
 - ECC `/pipeline` → CI/CD 파이프라인 트리거
 
 ### STEP 5: 배포 후 검증 (Post-Deploy Verification)
-- gstack `/qa` → 배포된 서비스 브라우저 QA
+- **Claude-in-Chrome 확장 (기본)** → `mcp__claude-in-chrome__*`로 배포된 서비스 실화면 스모크 (핵심 플로우·콘솔 에러)
+  - 폴백: Chrome 확장 미가용/무인 CI 카나리 시 Playwright(`/e2e`). 정책: `skills/ceo-standards/SKILL.md` "브라우저 검증 정책"
 - DC-QA 에이전트 → 프로덕션 기능 검증
 
 ## 결과 보고 / Output
@@ -68,7 +69,8 @@
 | `/canary` | gstack | 카나리 배포 |
 | `/land-and-deploy` | gstack | 랜딩 + 배포 |
 | `/review` | gstack | 배포 전 리뷰 |
-| `/qa` | gstack | 배포 후 QA |
+| `mcp__claude-in-chrome__*` | Claude-in-Chrome | **배포 후 실화면 스모크 (기본)** |
+| `/e2e` | ECC | Playwright 스모크 (폴백 — CI/무인 카나리) |
 | DC-DEV-OPS | DOMANGCHA | DevOps 전문 에이전트 |
 | DC-REV | DOMANGCHA | 최종 리뷰 에이전트 |
 | DC-QA | DOMANGCHA | QA 전문 에이전트 |

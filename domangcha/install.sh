@@ -434,8 +434,8 @@ with open(settings_path, "w") as f:
 print("  ✔  settings.json 훅 주입 완료 / hooks injected (merged safely)")
 PYEOF
 
-# ── 12. Playwright ────────────────────────────────
-step "Playwright MCP 설정 (브라우저 테스트)" "Setting up Playwright MCP (browser testing)"
+# ── 12. Playwright (폴백 — 기본은 Claude-in-Chrome 확장) ──
+step "Playwright MCP 설정 (브라우저 검증 폴백)" "Setting up Playwright MCP (browser-verify fallback)"
 bash "${SRC}/hooks/domangcha-playwright-setup.sh"
 
 # ── 13. Git hooks ─────────────────────────────────

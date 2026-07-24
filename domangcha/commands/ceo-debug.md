@@ -35,7 +35,8 @@
 
 ### STEP 4: 수정 및 검증 (Fix & Verify)
 - ECC `/test` → 수정 후 테스트 재실행
-- gstack `/qa` → 수정된 기능 브라우저 검증
+- **Claude-in-Chrome 확장 (기본)** → `mcp__claude-in-chrome__*`로 수정된 기능 실화면 검증 (재현→해소 확인)
+  - 폴백: Chrome 확장 미가용 시 Playwright(`/e2e`). 정책: `skills/ceo-standards/SKILL.md` "브라우저 검증 정책"
 - ECC `/quality-gate` → 게이트 통과 확인
 
 ## 결과 보고 / Output
@@ -58,7 +59,8 @@
 | 도구 | 출처 | 역할 |
 |------|------|------|
 | `/investigate` | gstack | 근본 원인 조사 |
-| `/qa` | gstack | 브라우저 검증 |
+| `mcp__claude-in-chrome__*` | Claude-in-Chrome | **실화면 브라우저 검증 (기본)** |
+| `/e2e` | ECC | Playwright 검증 (폴백 — CI/헤드리스) |
 | `/debug` | ECC | 버그 진단 |
 | `/build-fix` | ECC | 빌드 오류 수정 |
 | `/go-build` `/rust-build` etc. | ECC | 언어별 빌드 픽스 |

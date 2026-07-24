@@ -24,6 +24,7 @@ description: "Frontend Developer — UI components, pages, and client-side logic
 - localStorage/sessionStorage에 토큰 저장 금지 — httpOnly 쿠키만
 - React에서 HTML `<form>` 태그 금지
 - 컴포넌트 단위 개발 → 자체 검토 후 CEO 제출
+- **실화면 자체 검증은 Claude-in-Chrome 확장(`mcp__claude-in-chrome__*`) 우선** — 렌더·인터랙션·콘솔 확인. Playwright는 폴백(CI/헤드리스). 정책: `skills/ceo-standards/SKILL.md` "브라우저 검증 정책"
 - CSS custom properties로 모든 디자인 토큰 관리
 - Semantic HTML 우선 — generic div 남발 금지
 - Compositor-friendly animation만 사용 (transform, opacity, clip-path, filter)

@@ -544,6 +544,24 @@ test('falls back to default when cache is unavailable', () => {})
 
 ---
 
+## 브라우저 검증 정책 (Browser Verification — Chrome 확장 우선)
+
+실행 중인 앱의 **실화면·시각·인터랙션 검증**은 아래 우선순위를 따른다. 사용자 Chrome에 Claude-in-Chrome 확장이 설치되어 있으면 별도 브라우저·드라이버 설치 없이 실제 세션에서 바로 검증 가능하므로 이를 기본으로 한다.
+
+**[BV-1] 기본 = Claude-in-Chrome 확장 (`mcp__claude-in-chrome__*`)**
+- 실화면 렌더 확인, 스크린샷, 콘솔/네트워크 로그, 클릭·입력·폼 등 인터랙션 검증
+- 세션 시작 시 `tabs_context_mcp` → 새 탭(`tabs_create_mcp`) → `navigate` → `read_page`/`computer`
+- 🟩 DC-DEV-FE 자기 산출물 확인, 🟥 DC-QA 기능 검증, 버그 수정 후 확인, 배포 후 스모크는 **이 경로로 먼저** 검증
+
+**[BV-2] 폴백 = Playwright (`ecc:e2e` / `/e2e`)**
+- Chrome 확장 미가용, 헤드리스 CI 자동화, CI에 박제되는 반복 회귀 E2E 스위트가 필요한 경우에만
+- 즉석 시각 검증이 아니라 **파이프라인에 남기는 자동화 스크립트**를 작성할 때는 계속 Playwright 사용
+
+**금지**: Chrome 확장으로 즉시 검증 가능한데 Playwright 브라우저를 새로 띄우는 중복·저속 검증.
+**주의**: `insane-search` 엔진의 Playwright는 외부 URL 본문 수집(WAF 우회)용으로 본 정책과 무관 — 그대로 유지한다.
+
+---
+
 ## 최초 프로젝트 셋업 절차
 
 CEO가 새 프로젝트에서 첫 번째 지시를 수신했을 때:
@@ -646,7 +664,7 @@ Step 7: 초기화 보고
 mkdir -p ~/.claude/reports
 
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo "[CEO SYSTEM INITIALIZED] v2.0.57"
+echo "[CEO SYSTEM INITIALIZED] v2.0.58"
 echo "ERROR-REGISTRY : $(grep -c 'ERROR-ID' ~/.claude/error-registry.md 2>/dev/null || echo 0)건"
 echo "SKILL-REGISTRY : $(grep -c 'SKILL-ID' ~/.claude/skill-registry.md 2>/dev/null || echo 0)건"
 echo "DECISION-LOG   : $(grep -c 'DEC-' ~/.claude/decision-log.md 2>/dev/null || echo 0)건"

@@ -27,10 +27,11 @@
 ### STEP 3: 커버리지 분석 (Coverage Analysis)
 - ECC `/test-coverage` → 80% 미만 구간 식별 및 보고
 
-### STEP 4: E2E + QA
-- ECC `/e2e` → Playwright 기반 E2E 테스트
-- gstack `/qa` → 실제 앱 브라우저 QA (스크린샷 포함)
+### STEP 4: 브라우저 검증 + E2E + QA
+- **Claude-in-Chrome 확장 (기본)** → `mcp__claude-in-chrome__*`로 실화면 QA (렌더·인터랙션·콘솔/네트워크·스크린샷)
+- ECC `/e2e` → Playwright E2E — **폴백**: Chrome 확장 미가용 / 헤드리스 CI / CI에 박제할 회귀 스위트일 때만
 - DC-QA 에이전트 → 기능/품질 종합 검증
+- 우선순위 근거: `skills/ceo-standards/SKILL.md` "브라우저 검증 정책" [BV-1]/[BV-2]
 
 ## 결과 보고 / Output
 
@@ -55,8 +56,8 @@
 | `/tdd` | ECC | TDD 워크플로우 강제 |
 | `/test` | ECC | 테스트 실행 |
 | `/test-coverage` | ECC | 커버리지 분석 |
-| `/e2e` | ECC | Playwright E2E |
+| `mcp__claude-in-chrome__*` | Claude-in-Chrome | **실화면 브라우저 검증 (기본)** |
+| `/e2e` | ECC | Playwright E2E (폴백 — CI/헤드리스) |
 | `/go-test` `/rust-test` `/cpp-test` etc. | ECC | 언어별 TDD |
 | `/test` | gstack | gstack 테스트 |
-| `/qa` | gstack | 브라우저 QA |
 | DC-QA | DOMANGCHA | QA 전문 에이전트 |
