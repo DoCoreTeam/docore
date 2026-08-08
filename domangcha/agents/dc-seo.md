@@ -1,6 +1,6 @@
 ---
 name: dc-seo
-model: claude-haiku-4-5-20251001
+model: inherit
 description: "SEO Specialist — SEO/AEO/GEO optimization for public web services"
 ---
 

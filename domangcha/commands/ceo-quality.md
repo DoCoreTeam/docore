@@ -1,5 +1,7 @@
 # /ceo-quality — 품질 오케스트레이터 / Quality Orchestrator
 
+Canonical TaskRouter에 validation intent를 전달하며 evaluator는 route와 mutation risk에 비례한다.
+
 **EN** — Full quality pipeline: health check → coverage → refactor → security → performance. Combines gstack's health tools with ECC's quality suite and DOCORE evaluators.
 
 **KO** — 헬스 체크 → 커버리지 → 리팩터 → 보안 → 성능 전체 품질 파이프라인. gstack 헬스 도구 + ECC 품질 스위트 + DOMANGCHA 평가자를 결합합니다.

@@ -1,5 +1,7 @@
 # /ceo-clarify — 입력 정제 후 CEO 자동 실행
 
+Canonical TaskRouter에 clarification intent를 전달하는 thin adapter다. 아래 단계는 route profile이며 독립 router가 아니다.
+
 사용자의 입력을 받아 CEO가 최적으로 이해할 수 있는 형태로 정제한 뒤,
 자동으로 `/ceo`를 실행합니다.
 
@@ -51,7 +53,7 @@
 ### STEP 4: /ceo 자동 실행
 
 정제된 태스크를 기준으로 `/ceo` 파이프라인 즉시 시작.
-(SIZE ASSESSMENT → PHASE 0 → FULL PIPELINE)
+(Intent normalization → TaskRouter → DIRECT / LOOP / GRAPH)
 
 ---
 

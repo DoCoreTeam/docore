@@ -32,7 +32,7 @@ If applicable, add screenshots or terminal output to help explain the problem.
 
 - OS: (e.g., macOS 14.5, Ubuntu 22.04)
 - Shell: (e.g., zsh 5.9, bash 5.2)
-- Claude Code version: (run `claude --version`)
+- Runtime and version: (for example `claude --version` or `codex --version`)
 - DOMANGCHA version: (contents of `domangcha/VERSION`)
 
 ## Additional Context

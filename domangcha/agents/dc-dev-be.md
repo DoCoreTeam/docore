@@ -1,6 +1,6 @@
 ---
 name: dc-dev-be
-model: claude-opus-4-8
+model: inherit
 description: "Backend Developer — API endpoints, business logic, and server-side code"
 ---
 

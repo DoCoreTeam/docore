@@ -1,6 +1,6 @@
 ---
 name: dc-biz
-model: claude-fable-5
+model: inherit
 description: "Business Judge — validates business feasibility and project constraints before every task"
 ---
 

@@ -1,5 +1,7 @@
 # /ceo-security — 보안 오케스트레이터 / Security Orchestrator
 
+Canonical TaskRouter에 minimum GRAPH security intent를 전달한다. Security invariant는 model proposal로 낮출 수 없다.
+
 **EN** — Full security audit pipeline: OWASP scan → secrets → auth → rate limiting → penetration. Combines ECC's security suite with gstack and DC-SEC agent.
 
 **KO** — OWASP 스캔 → 시크릿 → 인증 → 레이트 리미팅 → 침투 테스트 전체 보안 파이프라인. ECC 보안 스위트 + gstack + DC-SEC 에이전트를 결합합니다.

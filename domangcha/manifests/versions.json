@@ -1,0 +1,10 @@
+{
+  "source": "domangcha/VERSION",
+  "surfaces": [
+    {"file":"package.json","kind":"json","key":"version"},
+    {"file":"bin/domangcha.sh","kind":"shell","key":"VERSION"},
+    {"file":"CLAUDE.md","kind":"header"},
+    {"file":"domangcha/CLAUDE.md","kind":"header"},
+    {"file":"README.md","kind":"badge"}
+  ]
+}

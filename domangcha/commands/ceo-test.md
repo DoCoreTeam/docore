@@ -1,5 +1,7 @@
 # /ceo-test — 테스트 오케스트레이터 / Test Orchestrator
 
+Canonical TaskRouter에 validation intent를 전달한다. Deterministic test는 DIRECT, 반복 수정은 LOOP, 병렬 검증은 GRAPH다.
+
 **EN** — Runs the full testing suite: TDD enforcement, unit/integration tests, E2E browser tests, and QA flows. Combines ECC, gstack, and DC-QA agent.
 
 **KO** — TDD 강제 → 단위/통합 테스트 → E2E 브라우저 테스트 → QA 플로우까지 전체 테스트 스위트를 실행합니다. ECC, gstack, DC-QA 에이전트를 결합합니다.

@@ -1,0 +1,23 @@
+{
+  "version": 1,
+  "roles": [
+    {"id":"dc-ana","group":"PLANNER","policy":"BALANCED"},
+    {"id":"dc-biz","group":"PLANNER","policy":"HIGH_REASONING"},
+    {"id":"dc-res","group":"PLANNER","policy":"BALANCED"},
+    {"id":"dc-oss","group":"PLANNER","policy":"BALANCED"},
+    {"id":"dc-knw","group":"PLANNER","policy":"BALANCED"},
+    {"id":"dc-dev-be","group":"GENERATOR","policy":"HIGH_REASONING"},
+    {"id":"dc-dev-db","group":"GENERATOR","policy":"HIGH_REASONING"},
+    {"id":"dc-dev-fe","group":"GENERATOR","policy":"HIGH_REASONING"},
+    {"id":"dc-dev-int","group":"GENERATOR","policy":"HIGH_REASONING"},
+    {"id":"dc-dev-mob","group":"GENERATOR","policy":"HIGH_REASONING"},
+    {"id":"dc-dev-ops","group":"GENERATOR","policy":"HIGH_REASONING"},
+    {"id":"dc-doc","group":"GENERATOR","policy":"FAST_CHEAP"},
+    {"id":"dc-wrt","group":"GENERATOR","policy":"FAST_CHEAP"},
+    {"id":"dc-seo","group":"GENERATOR","policy":"FAST_CHEAP"},
+    {"id":"dc-qa","group":"EVALUATOR","policy":"REVIEW"},
+    {"id":"dc-sec","group":"EVALUATOR","policy":"REVIEW"},
+    {"id":"dc-rev","group":"EVALUATOR","policy":"REVIEW"},
+    {"id":"dc-tok","group":"SUPPORT","policy":"FAST_CHEAP"}
+  ]
+}

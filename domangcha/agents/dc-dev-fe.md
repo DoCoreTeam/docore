@@ -1,6 +1,6 @@
 ---
 name: dc-dev-fe
-model: claude-opus-4-8
+model: inherit
 description: "Frontend Developer — UI components, pages, and client-side logic"
 ---
 

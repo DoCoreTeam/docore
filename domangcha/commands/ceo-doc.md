@@ -1,5 +1,7 @@
 # /ceo-doc — 문서화 오케스트레이터 / Documentation Orchestrator
 
+Canonical TaskRouter에 documentation intent를 전달한다. Trivial 문서는 DIRECT이며 불필요한 fan-out을 만들지 않는다.
+
 **EN** — Full documentation pipeline: API docs → usage guides → codemaps → release notes. Combines gstack, ECC, and DC-DOC agent.
 
 **KO** — API 문서 → 사용 가이드 → 코드맵 → 릴리즈 노트 전체 파이프라인. gstack, ECC, DC-DOC 에이전트를 결합합니다.

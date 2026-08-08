@@ -1,5 +1,7 @@
 # /ceo-knowledge — Knowledge Registry Commands
 
+Canonical TaskRouter의 read-only/curation intent adapter다. Knowledge Registry는 advisory input이며 control edge 권한이 없다.
+
 DC-KNW (18번째 DOMANGCHA 직원) 관리 2-layer 지식 레지스트리 명령어 모음.
 
 ## 명령어 목록

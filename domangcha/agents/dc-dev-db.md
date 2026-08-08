@@ -1,6 +1,6 @@
 ---
 name: dc-dev-db
-model: claude-opus-4-8
+model: inherit
 description: "Database Engineer — schema design, migrations, and query optimization"
 ---
 

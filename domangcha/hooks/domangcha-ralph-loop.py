@@ -7,7 +7,7 @@ ceo-ralph 자율 루프의 실제 "엔진". 프롬프트 prose가 아니라 기�
 동작:
   .ralph/status.json 을 읽어 루프 계속/종료를 결정한다.
   - active != true           → exit 0  (ralph 루프 중 아님 — 일반 세션, 영향 없음)
-  - exit_signal == true       → active 내림 + exit 0  (완료)
+  - exit_signal + evidence    → active 내림 + exit 0  (완료)
   - circuit_breaker OPEN       → exit 0  (차단기 작동 — 정상 중단)
   - loop_count >= max_loops    → active 내림 + breaker OPEN + exit 0  (런어웨이 방지 캡)
   - 그 외                      → loop_count++ 기록 후 exit 2  (재진입 강제)
@@ -59,6 +59,20 @@ def _write_json(path: Path, data: dict) -> None:
         pass
 
 
+def _completion_is_valid(status_path: Path, st: dict) -> bool:
+    """The model cannot end a loop by setting exit_signal alone."""
+    fix_plan = status_path.parent / "fix_plan.md"
+    if not fix_plan.exists() or "- [ ]" in fix_plan.read_text():
+        return False
+    if st.get("validation_status", st.get("gate_status")) not in {"PASS", "PASSED"}:
+        return False
+    if st.get("requires_tests") and st.get("tests_status") not in {"PASS", "PASSED"}:
+        return False
+    if st.get("requires_review") and st.get("evaluators_status") not in {"PASS", "PASSED"}:
+        return False
+    return True
+
+
 CONTINUE_MSG = """\
 [RALPH ENGINE] 루프 미완료 — 계속 진행하세요 (loop #{loop}/{maxl}).
 
@@ -69,7 +83,8 @@ CONTINUE_MSG = """\
 4. 사용자에게 질문하려고 멈추지 마세요 (LOOP-001/003). Circuit Breaker 조건만 중단 허용.
 5. 매 루프 끝에 RALPH_STATUS 블록을 출력하고 .ralph/status.json 의 loop 상태를 갱신하세요.
 
-⚠️ 완료 판정: fix_plan.md 전 항목 [x] + DC-QA/SEC/REV 통과 + GATE 1-5 통과 일 때에만
+⚠️ 완료 판정: fix_plan.md 전 항목 [x] + route-relevant deterministic validation
+   + 필요한 경우 tests/independent review evidence가 있을 때에만
    .ralph/status.json 의 "exit_signal" 을 true 로 설정하세요.
    그 전에는 이 엔진이 계속 루프를 재개합니다. "여기까지만" 금지 [EXEC-002].
 """
@@ -101,10 +116,14 @@ def main() -> int:
         return 0
 
     # 2) 완료 신호 — 모델이 완료조건 충족 시 설정
-    if st.get("exit_signal") is True:
+    if st.get("exit_signal") is True and _completion_is_valid(status_path, st):
         st["active"] = False
         _write_json(status_path, st)
         return 0
+    if st.get("exit_signal") is True:
+        st["exit_signal"] = False
+        st["last_error"] = "exit_signal rejected: completion evidence missing"
+        _write_json(status_path, st)
 
     # 3) Circuit Breaker OPEN → 정상 중단
     breaker = st.get("circuit_breaker", {})

@@ -1,6 +1,6 @@
 ---
 name: dc-oss
-model: claude-fable-5
+model: inherit
 description: "OSS Scout — discovers top 3 external libraries and tools for the task"
 ---
 

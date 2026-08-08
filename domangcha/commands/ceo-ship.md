@@ -1,5 +1,7 @@
 # /ceo-ship — 배포 오케스트레이터 / Ship Orchestrator
 
+Canonical TaskRouter의 guarded GRAPH side-effect workflow다. Deploy/publish는 explicit authority와 HUMAN_GATE 후에만 실행한다.
+
 **EN** — Full ship pipeline: quality gate → review → build → deploy. Combines gstack, ECC, and DC-DEV-OPS agent for a safe, verified release.
 
 **KO** — 품질 게이트 → 리뷰 → 빌드 → 배포 전체 파이프라인. gstack, ECC, DC-DEV-OPS 에이전트를 결합하여 안전하고 검증된 릴리즈를 보장합니다.

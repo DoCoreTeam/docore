@@ -1,31 +1,19 @@
-# /ceo-status — 현황 조회
+# /ceo-status — Execution Status
 
-프로젝트와 레지스트리 현재 상태를 보여줌
+Canonical engine의 DIRECT read-only checkpoint/status adapter다.
 
-## 출력 포맷
-
+```bash
+python3 ~/.domangcha/domangcha/engine.py status <task_id> --workspace <project>
 ```
-[CEO STATUS]
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-📁 프로젝트: <프로젝트명>
-🏷️ 현재 버전: <domangcha/VERSION 파일 읽어서 표시>
-📊 상태: PLANNING / ACTIVE / REVIEW / DONE
 
-[레지스트리]
-🔴 ERROR-REGISTRY: N건 (최근: <마지막 에러 요약>)
-🔧 SKILL-REGISTRY: N건
-📋 DECISION-LOG:   N건
+보고 항목:
 
-[하네스 장치]
-✅/⬜ pre-commit hook
-✅/⬜ lint 규칙
-✅/⬜ 아키텍처 테스트
-✅/⬜ commit-msg hook
-✅/⬜ CI/CD 게이트
-✅/⬜ CODEOWNERS
-✅/⬜ gc.sh
+- task ID, route, route history
+- current status/node
+- completed and pending nodes
+- attempts, budget usage, error fingerprints
+- checkpoint version/time
+- pending approval
+- artifact references
 
-[최근 스프린트]
-Sprint N: PASS/FAIL — <요약>
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-```
+Secret values와 untrusted artifact 전문은 출력하지 않는다.

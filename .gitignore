@@ -24,3 +24,6 @@ package-lock.json
 
 # User-generated planning docs (created locally after install)
 docs/*/
+
+# DOMANGCHA runtime state (checkpoints and structured events)
+.domangcha/

@@ -1,5 +1,7 @@
 # /ceo-learn — 학습 오케스트레이터 / Learning Orchestrator
 
+Canonical engine의 structured failure/knowledge curation adapter다. Retry 중 registry를 반복 변경하지 않는다.
+
 **EN** — Full learning pipeline: extract patterns → evaluate → save instincts → promote to global. Combines ECC's learning system with gstack's retro and DOMANGCHA's session tools.
 
 **KO** — 패턴 추출 → 평가 → 인스팅트 저장 → 글로벌 승격 전체 학습 파이프라인. ECC 학습 시스템 + gstack 회고 + DOMANGCHA 세션 도구를 결합합니다.

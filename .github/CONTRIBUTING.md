@@ -1,6 +1,6 @@
 # Contributing to DOMANGCHA
 
-Thank you for your interest in contributing to DOMANGCHA — the 16-agent AI automation crew for Claude Code. This document explains how to contribute effectively.
+Thank you for contributing to DOMANGCHA — adaptive DIRECT, LOOP, and GRAPH engineering for Claude Code and OpenAI Codex with 18 logical agent roles.
 
 ## Table of Contents
 
@@ -22,7 +22,7 @@ If you found a bug, please open an issue using the **Bug Report** template. Incl
 - A clear description of the problem
 - Steps to reproduce
 - Expected vs actual behavior
-- Your environment (OS, shell, Claude Code version)
+- Your environment (OS, shell, runtime and version: Claude Code, Codex Local/IDE, or Codex Cloud)
 
 ### Feature Requests
 
@@ -55,11 +55,11 @@ For new ideas or improvements, open an issue using the **Feature Request** templ
 
 All agents live in `domangcha/agents/`. To add a new agent:
 
-1. Create a new directory: `domangcha/agents/DC-YOUR-AGENT/`
-2. Add a `AGENT.md` file describing the agent's role, model tier, primary skills, and responsibilities.
-3. Follow the existing agent format — see `domangcha/agents/DC-DEV-OPS/` as a reference.
-4. Update `domangcha/CLAUDE.md` to register the new agent in the agent table.
-5. Document the agent in `README.md` under the appropriate category (PLANNER / GENERATOR / EVALUATOR / SUPPORT).
+1. Create `domangcha/agents/dc-your-agent.md` using the existing frontmatter format.
+2. Add the role ID, group, and ModelPolicy intent to `domangcha/manifests/agents.json`.
+3. Keep provider-independent identity in the manifest and provider-specific prompt details in the agent file.
+4. Update README role documentation when the public role catalog changes.
+5. Run `npm test`; the manifest validator rejects count or name drift.
 
 ---
 
@@ -84,7 +84,7 @@ All agents live in `domangcha/agents/`. To add a new agent:
 
 ### File Size
 
-- Files must not exceed 300 lines. Split large files into focused modules.
+- Keep hand-maintained production source around 300 lines where reasonable. Generated, vendor, lock, schema, and unavoidable installer/configuration artifacts are explicit exceptions.
 
 ---
 

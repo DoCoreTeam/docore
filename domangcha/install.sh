@@ -137,6 +137,41 @@ mkdir -p "${SKILLS_DIR}/ceo-system"
 cp "${SRC}/skills/ceo-system/SKILL.md" "${SKILLS_DIR}/ceo-system/SKILL.md"
 echo -e "  ${GREEN}✔${NC}  ceo-system/SKILL.md  ${DIM}→ ~/.claude/skills/ceo-system/${NC}"
 
+# Canonical adaptive engine — shared by hooks and runtime adapters.
+ENGINE_ROOT="${HOME}/.domangcha"
+ENGINE_DIR="${ENGINE_ROOT}/domangcha"
+mkdir -p "$ENGINE_DIR"
+cp "${SRC}/engine.py" "$ENGINE_DIR/engine.py"
+cp "${SRC}/VERSION" "$ENGINE_DIR/VERSION"
+for part in orchestration adapters manifests graphs policies; do
+    rm -rf "${ENGINE_DIR:?}/${part}"
+    cp -R "${SRC}/${part}" "${ENGINE_DIR}/${part}"
+done
+touch "$ENGINE_DIR/__init__.py"
+echo -e "  ${GREEN}✔${NC}  adaptive engine  ${DIM}→ ~/.domangcha/domangcha/${NC}"
+
+# Codex adapter: managed global block, shared policy remains in ~/.domangcha.
+CODEX_DIR="${CODEX_HOME:-${HOME}/.codex}"
+mkdir -p "$CODEX_DIR"
+CODEX_AGENTS="$CODEX_DIR/AGENTS.md"
+python3 - "$CODEX_AGENTS" <<'PYEOF'
+import pathlib, re, sys
+path = pathlib.Path(sys.argv[1])
+existing = path.read_text() if path.exists() else ""
+start, end = "<!-- DOMANGCHA:START -->", "<!-- DOMANGCHA:END -->"
+block = """<!-- DOMANGCHA:START -->
+## DOMANGCHA Adaptive Execution
+Use `python3 ~/.domangcha/domangcha/engine.py route \"<request>\"` for DOMANGCHA routing.
+Follow DIRECT, LOOP, or GRAPH; deterministic safety invariants override model proposals.
+Shared policy: `~/.domangcha/domangcha/policies/`. Preserve task state on escalation.
+Do not assume Claude-specific Agent tools or hooks; use Codex-native capabilities.
+<!-- DOMANGCHA:END -->"""
+pattern = re.compile(re.escape(start) + r".*?" + re.escape(end), re.S)
+updated = pattern.sub(block, existing) if pattern.search(existing) else (existing.rstrip() + "\n\n" + block + "\n")
+path.write_text(updated.lstrip())
+PYEOF
+echo -e "  ${GREEN}✔${NC}  Codex adapter  ${DIM}→ ${CODEX_AGENTS}${NC}"
+
 # insane-search (vendored, MIT — fivetaku/insane-search): 차단 사이트 우회 리더
 if [ -d "${SRC}/skills/insane-search" ]; then
     rm -rf "${SKILLS_DIR}/insane-search"
@@ -238,38 +273,8 @@ for file in error-registry skill-registry project-registry decision-log; do
     fi
 done
 
-# Auto-add docs/*/ to user's project .gitignore (opt-out: DOMANGCHA_SKIP_GITIGNORE=1)
-if [ "${DOMANGCHA_SKIP_GITIGNORE:-0}" = "1" ]; then
-    echo -e "  ${DIM}·${NC}  .gitignore 자동 추가 비활성화됨 / auto-gitignore disabled"
-else
-    USER_GIT_ROOT=$(git rev-parse --show-toplevel 2>/dev/null || true)
-    if [ -z "$USER_GIT_ROOT" ]; then
-        echo -e "  ${DIM}·${NC}  git 레포 없음 — .gitignore 건너뜀 / no git repo"
-    elif [ "$USER_GIT_ROOT" = "$HOME" ]; then
-        echo -e "  ${YELLOW}⏭${NC}  cwd가 \$HOME — .gitignore 건너뜀 / skipping (\$HOME)"
-    elif [ -f "${USER_GIT_ROOT}/domangcha/VERSION" ]; then
-        echo -e "  ${YELLOW}⏭${NC}  DOMANGCHA 레포 자체 — 건너뜀 / skipping (DOMANGCHA repo)"
-    else
-        GITIGNORE_PATH="${USER_GIT_ROOT}/.gitignore"
-        if [ -f "$GITIGNORE_PATH" ] && grep -qE "^/?docs/(\*|\*\*)/?$" "$GITIGNORE_PATH"; then
-            echo -e "  ${YELLOW}⏭${NC}  .gitignore — docs 패턴 존재 / docs pattern present (${GITIGNORE_PATH})"
-        else
-            printf '\n# DOMANGCHA: user planning docs (local only)\ndocs/*/\n' >> "$GITIGNORE_PATH"
-            echo -e "  ${GREEN}✔${NC}  .gitignore — docs/*/ 추가 / added (${GITIGNORE_PATH})"
-        fi
-        # Untrack already-tracked docs/ subdirs (safe on both fresh install and update)
-        TRACKED_SUBDIRS=$(git -C "$USER_GIT_ROOT" -c core.quotepath=false ls-files "docs/" 2>/dev/null \
-            | grep -E "^docs/[^/]+/" \
-            | sed 's|docs/\([^/]*\)/.*|docs/\1|' \
-            | sort -u || true)
-        if [ -n "$TRACKED_SUBDIRS" ]; then
-            echo "$TRACKED_SUBDIRS" | while IFS= read -r subdir; do
-                git -C "$USER_GIT_ROOT" rm -r --cached "$subdir" 2>/dev/null || true
-            done
-            echo -e "  ${GREEN}✔${NC}  docs/ 하위 폴더 언트래킹 완료 / untracked existing docs/ subdirs"
-        fi
-    fi
-fi
+# Adaptive documentation is route-dependent. The installer never rewrites a
+# user's .gitignore or untracks their documentation.
 
 # ── 7. ECC ────────────────────────────────────────
 step "ECC 183개 스킬 설치" "Installing 183 ECC skills"
@@ -375,7 +380,7 @@ DOMANGCHA_POST = {
 }
 # async: true — CEO quality review runs in background so session ends immediately
 DOMANGCHA_STOP = {
-    "hooks": [{"type": "command", "command": f'bash "{hooks_dir}/domangcha-stop.sh"', "timeout": 120, "async": True}]
+    "hooks": [{"type": "command", "command": f'bash "{hooks_dir}/domangcha-stop.sh"', "timeout": 120}]
 }
 # ralph loop engine — BLOCKING (no async) so exit 2 can force loop continuation
 DOMANGCHA_RALPH_LOOP = {
@@ -541,8 +546,8 @@ else:
 
 # ── Info box (width-adaptive) ──
 rows = [
-    (CY, "18 에이전트(Agents)  ·  16 명령어(Commands)  ·  풀 파이프라인(Full Pipeline)"),
-    (DM, "기획 → 빌드 → 검증 → GATE → 출시  /  Plan → Build → Eval → GATE → Ship"),
+    (CY, "18 역할(Agent Roles)  ·  19 명령어(Commands)  ·  적응형 실행(Adaptive Execution)"),
+    (DM, "DIRECT · LOOP · GRAPH → 검증  /  minimum reliable orchestration"),
     (WH, "by docore  (Michael Dohyeon Kim · KDC CEO)"),
     (DM, "github.com/DoCoreTeam/domangcha"),
     (GR, "설치/업데이트:  npx domangcha"),
@@ -580,7 +585,7 @@ print()
 print(f"{WH}{BD}  🚀 시작하기 / Getting Started{NC}")
 print(f"  {DM}1.{NC} Claude Code 를 아무 프로젝트에서 열기  {DM}/ Open Claude Code in any project{NC}")
 print(f"  {DM}2.{NC} {CY}/ceo-init{NC}  {DM}프로젝트 초기화 / Initialize project{NC}")
-print(f"  {DM}3.{NC} {CY}/ceo \"투두앱 만들어줘\"{NC}  {DM}→ 풀 파이프라인 시작 / Start full pipeline{NC}")
+print(f"  {DM}3.{NC} {CY}/ceo \"투두앱 만들어줘\"{NC}  {DM}→ DIRECT/LOOP/GRAPH 자동 선택{NC}")
 print()
 print(f"  {WH}{BD}📦 재설치 / Update / Reinstall{NC}")
 print(f"  {GR}  npx domangcha{NC}  {DM}← 권장 / recommended{NC}")
@@ -588,7 +593,7 @@ print(f"  {DM}  curl -sSL https://raw.githubusercontent.com/DoCoreTeam/domangcha
 print()
 print(f"  {WH}{BD}📋 주요 명령어 / Key Commands{NC}")
 cmds = [
-    ("/ceo \"업무\"", "Q&A → 17에이전트 → GATE → 완료"),
+    ("/ceo \"업무\"", "DIRECT / LOOP / GRAPH 자동 라우팅"),
     ("/ceo-ralph",    "자율 반복 루프 / autonomous loop"),
     ("/ceo-init",     "프로젝트 하네스 셋업 / harness setup"),
     ("/ceo-status",   "현황 조회 / show status"),

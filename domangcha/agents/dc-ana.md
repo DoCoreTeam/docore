@@ -1,6 +1,6 @@
 ---
 name: dc-ana
-model: claude-sonnet-4-6
+model: inherit
 description: "Analyst — deep internal codebase exploration: execution path tracing, architecture mapping, gap analysis, dependency documentation"
 ---
 

@@ -1,13 +1,15 @@
 {
   "name": "domangcha",
-  "version": "2.0.58",
-  "description": "17-agent harness for Claude Code — spec to ship in one command.",
+  "version": "2.1.0",
+  "description": "Adaptive DIRECT, LOOP, and GRAPH engineering for Claude Code and OpenAI Codex.",
   "keywords": [
     "harness",
     "agent-harness",
     "agent-orchestration",
     "vibe-coding",
     "claude-code",
+    "openai-codex",
+    "graph-engineering",
     "multi-agent",
     "agentic-ai",
     "anthropic",
@@ -43,6 +45,7 @@
   "files": [
     "bin/",
     "domangcha/",
+    "AGENTS.md",
     "README.md",
     "LICENSE"
   ],
@@ -50,7 +53,7 @@
     "node": ">=14.0.0"
   },
   "scripts": {
-    "test": "bash -n domangcha/install.sh && echo 'install.sh syntax OK'",
-    "prepublishOnly": "bash -n domangcha/install.sh"
+    "test": "python3 -m unittest discover -s domangcha/tests && python3 domangcha/engine.py validate && bash -n domangcha/install.sh bin/domangcha.sh domangcha/hooks/*.sh",
+    "prepublishOnly": "npm test"
   }
 }

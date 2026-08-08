@@ -1,6 +1,6 @@
 ---
 name: dc-tok
-model: claude-haiku-4-5-20251001
+model: inherit
 description: "Token Monitor — context usage reporting and budget management"
 ---
 

@@ -1,104 +1,18 @@
 # DOMANGCHA Error Registry
 
-> CEO는 매 작업 전 이 파일을 확인하고 금지 패턴을 스캔해야 함
-> 새로운 실수 발생 시 즉시 여기에 추가하여 재발 방지
+The registry stores recurring failure classes; executable prevention belongs to validators and tests.
 
-## 사용 방법
+| ID | Failure class | Deterministic prevention |
+|---|---|---|
+| ERR-001 | Oversized hand-maintained source | line-limit validator with explicit exemptions |
+| ERR-002 | Hard-coded secret | secret scan + checkpoint/log redaction |
+| ERR-003 | Version/metadata drift | manifest and release-surface validator |
+| ERR-004 | Builder is sole reviewer | execution-identity validator |
+| ERR-005 | Unverified completion | route-specific validation evidence |
+| ERR-006 | Infinite/no-progress retry | max attempts, budgets, progress hash, error fingerprint |
+| ERR-007 | Duplicate side effect on retry | idempotency classification and receipts |
+| ERR-008 | Prompt-controlled transition | structured result + deterministic edge guard |
+| ERR-009 | Approval path bypass | graph path validation + HUMAN_GATE state |
+| ERR-010 | Secret/path leakage in state | allowlisted state, redaction, workspace containment |
 
-- **GATE 1**에서 이 파일의 모든 금지 패턴을 산출물과 대조
-- 패턴 발견 시 → 즉시 차단 (FAIL 판정)
-- 새 실수 등록: `[ERR-XXX]` 형식으로 번호 부여
-
----
-
-## 금지 패턴 목록
-
-### [ERR-001] 파일 크기 초과
-- **패턴**: 단일 파일 300줄 초과
-- **원인**: 모듈 분리 없이 기능 계속 추가
-- **처방**: 300줄 도달 시 즉시 서브모듈 분리
-- **GATE**: GATE 1에서 자동 차단
-
-### [ERR-002] 하드코딩 시크릿
-- **패턴**: `API_KEY=`, `password=`, `secret=` 등이 소스에 직접 포함
-- **원인**: 환경변수 미사용
-- **처방**: 즉시 삭제 → .env + 환경변수로 교체 → 비밀 로테이션
-- **GATE**: GATE 1 + DC-SEC에서 차단
-
-### [ERR-003] 버전 불일치
-- **패턴**: domangcha/VERSION과 CLAUDE.md/SKILL.md/README.md의 버전 번호가 다름
-- **원인**: 일부 파일만 업데이트하고 커밋
-- **처방**: 버전 업데이트 시 5개 파일 전부 동시 수정
-- **GATE**: GATE 3에서 자동 차단
-
-### [ERR-004] Builder = Reviewer 역할 혼용
-- **패턴**: 코드를 작성한 에이전트가 동일 코드를 리뷰
-- **원인**: DC-REV 없이 자체 검토로 완료 처리
-- **처방**: GENERATOR 에이전트와 EVALUATOR 에이전트 반드시 분리
-- **GATE**: GATE 4에서 자동 차단
-
-### [ERR-005] 가비지 코드 누적
-- **패턴**: 재작업 시 이전 구현을 삭제하지 않고 새 코드 추가
-- **원인**: 리셋 없이 위에 덮어쓰기
-- **처방**: `/ceo-ralph reset` 또는 git stash 후 fresh start
-- **GATE**: GATE 1 스캔 + DC-REV 지적
-
-### [ERR-006] SKILL.md 규칙 불일치
-- **패턴**: ceo.md의 Q&A 질문 수와 SKILL.md의 Q&A 질문 수가 다름
-- **원인**: 한 파일만 수정하고 다른 파일 미동기화
-- **처방**: ceo.md와 SKILL.md 동시 업데이트, 단일 소스 유지
-- **GATE**: CEO 자가점검
-
-### [EXEC-001] 완료 미검증 선언
-- **패턴**: `04-completion-criteria.md` 전 항목 확인 없이 "완료" 또는 [CEO REPORT] 출력
-- **원인**: 완료 조건 문서 미조회
-- **처방**: GATE 2에서 `04-completion-criteria.md` 라인별 ✅/❌ 출력 후 전항목 ✅일 때만 완료
-- **GATE**: GATE 2에서 자동 차단
-- **발생일**: 2026-05-01
-- **관련 커밋**: v2.0.41
-
-### [EXEC-002] 구현 중간 멈춤
-- **패턴**: 구현 시작 후 "여기까지만", "다음 스프린트에서", "일단 멈추고" 출력
-- **원인**: Q&A 단계에서 범위를 확정하지 않고 구현 진입
-- **처방**: 범위 분리는 Q&A(PHASE 0.5) 단계에서만 사용자 승인 → 구현 시작 후 중단 절대 금지
-- **GATE**: GATE 2 (완료 확인) + CEO 자가점검
-- **발생일**: 2026-05-01
-- **관련 커밋**: v2.0.41
-
-### [EXEC-003] CLI 가능 작업 사용자 위임
-- **패턴**: Bash로 실행 가능한 명령을 사용자에게 "직접 실행하세요" 로 위임
-- **원인**: 권한 확인 없이 사용자 위임 선택
-- **처방**: CEO/에이전트가 직접 Bash 실행. 위임 허용 = 사용자 인증(oauth/MFA) 필요 또는 사용자 로컬 전용 환경만
-- **GATE**: GATE 1 스캔 (출력 텍스트에 "직접 실행하세요" 패턴 탐지)
-- **발생일**: 2026-05-01
-- **관련 커밋**: v2.0.41
-
-### [EXEC-004] 세션 리포트 누락
-- **패턴**: 작업 완료 후 [CEO REPORT] 또는 [CEO FAST REPORT] 블록 미출력
-- **원인**: PHASE 6 또는 FAST PATH 마지막 단계 건너뜀
-- **처방**: [CEO REPORT] 블록은 GATE 5 통과 직후 무조건 출력. 멀티세션 사용자가 이번 세션 산출물을 한눈에 파악할 수 있어야 함
-- **GATE**: GATE 2 (완료 체크리스트 마지막 항목으로 포함)
-- **발생일**: 2026-05-01
-- **관련 커밋**: v2.0.41
-
-### [ERR-007] README 상세 섹션 미검토 업데이트
-- **패턴**: 에이전트/기능 추가 후 README의 "Watch a Real Sprint" 데모, 파이프라인 다이어그램, 에이전트 테이블 등 상세 섹션을 갱신하지 않고 배포
-- **원인**: README 업데이트 시 What's New와 버전 배지만 수정하고 실제 동작을 보여주는 섹션은 누락
-- **처방**: FAST PATH/FULL PIPELINE GATE 전 README 체크리스트: ① What's New ② 버전 배지 ③ Watch a Real Sprint 데모 ④ 파이프라인 다이어그램 ⑤ 에이전트 테이블 ⑥ 명령어 테이블 ⑦ KO 대응 섹션 — 7개 전부 점검
-- **GATE**: GATE 1 CEO 자가점검 + DC-REV README 섹션 일관성 확인
-- **발생일**: 2026-05-02
-- **관련 커밋**: v2.0.49
-
----
-
-## 등록 템플릿
-
-```markdown
-### [ERR-XXX] 오류 이름
-- **패턴**: 구체적 코드/행동 패턴
-- **원인**: 왜 발생했는가
-- **처방**: 재발 방지 방법
-- **GATE**: 어느 GATE에서 차단할 것인가
-- **발생일**: YYYY-MM-DD
-- **관련 커밋**: vX.X.X
-```
+New failures are recorded as structured evidence first and curated after validation. A worker must not mutate this registry repeatedly during retries.

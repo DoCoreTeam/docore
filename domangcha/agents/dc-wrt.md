@@ -1,6 +1,6 @@
 ---
 name: dc-wrt
-model: claude-haiku-4-5-20251001
+model: inherit
 description: "Content Writer — marketing copy, UX text, and content strategy"
 ---
 

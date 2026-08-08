@@ -1,8 +1,10 @@
 # /ceo-update — CEO 업데이트 / Update CEO
 
-**EN** — Update CEO and all dependencies (ECC, gstack, Superpowers) to the latest version. Registries are preserved.
+Canonical installer의 guarded update workflow다. Managed adapter만 교체하고 사용자 registry/checkpoint를 보존한다.
 
-**KO** — CEO와 모든 의존성 (ECC, gstack, Superpowers)을 최신 버전으로 업데이트합니다. 레지스트리는 보존됩니다.
+**EN** — Update the shared engine and Claude/Codex adapters. Registries and checkpoints are preserved.
+
+**KO** — shared engine과 Claude/Codex adapter를 업데이트합니다. 레지스트리와 체크포인트는 보존됩니다.
 
 > 💡 업데이트 전에 현재 버전을 확인하려면 `/ceo-version` 을 먼저 실행하세요.
 
@@ -26,6 +28,8 @@ npx domangcha
 | CEO commands (/ceo-*.md) | ✅ 항상 최신으로 덮어씀 |
 | CEO SKILL.md | ✅ 항상 최신으로 덮어씀 |
 | CLAUDE.md | ✅ CEO 섹션만 교체 |
+| Codex AGENTS managed block | ✅ DOMANGCHA block만 교체 |
+| Shared engine (`~/.domangcha`) | ✅ 항상 최신으로 교체 |
 | ECC (183 skills + 79 commands) | ✅ 전체 교체 |
 | gstack | ✅ git pull (또는 재클론) |
 | Superpowers | ✅ plugin update (또는 재클론) |

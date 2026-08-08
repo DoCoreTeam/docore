@@ -1,56 +1,20 @@
-# DOMANGCHA Stack Selection Rubric
+# Adaptive Routing Rubric
 
-CEO가 PHASE 0.3에서 이 파일의 조건을 업무에 대입해 각 스택 점수를 합산합니다.
-점수가 가장 높은 스택을 추천하되, 동점 시 Standard 우선.
+This file documents the deterministic score implemented by `orchestration/router.py`. The code is authoritative.
 
-## 스택 약어
-- **Std** = Standard (FULL PIPELINE — DC-* 18명)
-- **Ral** = Ralph Loop (자율 반복 루프)
-- **Gs** = gstack (FULL PIPELINE + 브라우저 E2E)
-- **SP** = Superpowers (설계 중심 계획 강화)
+| Signal | Score |
+|---|---:|
+| mutation | +2 |
+| 2–3 files | +1 |
+| 4–7 files | +3 |
+| 8+ files | +5 |
+| iteration/test correction | +2 |
+| external integration | +3 |
+| database/schema | +4 |
+| auth/security | +5 |
+| public breaking risk | +5 |
+| independent branches | +4 |
+| checkpoint/HITL | +5 |
+| read-only deterministic task | −5 |
 
----
-
-## 12개 조건 × 4 스택 점수표
-
-| # | 조건 | Std | Ral | Gs | SP |
-|---|------|-----|-----|----|----|
-| 1 | 완료 조건을 사전에 명확하게 정의할 수 있고 자동 검증 가능 | +5 | +30 | +5 | +5 |
-| 2 | UI/브라우저 인터랙션 직접 검증이 필수 (클릭·폼·렌더링) | +5 | +5 | +30 | +5 |
-| 3 | 아키텍처·기술 설계 결정이 실제 구현보다 더 중요 | +5 | +5 | +5 | +30 |
-| 4 | 반복 실행 + 명확한 통과 조건 + 에이전트 자율 판단 필요 | +5 | +25 | +5 | +5 |
-| 5 | 다중 에이전트 협업 필수 (5+ 파일, 풀스택, DB+BE+FE 동시) | +25 | +5 | +10 | +5 |
-| 6 | 외부 API / DB 스키마 변경 / 통합 연동 포함 | +20 | +5 | +10 | +5 |
-| 7 | 기획 명세 불충분 — 설계 문서·의사결정 트리 먼저 필요 | +5 | +5 | +5 | +25 |
-| 8 | E2E 브라우저 자동화 테스트가 핵심 품질 기준 | +10 | +10 | +30 | +5 |
-| 9 | 보안·규정 준수 중요 (인증, 결제, PII, RLS) | +20 | +5 | +10 | +10 |
-| 10 | 빠른 실험·프로토타입 우선 (완성도보다 속도) | +5 | +20 | +10 | +15 |
-| 11 | 반복적·대량의 단조로운 작업 (파일 변환, 대량 수정 등) | +5 | +25 | +5 | +5 |
-| 12 | 신규 서비스·모듈 (기존 코드 없음, 구조부터 설계 필요) | +15 | +5 | +10 | +25 |
-
----
-
-## 계산 방법
-
-```
-1. CEO가 업무 설명 분석 → 해당 조건 번호 선택 (복수 가능)
-2. 각 조건에서 Std / Ral / Gs / SP 점수 합산
-3. 4개 스택 점수를 내림차순 정렬 → 순위 확정
-4. 최고점 스택을 추천 (동점 시 Std 우선)
-5. 막대 표시: 1위 스택 점수 = 10칸, 나머지 비례 채움 (████░░░ 식)
-6. 조건 매칭 개수: 최소 2개, 최대 7개 권장 (전부 적용 시 점수 인플레이션 방지)
-```
-
-## 출력 예시
-
-```
-[CEO STACK SELECTION]
-매칭 조건: 5.다중에이전트(Std+25) · 6.외부API(Std+20,Gs+10) · 9.보안(Std+20,Gs+10)
-┌────────────────────────────────────────────────────┐
-│ [1] Standard    │ ████████░░  65pt │ 이유: 풀스택+외부연동+보안 조건 매칭 │
-│ [3] gstack      │ █████░░░░░  30pt │                                    │
-│ [2] Ralph Loop  │ ███░░░░░░░  15pt │                                    │
-│ [4] Superpowers │ ███░░░░░░░  15pt │                                    │
-└────────────────────────────────────────────────────┘
-💡 추천: [1] Standard (Std 65/Ral 15/Gs 30/SP 15) — 풀스택 협업+외부API+보안 3개 조건 모두 Standard 우세 | 선택(1-4, Enter=추천):
-```
+Default boundaries are DIRECT ≤1, LOOP 2–6, GRAPH ≥7. Hard invariants override scores. gstack, Superpowers, ECC, browser tools, and agent roles are node capabilities—not competing routing stacks.

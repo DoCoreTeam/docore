@@ -79,7 +79,7 @@ run_test() {
         vitest) [ -n "$TEST_FILE" ] && npx vitest run "$TEST_FILE" 2>&1 || npx vitest run --passWithNoTests 2>&1 ;;
         jest)   [ -n "$TEST_FILE" ] && npx jest "$(basename "$TEST_FILE")" --no-coverage --silent 2>&1 \
                                      || npx jest --no-coverage --silent --passWithNoTests 2>&1 ;;
-        npm)    npm test -- --passWithNoTests 2>&1 ;;
+        npm)    npm test 2>&1 ;;
         pytest) [ -n "$TEST_FILE" ] && python -m pytest "$TEST_FILE" -x -q 2>&1 || exit 0 ;;
         go)
             PKG=$(python3 -c "import os; print('./'+os.path.relpath('$(dirname "$FILE_PATH")', '$PROJECT_ROOT'))" 2>/dev/null || echo "./...")
@@ -94,22 +94,8 @@ TEST_OUTPUT=$(run_test 2>&1)
 TEST_EXIT=$?
 [ $TEST_EXIT -eq 0 ] && exit 0
 
-# ── Auto-fix via Claude ────────────────────────────────────
-echo "[DOMANGCHA] Tests failed for $FILE_PATH — auto-fixing..."
-
-PROMPT="Fix the test failure caused by a change to: $FILE_PATH
-
-Runner: $RUNNER
-Test file: ${TEST_FILE:-not found}
-
-Test output:
-$TEST_OUTPUT
-
-Fix the implementation in $FILE_PATH (not the tests unless tests are wrong). Max 3 fix attempts."
-
-claude -p "$PROMPT" \
-    --allowedTools "Edit,Write,Bash,Read,Grep" \
-    --max-turns 3 \
-    2>/dev/null || true
-
-exit 0
+# Return deterministic feedback to the active runtime. Never spawn a nested
+# model process from a hook: retries belong to LOOP/GRAPH execution state.
+echo "[DOMANGCHA VALIDATION FAILED] $FILE_PATH" >&2
+echo "$TEST_OUTPUT" >&2
+exit 2

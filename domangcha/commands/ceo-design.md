@@ -1,5 +1,7 @@
 # /ceo-design — 디자인 오케스트레이터 / Design Orchestrator
 
+Canonical TaskRouter에 design intent를 전달하며 실제 DIRECT/LOOP/GRAPH route는 engine이 결정한다.
+
 **EN** — Full design pipeline: direction → system → components → review. Combines gstack's design tools with ECC's UI generation and DC-DEV-FE agent.
 
 **KO** — 디자인 방향 → 디자인 시스템 → 컴포넌트 → 리뷰 전체 파이프라인. gstack 디자인 도구 + ECC UI 생성 + DC-DEV-FE 에이전트를 결합합니다.

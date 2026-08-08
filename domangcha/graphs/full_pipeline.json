@@ -1,0 +1,21 @@
+{
+  "id": "domangcha-full-pipeline",
+  "version": "1",
+  "start": "normalize",
+  "nodes": [
+    {"id":"normalize","type":"DETERMINISTIC"},
+    {"id":"plan","type":"AGENT"},
+    {"id":"build","type":"AGENT"},
+    {"id":"validate","type":"VALIDATOR"},
+    {"id":"approval","type":"HUMAN_GATE"},
+    {"id":"complete","type":"DETERMINISTIC"}
+  ],
+  "edges": [
+    {"source":"normalize","target":"plan","guard":"always"},
+    {"source":"plan","target":"build","guard":"always"},
+    {"source":"build","target":"validate","guard":"always"},
+    {"source":"validate","target":"approval","guard":"approval_required","priority":10},
+    {"source":"validate","target":"complete","guard":"ok"},
+    {"source":"approval","target":"complete","guard":"always"}
+  ]
+}

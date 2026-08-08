@@ -1,105 +1,30 @@
-# /ceo-init — 프로젝트 최초 셋업
+# /ceo-init — Adaptive Runtime Setup
 
-새 프로젝트에 CEO 시스템을 처음 세팅할 때 사용
+Canonical engine과 runtime adapter를 초기화하는 guarded workflow다. 기존 사용자 설정, registry, checkpoint를 보존한다.
 
-## 실행 순서
+## Setup
 
-### Step 1: gstack 스킬 확인
-- https://github.com/garrytan/gstack 스킬 설치 여부 확인
-- 미설치 시 설치 → 이미 설치되었으면 패스
+1. `~/.domangcha/domangcha/` shared engine과 policies/manifests/graphs를 확인한다.
+2. Claude Code가 있으면 managed agents, commands, hooks, CLAUDE adapter를 확인한다.
+3. Codex가 있으면 `CODEX_HOME` 또는 `~/.codex`의 managed AGENTS block을 확인한다.
+4. 현재 runtime을 `RuntimeDetector`로 탐지하고 capability snapshot을 출력한다.
+5. 프로젝트에 `.domangcha/checkpoints/`와 structured event 저장 경로를 준비한다. 이 runtime artifact는 기본적으로 Git에 커밋하지 않는다.
+6. `python3 domangcha/engine.py validate` 또는 설치본의 동일 명령을 실행한다.
 
-### Step 2: 레지스트리 초기화
-아래 파일들을 `~/.claude/` 에 생성 (없으면):
-- `error-registry.md` — 실수 기록 + 방어 규칙
-- `skill-registry.md` — 학습된 스킬 패턴
-- `project-registry.md` — 프로젝트 등록부
-- `decision-log.md` — 의사결정 기록
+## Safety
 
-### Step 3: 하네스 장치 전체 구축
-DC-DEV-OPS를 통해 아래 7개를 전부 구축:
-1. pre-commit hook — error-registry 금지 패턴 자동 스캔
-2. lint 규칙 — 프로젝트 컨벤션 린터 강제
-3. 아키텍처 테스트 — 의존성 방향/레이어 분리 테스트
-4. commit-msg hook — 버전 태그 + Conventional Commits 강제
-5. CI/CD 게이트 — GATE 1-5 자동 실행
-6. CODEOWNERS — 파일/디렉토리 보호
-7. gc.sh — error-registry 기반 방어 규칙 자동 생성
+- 기존 AGENTS.md/CLAUDE.md 전체를 덮어쓰지 않는다.
+- user registry, decisions, checkpoint, unrelated hooks를 삭제하지 않는다.
+- pre-commit, CI, CODEOWNERS는 프로젝트 정책을 검사한 뒤 필요한 경우에만 제안/설치한다.
+- project initialization 자체가 commit, push, publish, deploy 권한을 의미하지 않는다.
 
-### Step 4: 사업 분류
-DC-BIZ 호출하여 초기 프로젝트 분류
+## Result
 
-### Step 5: 프로젝트 등록
-project-registry.md에 초기 PROJECT 항목 생성
-
-### Step 6: 에이전트 파일 확인
-.claude/agents/ 디렉토리에 모든 Worker 에이전트 파일 존재 확인
-미존재 시 생성
-
-### Step 7: 프로젝트 hooks 설정 (.claude/settings.json)
-
-프로젝트 루트에 `.claude/settings.json`을 생성하여 DOMANGCHA hooks를 프로젝트 레벨로도 추가:
-
-```bash
-mkdir -p .claude
-python3 - <<'PYEOF'
-import json, os
-
-settings_path = ".claude/settings.json"
-hooks_dir = os.path.expanduser("~/.claude/hooks")
-
-DOMANGCHA_POST = {
-    "matcher": "Write|Edit|MultiEdit",
-    "hooks": [{"type": "command", "command": f'bash "{hooks_dir}/domangcha-post-edit.sh"'}]
-}
-DOMANGCHA_STOP = {
-    "hooks": [{"type": "command", "command": f'bash "{hooks_dir}/domangcha-stop.sh"'}]
-}
-
-settings = {}
-if os.path.exists(settings_path):
-    try:
-        with open(settings_path) as f:
-            settings = json.load(f)
-    except:
-        settings = {}
-
-hooks = settings.get("hooks", {})
-
-post = hooks.get("PostToolUse", [])
-post = [h for h in post if not any("domangcha-post-edit" in sub.get("command","") for sub in h.get("hooks",[]))]
-post.append(DOMANGCHA_POST)
-hooks["PostToolUse"] = post
-
-stop = hooks.get("Stop", [])
-stop = [h for h in stop if not any("domangcha-stop" in sub.get("command","") for sub in h.get("hooks",[]))]
-stop.append(DOMANGCHA_STOP)
-hooks["Stop"] = stop
-
-settings["hooks"] = hooks
-with open(settings_path, "w") as f:
-    json.dump(settings, f, indent=2)
-print("✅ .claude/settings.json hooks configured")
-PYEOF
-```
-
-DOMANGCHA hooks 동작:
-- `PostToolUse(Write|Edit)` → 관련 테스트 자동 실행 → 실패 시 Claude 자동수정
-- `Stop` → CEO 품질 리뷰 (보안 + 코드품질 + 테스트 + 버전 체크)
-
-### Step 8: 초기화 보고
-
-```
-[CEO SYSTEM INITIALIZED] v1.0.0
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-ERROR-REGISTRY : N건
-SKILL-REGISTRY : N건
-DECISION-LOG   : N건
-ACTIVE PROJECTS: N개
-MODEL TIERS    : Opus(설계·보안·검토) / Sonnet(개발·분석) / Haiku(리서치·문서·QA)
-DEV WORKERS    : FE / BE / DB / MOB / OPS / INT (병렬)
-SPECIAL WORKERS: BIZ(사업판단) / OSS(자원탐색) / TOK(토큰관리)
-GATE           : 1-5 가동
-HARNESS        : ①~⑦ 구축 완료
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-준비 완료. 지시를 내려주세요.
+```text
+[DOMANGCHA INITIALIZED]
+version: <VERSION>
+runtime: <CLAUDE_CODE|CODEX_LOCAL|CODEX_IDE|CODEX_CLOUD|UNKNOWN>
+route engine: ready
+checkpointing: ready
+manifest validation: pass|fail
 ```

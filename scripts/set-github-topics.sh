@@ -11,6 +11,9 @@ echo "Setting GitHub topics for ${REPO}..."
 
 gh repo edit "${REPO}" \
   --add-topic claude-code \
+  --add-topic openai-codex \
+  --add-topic graph-engineering \
+  --add-topic workflow-engine \
   --add-topic ai-agents \
   --add-topic anthropic \
   --add-topic llm \

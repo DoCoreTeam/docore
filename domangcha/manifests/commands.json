@@ -1,0 +1,9 @@
+{
+  "version": 1,
+  "commands": [
+    "ceo", "ceo-clarify", "ceo-debug", "ceo-design", "ceo-doc",
+    "ceo-feature", "ceo-init", "ceo-knowledge", "ceo-learn", "ceo-plan",
+    "ceo-quality", "ceo-ralph", "ceo-review", "ceo-security", "ceo-ship",
+    "ceo-status", "ceo-test", "ceo-update", "ceo-version"
+  ]
+}

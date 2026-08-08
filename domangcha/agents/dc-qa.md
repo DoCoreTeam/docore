@@ -1,6 +1,6 @@
 ---
 name: dc-qa
-model: claude-sonnet-4-6
+model: inherit
 description: "QA Engineer — functional testing, boundary testing, and quality verification"
 ---
 

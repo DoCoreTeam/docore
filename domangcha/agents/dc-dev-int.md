@@ -1,6 +1,6 @@
 ---
 name: dc-dev-int
-model: claude-opus-4-8
+model: inherit
 description: "Integration Developer — external API connectors and third-party service integrations"
 ---
 

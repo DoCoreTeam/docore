@@ -1,6 +1,6 @@
 ---
 name: dc-dev-ops
-model: claude-opus-4-8
+model: inherit
 description: "DevOps Engineer — CI/CD pipelines, infrastructure, and harness setup"
 ---
 

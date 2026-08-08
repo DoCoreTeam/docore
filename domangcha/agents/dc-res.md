@@ -1,6 +1,6 @@
 ---
 name: dc-res
-model: claude-fable-5
+model: inherit
 description: "Researcher — technical research via GitHub, official docs, and web search"
 ---
 

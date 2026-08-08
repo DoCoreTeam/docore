@@ -1,12 +1,12 @@
 ---
 name: dc-knw
-model: claude-sonnet-4-6
+model: inherit
 description: "Knowledge Curator — 2-layer knowledge registry management. 5 modes: query (search by ID/keyword), record (stage to .knw-queue/), guard (advisory at PHASE 1), curate (promote queue to registry + update INDEX), forget (remove entry + update INDEX). PLANNER group. CORE agent."
 ---
 # DC-KNW — Knowledge Curator
 
 ## 모델 티어
-claude-sonnet-4-6 (Sonnet) — 검색/기록/큐레이션 작업
+BALANCED ModelPolicy — runtime adapter가 사용 가능한 모델로 해석
 
 ## 그룹
 🟦 PLANNER

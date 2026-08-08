@@ -1,5 +1,7 @@
 # /ceo-feature — 기능 개발 오케스트레이터 / Feature Development Orchestrator
 
+Canonical TaskRouter에 feature intent를 전달한다. 아래 lifecycle은 선택된 LOOP/GRAPH profile이며 별도 router가 아니다.
+
 **EN** — Full feature development lifecycle: plan → TDD → implement → review → ship. The most comprehensive single command for building a new feature end-to-end.
 
 **KO** — 기획 → TDD → 구현 → 리뷰 → 배포 전체 기능 개발 라이프사이클. 새로운 기능을 처음부터 끝까지 빌드하기 위한 가장 포괄적인 단일 커맨드입니다.
@@ -37,8 +39,9 @@ This command runs `/ceo-plan` → `/ceo-test` → implement → `/ceo-review` �
 - 보안 → 코드 품질 → PR 리뷰
 - FAIL 시 최대 3회 재작업
 
-### STEP 5: 배포 (Ship) — `/ceo-ship` 실행
-- 품질 게이트 → 빌드 → 배포 → QA
+### STEP 5: 출시 준비 (Release Readiness)
+- 품질 게이트와 빌드 검증까지 수행한다.
+- 원 요청이 배포를 명시했을 때만 `/ceo-ship` side-effect workflow로 전환한다.
 
 ## 결과 보고 / Output
 

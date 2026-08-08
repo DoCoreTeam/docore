@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -e
 
-VERSION="2.0.36"
+VERSION="2.1.0"
 INSTALL_URL="https://raw.githubusercontent.com/DoCoreTeam/domangcha/main/domangcha/install.sh"
 
 usage() {
@@ -16,8 +16,8 @@ OPTIONS:
   --help      Show this help message and exit
 
 DESCRIPTION:
-  Installs DOMANGCHA — a 17-agent Claude Code crew for AI development
-  automation. Runs the official install script from GitHub.
+  Installs DOMANGCHA adaptive DIRECT/LOOP/GRAPH execution for Claude Code
+  and OpenAI Codex. Runs the official install script from GitHub.
 
 INSTALL:
   npx domangcha

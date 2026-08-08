@@ -1,6 +1,6 @@
 ---
 name: dc-dev-mob
-model: claude-opus-4-8
+model: inherit
 description: "Mobile Developer — iOS/Android/cross-platform mobile features"
 ---
 

@@ -1,5 +1,7 @@
 # /ceo-review — 코드 리뷰 오케스트레이터 / Code Review Orchestrator
 
+Canonical TaskRouter에 independent review intent를 전달하고 결과를 structured validator evidence로 반환한다.
+
 **EN** — Runs all review tools in optimal order: security first, then code quality, then PR-level review. Combines ECC, gstack, and DC-REV agent for maximum coverage.
 
 **KO** — 보안 → 코드 품질 → PR 리뷰 순서로 모든 리뷰 도구를 최적 순서로 실행합니다. ECC, gstack, DC-REV 에이전트를 결합하여 최대 커버리지를 확보합니다.

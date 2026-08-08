@@ -1,5 +1,7 @@
 # /ceo-debug — 디버그 오케스트레이터 / Debug Orchestrator
 
+Canonical TaskRouter에 minimum LOOP debug intent를 전달한다. 아래 단계는 독립 orchestration authority가 아니다.
+
 **EN** — Full debug pipeline: reproduce → investigate → fix → verify. Combines gstack's investigate with ECC's debug tools and build fixers.
 
 **KO** — 재현 → 조사 → 수정 → 검증 전체 파이프라인. gstack 조사 도구 + ECC 디버그 + 빌드 수정 도구를 결합합니다.
