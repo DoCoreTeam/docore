@@ -1,4 +1,4 @@
-# DOMANGCHA v2.1.0 — Adaptive Execution
+# DOMANGCHA v2.1.1 — Adaptive Execution
 
 DOMANGCHA has one orchestration authority: `domangcha/engine.py`.
 
@@ -39,4 +39,4 @@ python3 -m unittest discover -s domangcha/tests
 python3 domangcha/engine.py validate
 ```
 
-Official version source: `domangcha/VERSION` = 2.1.0.
+Official version source: `domangcha/VERSION` = 2.1.1.
