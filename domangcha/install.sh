@@ -99,6 +99,7 @@ echo -e "  ${DIM}설치를 시작합니다 / Starting installation...${NC}"
 echo ""
 ( git clone --depth 1 "$DOMANGCHA_REPO" "$TMP_DIR/domangcha-repo" --quiet ) & spin "DOMANGCHA 다운로드 중 / Downloading..."
 SRC="${TMP_DIR}/domangcha-repo/domangcha"
+REPO_SRC="${TMP_DIR}/domangcha-repo"
 DOMANGCHA_VERSION=$(cat "${SRC}/VERSION" 2>/dev/null || echo "unknown")
 
 # ── 2. Agents ────────────────────────────────────
@@ -161,16 +162,49 @@ existing = path.read_text() if path.exists() else ""
 start, end = "<!-- DOMANGCHA:START -->", "<!-- DOMANGCHA:END -->"
 block = """<!-- DOMANGCHA:START -->
 ## DOMANGCHA Adaptive Execution
-Use `python3 ~/.domangcha/domangcha/engine.py route \"<request>\"` for DOMANGCHA routing.
-Follow DIRECT, LOOP, or GRAPH; deterministic safety invariants override model proposals.
+The DOMANGCHA Codex plugin attaches native lifecycle hooks and a reusable skill.
+Follow the injected task ID, DIRECT/LOOP/GRAPH route, and exact completion control command.
+Use `$domangcha` to select the skill explicitly. Review plugin hooks once with `/hooks`.
+Manual fallback: `python3 ~/.domangcha/domangcha/engine.py route \"<request>\"`.
 Shared policy: `~/.domangcha/domangcha/policies/`. Preserve task state on escalation.
-Do not assume Claude-specific Agent tools or hooks; use Codex-native capabilities.
+Use Codex-native agents and tools; never emulate Claude-specific `Agent(...)` syntax.
 <!-- DOMANGCHA:END -->"""
 pattern = re.compile(re.escape(start) + r".*?" + re.escape(end), re.S)
 updated = pattern.sub(block, existing) if pattern.search(existing) else (existing.rstrip() + "\n\n" + block + "\n")
 path.write_text(updated.lstrip())
 PYEOF
 echo -e "  ${GREEN}✔${NC}  Codex adapter  ${DIM}→ ${CODEX_AGENTS}${NC}"
+
+# Native Codex plugin: skill + lifecycle hooks backed by the same canonical engine.
+CODEX_MARKETPLACE="${ENGINE_ROOT}/codex-marketplace"
+if [ -d "${REPO_SRC}/plugins/domangcha" ] && [ -f "${REPO_SRC}/.agents/plugins/marketplace.json" ]; then
+    rm -rf "${CODEX_MARKETPLACE:?}/plugins/domangcha" "${CODEX_MARKETPLACE:?}/.agents/plugins"
+    mkdir -p "${CODEX_MARKETPLACE}/plugins" "${CODEX_MARKETPLACE}/.agents/plugins"
+    cp -R "${REPO_SRC}/plugins/domangcha" "${CODEX_MARKETPLACE}/plugins/domangcha"
+    cp "${REPO_SRC}/.agents/plugins/marketplace.json" "${CODEX_MARKETPLACE}/.agents/plugins/marketplace.json"
+    if command -v codex >/dev/null 2>&1; then
+        CURRENT_ROOT=$(codex plugin marketplace list --json 2>/dev/null | python3 -c '
+import json, sys
+try:
+    data = json.load(sys.stdin)
+    print(next((x.get("root", "") for x in data.get("marketplaces", []) if x.get("name") == "domangcha-local"), ""))
+except Exception:
+    print("")
+' || true)
+        if [ -n "$CURRENT_ROOT" ] && [ "$CURRENT_ROOT" != "$CODEX_MARKETPLACE" ]; then
+            codex plugin marketplace remove domangcha-local --json >/dev/null 2>&1 || true
+            CURRENT_ROOT=""
+        fi
+        if [ -z "$CURRENT_ROOT" ]; then
+            codex plugin marketplace add "$CODEX_MARKETPLACE" --json >/dev/null
+        fi
+        codex plugin add domangcha@domangcha-local --json >/dev/null
+        echo -e "  ${GREEN}✔${NC}  Codex native plugin  ${DIM}skill + lifecycle hooks installed${NC}"
+        echo -e "  ${YELLOW}⚠${NC}  Codex에서 ${CYAN}/hooks${NC}를 열어 DOMANGCHA hooks를 최초 1회 신뢰하세요."
+    else
+        echo -e "  ${YELLOW}⚠${NC}  Codex CLI 미감지 — plugin bundle staged at ${CODEX_MARKETPLACE}"
+    fi
+fi
 
 # insane-search (vendored, MIT — fivetaku/insane-search): 차단 사이트 우회 리더
 if [ -d "${SRC}/skills/insane-search" ]; then
@@ -574,6 +608,7 @@ items = [
     ("~/.claude/skills/",          "CEO 스킬 + 183 ECC + gstack + Superpowers"),
     ("~/.claude/hooks/ + settings.json", "자동 테스트·CEO 검토·파이프라인 강제 / enforcer"),
     ("~/.claude/CLAUDE.md",        "Claude Code 자동 로드 / auto-loaded"),
+    ("~/.domangcha/codex-marketplace", "Codex plugin + skill + lifecycle hooks"),
 ]
 for path, desc in items:
     print(f"  {GR}✔{NC}  \033[1;33m{path}{NC}")

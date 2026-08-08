@@ -1,0 +1,54 @@
+{
+  "description": "DOMANGCHA adaptive execution lifecycle for Codex.",
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$PLUGIN_ROOT/scripts/user_prompt.py\"",
+            "timeout": 15,
+            "statusMessage": "DOMANGCHA is routing this task",
+            "additionalContextLimit": 1800
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Bash|apply_patch|Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$PLUGIN_ROOT/scripts/tool_event.py\"",
+            "timeout": 5,
+            "statusMessage": "DOMANGCHA is recording execution evidence"
+          }
+        ]
+      }
+    ],
+    "SubagentStop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$PLUGIN_ROOT/scripts/tool_event.py\"",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$PLUGIN_ROOT/scripts/stop.py\"",
+            "timeout": 15,
+            "statusMessage": "DOMANGCHA is checking completion evidence"
+          }
+        ]
+      }
+    ]
+  }
+}

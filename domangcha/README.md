@@ -1,4 +1,4 @@
-# DOMANGCHA Runtime Payload v2.1.0
+# DOMANGCHA Runtime Payload v2.2.0
 
 This directory is the installable DOMANGCHA payload.
 
@@ -12,6 +12,7 @@ policies/          shared Claude/Codex policies
 agents/            18 logical role prompts
 commands/          backward-compatible command adapters
 hooks/             Claude Code adapters
+../plugins/        Codex-native skill and lifecycle hooks
 skills/            reusable role/domain knowledge
 ```
 

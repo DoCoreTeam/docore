@@ -5,6 +5,7 @@
     {"file":"bin/domangcha.sh","kind":"shell","key":"VERSION"},
     {"file":"CLAUDE.md","kind":"header"},
     {"file":"domangcha/CLAUDE.md","kind":"header"},
-    {"file":"README.md","kind":"badge"}
+    {"file":"README.md","kind":"badge"},
+    {"file":"plugins/domangcha/.codex-plugin/plugin.json","kind":"json","key":"version"}
   ]
 }

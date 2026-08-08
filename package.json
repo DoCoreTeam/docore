@@ -1,6 +1,6 @@
 {
   "name": "domangcha",
-  "version": "2.1.1",
+  "version": "2.2.0",
   "description": "Adaptive DIRECT, LOOP, and GRAPH engineering for Claude Code and OpenAI Codex.",
   "keywords": [
     "harness",
@@ -45,6 +45,8 @@
   "files": [
     "bin/",
     "domangcha/",
+    "plugins/",
+    ".agents/plugins/marketplace.json",
     "AGENTS.md",
     "README.md",
     "LICENSE"

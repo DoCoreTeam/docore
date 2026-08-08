@@ -16,7 +16,7 @@ One command selects DIRECT, LOOP, or GRAPH—then coordinates up to 18 logical s
 
 *Your AI getaway car from development hell.*
 
-[![Version](https://img.shields.io/badge/version-2.1.1-brightgreen?style=for-the-badge&logo=github)](https://github.com/DoCoreTeam/domangcha/blob/main/domangcha/VERSION)
+[![Version](https://img.shields.io/badge/version-2.2.0-brightgreen?style=for-the-badge&logo=github)](https://github.com/DoCoreTeam/domangcha/blob/main/domangcha/VERSION)
 [![npm](https://img.shields.io/npm/v/domangcha?style=for-the-badge&logo=npm&color=CB3837)](https://www.npmjs.com/package/domangcha)
 [![License](https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge)](https://opensource.org/licenses/MIT)
 [![Runtimes](https://img.shields.io/badge/Runtimes-Claude%20Code%20%7C%20Codex-5865F2?style=for-the-badge)](#runtime-compatibility)
@@ -156,13 +156,25 @@ Dynamic fan-out supports `ALL`, `ANY`, `QUORUM`, and `BEST_EFFORT` joins with co
 | Guarantee | Claude Code | Codex Local / IDE | Codex Cloud |
 |---|---|---|---|
 | Shared router, state, and validators | ✅ | ✅ | ✅ |
-| Native instruction entrypoint | `CLAUDE.md` | `AGENTS.md` | `AGENTS.md` |
+| Native attachment | hooks + commands | plugin skill + lifecycle hooks | plugin skill + checkpoints |
 | Logical agent roles | Claude subagents | runtime-native agents | delegated agents when available |
 | Human approval | interactive | interactive when supported | checkpoint and review |
 | Browser verification | Claude-in-Chrome; Playwright fallback | capability-resolved | CI/headless capability |
 | Checkpoint format | shared | shared | shared |
 
 Runtime behavior is capability-based—not hard-coded to provider model names. Model policies express `HIGH_REASONING`, `BALANCED`, `FAST_CHEAP`, `LONG_CONTEXT`, or `REVIEW`; each adapter maps them to what is actually available. Unknown runtime or model names do not fail by default.
+
+#### Codex-native attachment
+
+`npx domangcha` installs the bundled DOMANGCHA plugin into a local Codex marketplace and enables its native skill. After installation, open `/hooks` once and trust the DOMANGCHA hook definition. From the next new Codex thread:
+
+- `UserPromptSubmit` automatically creates a canonical task and injects its route and task ID.
+- the `domangcha` skill tells Codex how to execute and report through that same state.
+- `PostToolUse` records mutations, successful validation commands, and independent subagent evidence.
+- `Stop` allows DIRECT answers to finish immediately, but boundedly continues unfinished LOOP/GRAPH work when completion evidence is absent.
+- state survives under the workspace `.domangcha/` directory, so follow-ups and continuation prompts reuse the same task instead of restarting.
+
+The hooks are code control, not another prompt-only router: they call the same `ExecutionCoordinator` and `TaskRouter` used by Claude and the CLI.
 
 ---
 
@@ -443,6 +455,7 @@ Complex feature requests still use the familiar PLANNER → BUILDER → EVALUATO
 
 | Version | Feature |
 |---|---|
+| **v2.2.0** | **Native Codex attachment** — bundles an installable Codex plugin with an implicitly matching DOMANGCHA skill and `UserPromptSubmit`, `PostToolUse`, `SubagentStop`, and `Stop` lifecycle hooks. Codex now receives automatic route/task injection, workspace checkpoints, tool and validation evidence, bounded continuation, and a deterministic completion command instead of relying on `AGENTS.md` alone. The installer registers the local marketplace and plugin automatically; users approve the hook definition once through `/hooks`. |
 | **v2.1.1** | **Full public README restored and modernized** — restores the original bilingual hero, real sprint and bug-fix walkthroughs, 18-role catalog, five gates, release history, complete 19-command reference, requirements, and every install/update path. Legacy mandatory-pipeline claims are rewritten for adaptive DIRECT/LOOP/GRAPH behavior and Claude Code/Codex parity. |
 | **v2.1.0** | **Adaptive DIRECT · LOOP · GRAPH architecture** — one deterministic TaskRouter evolves CEO SIZE ASSESSMENT, FAST PATH, Ralph, and FULL PIPELINE into a single authority. Adds typed graph contracts, bounded retry and joins, checkpoint/resume, human gates, budgets, structured events, Claude Code + Codex adapters, shared policies, authoritative manifests, and deterministic CI tests. Existing `/ceo-*` commands and all 18 roles remain compatible. |
 | **v2.0.58** | **Browser verification now Chrome-extension-first** — app real-screen/visual/interaction QA now defaults to the Claude-in-Chrome extension (`mcp__claude-in-chrome__*`) instead of Playwright, since the extension verifies directly in the user's live Chrome session with no separate driver. New **"브라우저 검증 정책"** [BV-1]/[BV-2] in `ceo-standards`: [BV-1] Chrome extension = default; [BV-2] Playwright = fallback only (headless CI / regression suites / extension unavailable). Reflected in `/ceo-test` (STEP 4), `/ceo-debug` (STEP 4), `/ceo-ship` (STEP 5), 🟥 DC-QA, 🟩 DC-DEV-FE, and the install Playwright setup (repositioned as fallback). **Unaffected:** the `insane-search` engine's Playwright, which is for external URL-body scraping (WAF bypass), not app verification. |
@@ -568,6 +581,8 @@ npm install -g domangcha && domangcha
 
 Re-running always pulls the latest. Your registries (errors, instincts, history) are preserved.
 
+**Codex first run:** restart Codex, open `/hooks`, and trust the DOMANGCHA plugin hooks once. Start a new thread; routing and task state are then attached automatically. Use `$domangcha` explicitly when you want to force skill selection.
+
 ---
 
 <details>
@@ -590,7 +605,7 @@ Re-running always pulls the latest. Your registries (errors, instincts, history)
 
 *개발 지옥에서 도망쳐 — 돔황차🚗💨*
 
-[![Version](https://img.shields.io/badge/version-2.1.1-brightgreen?style=for-the-badge&logo=github)](https://github.com/DoCoreTeam/domangcha/blob/main/domangcha/VERSION)
+[![Version](https://img.shields.io/badge/version-2.2.0-brightgreen?style=for-the-badge&logo=github)](https://github.com/DoCoreTeam/domangcha/blob/main/domangcha/VERSION)
 [![npm](https://img.shields.io/npm/v/domangcha?style=for-the-badge&logo=npm&color=CB3837)](https://www.npmjs.com/package/domangcha)
 [![License](https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge)](https://opensource.org/licenses/MIT)
 [![Runtimes](https://img.shields.io/badge/런타임-Claude%20Code%20%7C%20Codex-5865F2?style=for-the-badge)](#runtime-compatibility)
@@ -855,6 +870,7 @@ DC-REV  ✔  수정 정확. undefined 방어 패턴은 카카오페이 공식 �
 
 | 버전 | 기능 |
 |---|---|
+| **v2.2.0** | **Codex 네이티브 밀착 통합** — 자동 매칭되는 DOMANGCHA skill과 `UserPromptSubmit`, `PostToolUse`, `SubagentStop`, `Stop` lifecycle hook을 갖춘 설치형 Codex plugin을 번들했습니다. 이제 Codex가 `AGENTS.md`만 읽는 대신 라우트/task ID 자동 주입, 워크스페이스 체크포인트, 도구·검증 근거 기록, 제한된 자동 계속, 결정론적 완료 명령을 사용합니다. 인스톨러가 로컬 marketplace와 plugin을 자동 등록하며 사용자는 `/hooks`에서 최초 1회 신뢰하면 됩니다. |
 | **v2.1.1** | **기존 공개 README 수준 완전 복원 및 현대화** — 영문·한국어 히어로, 실제 스프린트·버그 수정 데모, 18개 역할, 5개 게이트, 변경 이력, 19개 전체 명령어, 요구사항, 모든 설치·업데이트 경로를 복원했습니다. 과거의 전체 파이프라인 강제 설명은 DIRECT/LOOP/GRAPH 적응형 실행과 Claude Code/Codex 동등성에 맞게 교체했습니다. |
 | **v2.1.0** | **적응형 DIRECT · LOOP · GRAPH 아키텍처** — CEO SIZE ASSESSMENT, FAST PATH, Ralph, FULL PIPELINE을 하나의 결정론적 TaskRouter 권한으로 통합했습니다. 타입 그래프 계약, 제한된 재시도와 조인, 체크포인트/재개, 사람 승인 게이트, 예산, 구조화 이벤트, Claude Code + Codex 어댑터, 공유 정책과 권위 매니페스트를 추가했습니다. 기존 `/ceo-*` 명령과 18개 역할은 유지됩니다. |
 | **v2.0.58** | **브라우저 검증 기본을 Chrome 확장 우선으로 전환** — 실행 중인 앱의 실화면·시각·인터랙션 QA를 Playwright 대신 **Claude-in-Chrome 확장**(`mcp__claude-in-chrome__*`) 기본으로 변경. 확장은 사용자 실제 Chrome 세션에서 별도 드라이버 없이 바로 검증 가능. `ceo-standards`에 **"브라우저 검증 정책"** [BV-1]/[BV-2] 신설: [BV-1] Chrome 확장=기본, [BV-2] Playwright=폴백(헤드리스 CI·회귀 스위트·확장 미가용 시에만). `/ceo-test`(STEP 4)·`/ceo-debug`(STEP 4)·`/ceo-ship`(STEP 5)·🟥 DC-QA·🟩 DC-DEV-FE 및 install Playwright 셋업(폴백으로 재포지셔닝)에 일괄 반영. **무관·유지:** `insane-search` 엔진의 Playwright는 외부 URL 본문 스크래핑(WAF 우회)용으로 본 정책과 별개. |
@@ -1031,6 +1047,8 @@ npm install -g domangcha && domangcha
 ```
 
 인스톨러를 다시 실행하면 항상 최신 버전을 가져옵니다. 레지스트리(에러, 본능, 히스토리)는 보존됩니다. `~/.claude/projects/*/memory/`의 규칙 메모리는 최신 버전 정의로 자동 갱신되며, 사용자 피드백/프로젝트 컨텍스트는 절대 덮어쓰지 않습니다.
+
+**Codex 최초 실행:** Codex를 재시작하고 `/hooks`에서 DOMANGCHA plugin hook을 최초 1회 신뢰하세요. 새 스레드부터 라우팅과 작업 상태가 자동으로 붙습니다. skill 선택을 명시하려면 `$domangcha`를 사용합니다.
 
 </details>
 

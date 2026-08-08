@@ -1,0 +1,28 @@
+{
+  "name": "domangcha",
+  "version": "2.2.0",
+  "description": "Adaptive DIRECT, LOOP, and GRAPH execution control for Codex.",
+  "author": {
+    "name": "DoCoreTeam",
+    "email": "kko2349@gmail.com",
+    "url": "https://github.com/DoCoreTeam"
+  },
+  "homepage": "https://github.com/DoCoreTeam/domangcha",
+  "repository": "https://github.com/DoCoreTeam/domangcha",
+  "license": "MIT",
+  "keywords": ["codex", "adaptive-execution", "loop-engineering", "graph-engineering"],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "DOMANGCHA",
+    "shortDescription": "Adaptive execution that stays attached to Codex.",
+    "longDescription": "Routes work into DIRECT, LOOP, or GRAPH and uses Codex lifecycle hooks to retain state, evidence, and bounded completion enforcement.",
+    "developerName": "DoCoreTeam",
+    "category": "Productivity",
+    "capabilities": ["Interactive", "Write", "Hooks", "Checkpointing"],
+    "defaultPrompt": [
+      "Use DOMANGCHA to implement this task.",
+      "Resume the active DOMANGCHA task.",
+      "Show the current DOMANGCHA execution state."
+    ]
+  }
+}
