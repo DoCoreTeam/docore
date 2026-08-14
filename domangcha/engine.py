@@ -14,6 +14,7 @@ from domangcha.orchestration.contracts import Route
 from domangcha.orchestration.intent import IntentNormalizer
 from domangcha.orchestration.execution import ExecutionCoordinator
 from domangcha.orchestration.router import TaskRouter
+from domangcha.orchestration.status import StatusReporter
 from domangcha.orchestration.validation import RepositoryValidator
 
 
@@ -42,11 +43,26 @@ def route_request(request: str) -> dict:
     }
 
 
+def _add_format(parser: argparse.ArgumentParser) -> None:
+    parser.add_argument(
+        "--format",
+        choices=("card", "json"),
+        default="card",
+        help="card renders a human-readable status card (default); json renders raw state",
+    )
+    parser.add_argument("--lang", choices=("ko", "en"), default=None)
+
+
+def _emit(payload: dict, args, card: str) -> None:
+    print(card if args.format == "card" else json.dumps(payload, ensure_ascii=False, indent=2))
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="DOMANGCHA adaptive execution engine")
     sub = parser.add_subparsers(dest="command", required=True)
     route = sub.add_parser("route", help="classify a request")
     route.add_argument("request", nargs="?")
+    _add_format(route)
     validate = sub.add_parser("validate", help="validate repository invariants")
     validate.add_argument("--root", default=".")
     start = sub.add_parser("start", help="create a resumable execution state")
@@ -55,6 +71,7 @@ def main() -> int:
     status = sub.add_parser("status", help="read a checkpoint")
     status.add_argument("task_id")
     status.add_argument("--workspace", default=".")
+    _add_format(status)
     approve = sub.add_parser("approve", help="resolve a HUMAN_GATE")
     approve.add_argument("task_id")
     approve.add_argument("node_id")
@@ -63,7 +80,8 @@ def main() -> int:
     args = parser.parse_args()
     if args.command == "route":
         request = args.request if args.request is not None else sys.stdin.read()
-        print(json.dumps(route_request(request), ensure_ascii=False, indent=2))
+        result = route_request(request)
+        _emit(result, args, StatusReporter(args.lang).route_card(result))
         return 0
     if args.command == "start":
         state = ExecutionCoordinator(Path(args.workspace).resolve()).start(args.request)
@@ -71,7 +89,12 @@ def main() -> int:
         return 0
     if args.command == "status":
         coordinator = ExecutionCoordinator(Path(args.workspace).resolve())
-        print(json.dumps(coordinator.checkpoints.read(args.task_id), ensure_ascii=False, indent=2))
+        state = coordinator.checkpoints.read(args.task_id)
+        history = state.get("route_history") or [{}]
+        summary = {"route": state.get("route"), "reasons": history[-1].get("reasons", [])}
+        reporter = StatusReporter(args.lang)
+        card = reporter.route_card(summary) + "\n" + reporter.graph_card(state)
+        _emit(state, args, card)
         return 0
     if args.command == "approve":
         coordinator = ExecutionCoordinator(Path(args.workspace).resolve())

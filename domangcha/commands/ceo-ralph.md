@@ -9,6 +9,23 @@ PLAN → EXECUTE → VALIDATE → ACT
                      └─ complexity discovered → GRAPH escalation
 ```
 
+## 루프 상태 보고 (기본 활성)
+
+Stop hook이 매 회차마다 루프 카드를 주입한다. 이 카드를 회차 응답 첫 줄에 그대로 보여주고,
+지난 회차 대비 실제로 달라진 것 한 줄을 사용자 언어로 덧붙인다.
+
+```text
+🔁 LOOP 5/30  ▓▓░░░░░░░░ 17%
+├ 재시도 여유 5 · 정체 0/3 · 반복 오류 0/3
+├ 게이트: 검증 FAIL · 테스트 PASS · 리뷰 —
+├ 차단기: CLOSED
+├ 최근: auth 미들웨어 테스트 2건 실패
+└ 상태: RUNNING ⏳
+```
+
+같은 자리를 돌고 있으면 숨기지 말고 그렇다고 말한다. 루프 상한 도달 시에도 카드와 함께
+어디까지 되었고 무엇이 남았는지 설명한다.
+
 ## 상태와 호환성
 
 - `.ralph/PROMPT.md`, `.ralph/fix_plan.md`, `.ralph/decisions/`, `.ralph/status.json` UX를 유지한다.

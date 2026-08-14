@@ -15,5 +15,8 @@ The canonical authority is `domangcha/engine.py`; this skill does not define a s
 6. Resolve logical roles from `manifests/agents.json` through runtime-native capabilities.
 7. Use policies rather than hard-coded provider model IDs.
 8. Do not commit, push, publish, deploy, or perform irreversible work without task-specific authority.
+9. Report progress by default through `orchestration/status.py`: route and reason up front, loop
+   iteration and budget every pass, node and parallel-branch state during graph execution, and a
+   plain-language explanation before every approval gate. Never go silent through a long step.
 
 Shared policies live under `domangcha/policies/`. Claude-specific instructions live in CLAUDE.md; Codex-specific instructions live in AGENTS.md.

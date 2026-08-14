@@ -1,4 +1,4 @@
-# DOMANGCHA v2.2.0 — Adaptive Execution
+# DOMANGCHA v2.3.0 — Adaptive Execution
 
 DOMANGCHA has one orchestration authority: `domangcha/engine.py`.
 
@@ -22,6 +22,9 @@ Use `python3 domangcha/engine.py route "<request>"`. Claude's UserPromptSubmit h
 - Validate ordinary facts—schemas, files, versions, tests, budgets, route enums—in code.
 - Never commit, push, publish, deploy, or perform irreversible work without task-specific authority.
 - Persist no secrets in checkpoints or structured logs.
+- Report progress by default, in the user's language: route and reason up front, loop iteration and
+  budget every pass, node and parallel-branch state during graph execution, and what each gate is
+  asking to approve. `domangcha/orchestration/status.py` renders these cards for every surface.
 
 Shared policy is under `domangcha/policies/`. Claude-specific agents and hooks are adapters; Codex uses `AGENTS.md`. Agent roles are defined by `domangcha/manifests/agents.json`, and model selection is capability/policy based rather than a permanent model ID.
 
@@ -39,4 +42,4 @@ python3 -m unittest discover -s domangcha/tests
 python3 domangcha/engine.py validate
 ```
 
-Official version source: `domangcha/VERSION` = 2.2.0.
+Official version source: `domangcha/VERSION` = 2.3.0.

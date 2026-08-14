@@ -29,6 +29,17 @@ def coordinator(root: Path):
     return load_engine(root)(root)
 
 
+def reporter(root: Path, lang: Optional[str] = None):
+    """Shared human-facing status renderer; None when the engine is unavailable."""
+    try:
+        load_engine(root)
+        from domangcha.orchestration.status import StatusReporter
+
+        return StatusReporter(lang)
+    except Exception:
+        return None
+
+
 def session_path(root: Path, session_id: str) -> Path:
     safe = "".join(ch for ch in session_id if ch.isalnum() or ch in "-_") or "unknown"
     return root / ".domangcha" / "codex" / "sessions" / (safe + ".json")

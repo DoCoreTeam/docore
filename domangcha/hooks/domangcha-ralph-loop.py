@@ -59,6 +59,51 @@ def _write_json(path: Path, data: dict) -> None:
         pass
 
 
+def _status_reporter():
+    """Renderer is optional — a missing engine must never break the loop."""
+    roots = (
+        Path(__file__).resolve().parents[2],
+        Path.home() / ".domangcha",
+        Path(os.environ.get("CLAUDE_PROJECT_DIR", os.getcwd())),
+    )
+    for root in roots:
+        if (root / "domangcha" / "orchestration" / "status.py").exists():
+            sys.path.insert(0, str(root))
+            try:
+                from domangcha.orchestration.status import StatusReporter
+
+                return StatusReporter()
+            except Exception:
+                return None
+    return None
+
+
+def _loop_card(st: dict, loop_count: int, max_loops: int) -> str:
+    """루프 상태를 사람이 읽는 카드로 렌더링한다."""
+    reporter = _status_reporter()
+    if reporter is None:
+        return "🔁 LOOP %d/%d" % (loop_count, max_loops)
+    breaker = st.get("circuit_breaker") if isinstance(st.get("circuit_breaker"), dict) else {}
+    gates = " · ".join(
+        "%s %s" % (label, st.get(key) or "—")
+        for label, key in (("검증", "validation_status"), ("테스트", "tests_status"), ("리뷰", "evaluators_status"))
+    )
+    extra = ["게이트: " + gates, "차단기: " + (breaker.get("status") or "CLOSED")]
+    return reporter.loop_card(
+        {
+            "status": "RUNNING" if st.get("active") else "PENDING",
+            "iteration": loop_count,
+            "max_iterations": max_loops,
+            "retry_budget": st.get("retry_budget", 0),
+            "no_progress_count": st.get("no_progress_count", 0),
+            "repeated_error_count": st.get("repeated_error_count", 0),
+            "usage": st.get("usage", {}),
+            "decisions": [{"error": st["last_error"]}] if st.get("last_error") else [],
+        },
+        extra=extra,
+    )
+
+
 def _completion_is_valid(status_path: Path, st: dict) -> bool:
     """The model cannot end a loop by setting exit_signal alone."""
     fix_plan = status_path.parent / "fix_plan.md"
@@ -74,7 +119,12 @@ def _completion_is_valid(status_path: Path, st: dict) -> bool:
 
 
 CONTINUE_MSG = """\
-[RALPH ENGINE] 루프 미완료 — 계속 진행하세요 (loop #{loop}/{maxl}).
+[RALPH ENGINE] 루프 미완료 — 계속 진행하세요.
+
+{card}
+
+이번 회차 응답 첫 줄에 위 루프 카드를 그대로 보여주고, 지난 회차 대비 실제로 달라진 것 한 줄을
+사용자 언어로 덧붙이세요. 같은 자리를 돌고 있으면 숨기지 말고 그렇다고 말하세요.
 
 1. .ralph/PROMPT.md 와 .ralph/fix_plan.md 를 읽으세요.
 2. fix_plan.md 의 미체크([ ]) 항목 중 최우선 1개를 실행하세요.
@@ -91,6 +141,10 @@ CONTINUE_MSG = """\
 
 CAP_MSG = """\
 [RALPH ENGINE] 루프 상한(max_loops={maxl}) 도달 — 안전 종료합니다.
+
+{card}
+
+사용자에게 위 카드와 함께 어디까지 되었고 무엇이 남았는지 친절하게 설명하세요.
 fix_plan.md 미완료 항목이 남아 있다면 사용자에게 Circuit Breaker 보고를 출력하세요.
 재개하려면 .ralph/status.json 의 loop_count 를 낮추거나 /ceo-ralph reset 하세요.
 """
@@ -140,14 +194,14 @@ def main() -> int:
         breaker["status"] = "OPEN"
         st["circuit_breaker"] = breaker
         _write_json(status_path, st)
-        sys.stderr.write(CAP_MSG.format(maxl=max_loops))
+        sys.stderr.write(CAP_MSG.format(maxl=max_loops, card=_loop_card(st, loop_count, max_loops)))
         return 0  # 캡 도달은 정상 종료(종료 허용) — 무한루프 차단
 
     # 5) 그 외 → 루프 카운트 증가 후 재진입 강제
     loop_count += 1
     st["loop_count"] = loop_count
     _write_json(status_path, st)
-    sys.stderr.write(CONTINUE_MSG.format(loop=loop_count, maxl=max_loops))
+    sys.stderr.write(CONTINUE_MSG.format(card=_loop_card(st, loop_count, max_loops)))
     return 2  # exit 2 = 종료 막고 모델 재진입
 
 

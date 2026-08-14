@@ -6,7 +6,7 @@ import json
 from datetime import datetime, timezone
 from pathlib import Path
 
-from runtime import checkpoint, find_session_for_task, read_json, update_checkpoint, write_json
+from runtime import checkpoint, find_session_for_task, read_json, reporter, update_checkpoint, write_json
 
 
 def evidence(root: Path, task_id: str):
@@ -22,12 +22,19 @@ def main() -> int:
     parser.add_argument("--message")
     parser.add_argument("--summary")
     parser.add_argument("--review")
+    parser.add_argument("--format", choices=("card", "json"), default="card")
     args = parser.parse_args()
     root = Path(args.workspace).resolve()
     state = checkpoint(root, args.task_id)
     session_path, session = evidence(root, args.task_id)
+
+    def report(payload: dict) -> None:
+        """Human-readable card by default; raw state stays available with --format json."""
+        renderer = reporter(root) if args.format == "card" else None
+        print(renderer.graph_card(state) if renderer else json.dumps(payload, ensure_ascii=False, indent=2))
+
     if args.action in {"status", "resume"}:
-        print(json.dumps({"state": state, "codex": session}, ensure_ascii=False, indent=2))
+        report({"state": state, "codex": session})
         return 0
     now = datetime.now(timezone.utc).isoformat()
     if args.action == "progress":
@@ -35,7 +42,7 @@ def main() -> int:
             parser.error("progress requires --message")
         state.setdefault("decisions", []).append({"at": now, "kind": "progress", "message": args.message})
         update_checkpoint(root, args.task_id, state)
-        print(json.dumps({"ok": True, "task_id": args.task_id}))
+        report({"ok": True, "task_id": args.task_id})
         return 0
     if not args.summary:
         parser.error("complete requires --summary")

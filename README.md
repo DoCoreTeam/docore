@@ -16,7 +16,7 @@ One command selects DIRECT, LOOP, or GRAPH—then coordinates up to 18 logical s
 
 *Your AI getaway car from development hell.*
 
-[![Version](https://img.shields.io/badge/version-2.2.0-brightgreen?style=for-the-badge&logo=github)](https://github.com/DoCoreTeam/domangcha/blob/main/domangcha/VERSION)
+[![Version](https://img.shields.io/badge/version-2.3.0-brightgreen?style=for-the-badge&logo=github)](https://github.com/DoCoreTeam/domangcha/blob/main/domangcha/VERSION)
 [![npm](https://img.shields.io/npm/v/domangcha?style=for-the-badge&logo=npm&color=CB3837)](https://www.npmjs.com/package/domangcha)
 [![License](https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge)](https://opensource.org/licenses/MIT)
 [![Runtimes](https://img.shields.io/badge/Runtimes-Claude%20Code%20%7C%20Codex-5865F2?style=for-the-badge)](#runtime-compatibility)
@@ -150,6 +150,25 @@ LOOP tracks termination criteria, max iterations, retry budget, no-progress hash
 A graph contains typed state, nodes, guarded edges, branches, joins, retry and fallback paths, checkpoints, budgets, and terminal states. Node types include `DETERMINISTIC`, `LLM`, `AGENT`, `TOOL`, `VALIDATOR`, `HUMAN_GATE`, and `JOIN`. Side effects are classified as `PURE`, `IDEMPOTENT`, or `NON_IDEMPOTENT`; unsafe side effects are not blindly retried.
 
 Dynamic fan-out supports `ALL`, `ANY`, `QUORUM`, and `BEST_EFFORT` joins with concurrency, branch timeout, wave timeout, token, tool-call, and retry budgets. Human approval is persisted as `WAITING_FOR_APPROVAL`, so cloud/delegated runs can pause and return a reviewable checkpoint.
+
+### Status reporting is on by default
+
+An engine that works silently feels like an engine that is stuck. Every surface — the CLI, the Claude hooks, and the Codex control plane — renders the same cards from `orchestration/status.py`, so you can see the route, the loop, and the parallel branches while they run.
+
+```text
+🚂 DOMANGCHA · GRAPH 🧭 (score 10)        🔁 LOOP 5/30  ▓▓░░░░░░░░ 17%
+├ why: hard graph invariant: parallel      ├ retry left 5 · no progress 0/3
+├ plan: typed node graph, branches, join   ├ budget: model 7/12 · tool 31/80
+└ next: report per node and per branch     └ state: RUNNING ⏳
+
+🧭 GRAPH full_pipeline@1  ▓▓▓▓▓░░░░░ 50% 3/6 nodes
+├ done: intake ✅ · plan ✅ · build ✅
+├ running: review ⏳ (attempt 1)
+├ parallel(build): dc-dev-be ✅ | dc-dev-fe ✅ | dc-sec ❌ · join=ALL
+└ awaiting approval: gate 🙋
+```
+
+`engine.py route|status` prints a card by default; `--format json` returns the raw state and `--lang en` switches language (`DOMANGCHA_STATUS_LANG` sets the default). The reporting contract itself is injected by the hooks: announce the route and why, report loop iteration and budget every pass, show branch results and the join strategy at fan-in, explain in plain language what a gate is asking to approve, and never go silent through a long step or hide a stalled loop.
 
 ### Runtime compatibility
 
@@ -455,6 +474,7 @@ Complex feature requests still use the familiar PLANNER → BUILDER → EVALUATO
 
 | Version | Feature |
 |---|---|
+| **v2.3.0** | **Progress reporting is on by default** — the engine used to record route, loop, and branch state into checkpoints and `events.jsonl` with nothing rendering it, so a running engine looked like a stalled one. `orchestration/status.py` is now the single renderer for route, loop, graph, and parallel-branch cards (Korean by default, `--lang en`, secrets redacted). `engine.py route\|status` prints a card by default (`--format json` keeps the raw state), the Claude `UserPromptSubmit` hook injects the card plus a reporting contract, the Ralph `Stop` hook injects the live loop card every iteration, and the Codex control plane renders the same cards. Announce the route and why, report iteration and budget every pass, show branch results and join strategy at fan-in, explain gates in plain language, and never go silent through a long step. |
 | **v2.2.0** | **Native Codex attachment** — bundles an installable Codex plugin with an implicitly matching DOMANGCHA skill and `UserPromptSubmit`, `PostToolUse`, `SubagentStop`, and `Stop` lifecycle hooks. Codex now receives automatic route/task injection, workspace checkpoints, tool and validation evidence, bounded continuation, and a deterministic completion command instead of relying on `AGENTS.md` alone. The installer registers the local marketplace and plugin automatically; users approve the hook definition once through `/hooks`. |
 | **v2.1.1** | **Full public README restored and modernized** — restores the original bilingual hero, real sprint and bug-fix walkthroughs, 18-role catalog, five gates, release history, complete 19-command reference, requirements, and every install/update path. Legacy mandatory-pipeline claims are rewritten for adaptive DIRECT/LOOP/GRAPH behavior and Claude Code/Codex parity. |
 | **v2.1.0** | **Adaptive DIRECT · LOOP · GRAPH architecture** — one deterministic TaskRouter evolves CEO SIZE ASSESSMENT, FAST PATH, Ralph, and FULL PIPELINE into a single authority. Adds typed graph contracts, bounded retry and joins, checkpoint/resume, human gates, budgets, structured events, Claude Code + Codex adapters, shared policies, authoritative manifests, and deterministic CI tests. Existing `/ceo-*` commands and all 18 roles remain compatible. |
@@ -605,7 +625,7 @@ Re-running always pulls the latest. Your registries (errors, instincts, history)
 
 *개발 지옥에서 도망쳐 — 돔황차🚗💨*
 
-[![Version](https://img.shields.io/badge/version-2.2.0-brightgreen?style=for-the-badge&logo=github)](https://github.com/DoCoreTeam/domangcha/blob/main/domangcha/VERSION)
+[![Version](https://img.shields.io/badge/version-2.3.0-brightgreen?style=for-the-badge&logo=github)](https://github.com/DoCoreTeam/domangcha/blob/main/domangcha/VERSION)
 [![npm](https://img.shields.io/npm/v/domangcha?style=for-the-badge&logo=npm&color=CB3837)](https://www.npmjs.com/package/domangcha)
 [![License](https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge)](https://opensource.org/licenses/MIT)
 [![Runtimes](https://img.shields.io/badge/런타임-Claude%20Code%20%7C%20Codex-5865F2?style=for-the-badge)](#runtime-compatibility)
@@ -870,6 +890,7 @@ DC-REV  ✔  수정 정확. undefined 방어 패턴은 카카오페이 공식 �
 
 | 버전 | 기능 |
 |---|---|
+| **v2.3.0** | **진행 상황 보고 기본 활성화** — 엔진은 라우트·루프·브랜치 상태를 체크포인트와 `events.jsonl`에 기록만 하고 **렌더링하는 코드가 없었습니다**. 그래서 돌고 있는 엔진이 멈춘 엔진처럼 보였습니다. 이제 `orchestration/status.py`가 라우트·루프·그래프·병렬 브랜치 카드를 렌더링하는 단일 지점입니다(한국어 기본, `--lang en`, secret 자동 마스킹). `engine.py route\|status`는 기본이 카드 출력이고(`--format json`으로 원시 상태 유지), Claude `UserPromptSubmit` 훅이 카드와 **보고 규칙**을 주입하며, Ralph `Stop` 훅이 매 회차 실제 루프 카드를 주입하고, Codex 컨트롤 플레인도 같은 카드를 씁니다. 라우트와 이유를 먼저 알리고, 매 반복마다 회차·예산·실제 변화를 보고하고, 조인 시점에 브랜치 결과와 join 전략을 보여주고, 게이트를 사람의 말로 설명하고, 긴 단계에서 침묵하지 않습니다. |
 | **v2.2.0** | **Codex 네이티브 밀착 통합** — 자동 매칭되는 DOMANGCHA skill과 `UserPromptSubmit`, `PostToolUse`, `SubagentStop`, `Stop` lifecycle hook을 갖춘 설치형 Codex plugin을 번들했습니다. 이제 Codex가 `AGENTS.md`만 읽는 대신 라우트/task ID 자동 주입, 워크스페이스 체크포인트, 도구·검증 근거 기록, 제한된 자동 계속, 결정론적 완료 명령을 사용합니다. 인스톨러가 로컬 marketplace와 plugin을 자동 등록하며 사용자는 `/hooks`에서 최초 1회 신뢰하면 됩니다. |
 | **v2.1.1** | **기존 공개 README 수준 완전 복원 및 현대화** — 영문·한국어 히어로, 실제 스프린트·버그 수정 데모, 18개 역할, 5개 게이트, 변경 이력, 19개 전체 명령어, 요구사항, 모든 설치·업데이트 경로를 복원했습니다. 과거의 전체 파이프라인 강제 설명은 DIRECT/LOOP/GRAPH 적응형 실행과 Claude Code/Codex 동등성에 맞게 교체했습니다. |
 | **v2.1.0** | **적응형 DIRECT · LOOP · GRAPH 아키텍처** — CEO SIZE ASSESSMENT, FAST PATH, Ralph, FULL PIPELINE을 하나의 결정론적 TaskRouter 권한으로 통합했습니다. 타입 그래프 계약, 제한된 재시도와 조인, 체크포인트/재개, 사람 승인 게이트, 예산, 구조화 이벤트, Claude Code + Codex 어댑터, 공유 정책과 권위 매니페스트를 추가했습니다. 기존 `/ceo-*` 명령과 18개 역할은 유지됩니다. |
@@ -926,6 +947,32 @@ DC-REV  ✔  수정 정확. undefined 방어 패턴은 카카오페이 공식 �
 - LLM은 경계가 모호할 때 구조화된 라우트를 제안할 수 있지만, 안전 불변식과 최종 전이는 코드가 결정합니다.
 - DIRECT → LOOP → GRAPH 승격 시 기존 작업 상태를 보존합니다.
 - Claude Code는 `CLAUDE.md`, Codex는 `AGENTS.md`를 사용하지만 공유 정책·엔진·체크포인트·검증 규칙은 같습니다.
+
+---
+
+### 📣 진행 상황 보고 (기본 활성)
+
+조용히 도는 엔진은 멈춘 엔진처럼 보입니다. CLI·Claude 훅·Codex 컨트롤 플레인이 모두
+`orchestration/status.py`의 같은 카드를 사용하므로, 라우트와 루프와 병렬 브랜치를 **진행 중에** 볼 수 있습니다.
+
+```text
+🚂 DOMANGCHA · GRAPH 🧭 (score 10)        🔁 LOOP 5/30  ▓▓░░░░░░░░ 17%
+├ 이유: hard graph invariant: parallel     ├ 재시도 여유 5 · 정체 0/3
+├ 계획: 타입 노드 그래프 · 병렬 · join      ├ 예산: model 7/12 · tool 31/80
+└ 다음: 노드·브랜치별 진행 보고             └ 상태: RUNNING ⏳
+
+🧭 GRAPH full_pipeline@1  ▓▓▓▓▓░░░░░ 50% 3/6 노드
+├ 완료: intake ✅ · plan ✅ · build ✅
+├ 진행: review ⏳ (시도 1)
+├ 병렬(build): dc-dev-be ✅ | dc-dev-fe ✅ | dc-sec ❌ · join=ALL
+└ 승인 대기: gate 🙋
+```
+
+`engine.py route|status`는 기본으로 카드를 출력합니다. 원시 상태는 `--format json`,
+언어는 `--lang ko|en`(기본값은 `DOMANGCHA_STATUS_LANG`)으로 바꿉니다. 보고 규칙 자체는 훅이 주입합니다 —
+라우트와 그 이유를 먼저 알리고, 매 반복마다 회차·예산·실제 변화를 보고하고, 조인 시점에 브랜치 결과와
+join 전략을 보여주고, 승인 게이트 앞에서 무엇을 왜 승인받는지 사람의 말로 설명하고,
+긴 단계에서 침묵하거나 정체된 루프를 감추지 않습니다.
 
 ---
 
