@@ -1,4 +1,4 @@
-# DOMANGCHA v2.3.1 — Claude Code Adapter
+# DOMANGCHA v2.3.2 — Claude Code Adapter
 
 This file contains Claude-specific integration only. Shared execution policy lives in `policies/` and deterministic control lives in `engine.py`.
 
@@ -13,4 +13,4 @@ This file contains Claude-specific integration only. Shared execution policy liv
 
 Do not reconstruct the legacy mandatory CEO/FULL PIPELINE from prompts. Follow DIRECT, LOOP, or GRAPH returned by `engine.py`.
 
-Official version source: `VERSION` = 2.3.1.
+Official version source: `VERSION` = 2.3.2.

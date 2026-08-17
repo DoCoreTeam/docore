@@ -16,7 +16,7 @@ One command selects DIRECT, LOOP, or GRAPH—then coordinates up to 18 logical s
 
 *Your AI getaway car from development hell.*
 
-[![Version](https://img.shields.io/badge/version-2.3.1-brightgreen?style=for-the-badge&logo=github)](https://github.com/DoCoreTeam/domangcha/blob/main/domangcha/VERSION)
+[![Version](https://img.shields.io/badge/version-2.3.2-brightgreen?style=for-the-badge&logo=github)](https://github.com/DoCoreTeam/domangcha/blob/main/domangcha/VERSION)
 [![npm](https://img.shields.io/npm/v/domangcha?style=for-the-badge&logo=npm&color=CB3837)](https://www.npmjs.com/package/domangcha)
 [![License](https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge)](https://opensource.org/licenses/MIT)
 [![Runtimes](https://img.shields.io/badge/Runtimes-Claude%20Code%20%7C%20Codex-5865F2?style=for-the-badge)](#runtime-compatibility)
@@ -474,6 +474,7 @@ Complex feature requests still use the familiar PLANNER → BUILDER → EVALUATO
 
 | Version | Feature |
 |---|---|
+| **v2.3.2** | **The single renderer stops carrying the phrasebook** — `orchestration/status.py` had reached 296 of its 300-line budget, so the next card would have broken `validate_line_limits`. The bilingual vocabulary (`LABELS`, `PLAN`, `NEXT`, `LANGS`) moved to `orchestration/wording.py`, leaving status.py at 226 lines with layout logic only. No behavior change: every card renders byte-identically and the same 86 tests pass. |
 | **v2.3.1** | **Hooks stop misfiring on unrelated projects, and stale deployments become visible** — the Stop hook identified this repository by `domangcha/VERSION` + `package.json` alone, so any project that happens to keep its own `domangcha/VERSION` was validated as if it were the framework source and crashed on the missing manifest every turn; the manifest itself is now the identifier. The post-edit hook's `find_root()` walked past `$HOME` and ran `npm test` in whatever monorepo lived there, blocking edits to files outside any project; it now stops at `$HOME`. `RepositoryValidator` reported a missing or malformed manifest as a raw traceback instead of a validation error, so a broken repository looked like a crashed engine — missing, unreadable, and invalid JSON are now ordinary entries in `errors`. New `engine.py drift` compares the installed `~/.domangcha` runtime against this repository by content hash and reports stale files in `/ceo-status`: both VERSION files agree while the code differs, so a version check cannot see this, and a fix that never shipped stays silent until the stale path is reached. |
 | **v2.3.0** | **Progress reporting is on by default** — the engine used to record route, loop, and branch state into checkpoints and `events.jsonl` with nothing rendering it, so a running engine looked like a stalled one. `orchestration/status.py` is now the single renderer for route, loop, graph, and parallel-branch cards (Korean by default, `--lang en`, secrets redacted). `engine.py route\|status` prints a card by default (`--format json` keeps the raw state), the Claude `UserPromptSubmit` hook injects the card plus a reporting contract, the Ralph `Stop` hook injects the live loop card every iteration, and the Codex control plane renders the same cards. Announce the route and why, report iteration and budget every pass, show branch results and join strategy at fan-in, explain gates in plain language, and never go silent through a long step. |
 | **v2.2.0** | **Native Codex attachment** — bundles an installable Codex plugin with an implicitly matching DOMANGCHA skill and `UserPromptSubmit`, `PostToolUse`, `SubagentStop`, and `Stop` lifecycle hooks. Codex now receives automatic route/task injection, workspace checkpoints, tool and validation evidence, bounded continuation, and a deterministic completion command instead of relying on `AGENTS.md` alone. The installer registers the local marketplace and plugin automatically; users approve the hook definition once through `/hooks`. |
@@ -626,7 +627,7 @@ Re-running always pulls the latest. Your registries (errors, instincts, history)
 
 *개발 지옥에서 도망쳐 — 돔황차🚗💨*
 
-[![Version](https://img.shields.io/badge/version-2.3.1-brightgreen?style=for-the-badge&logo=github)](https://github.com/DoCoreTeam/domangcha/blob/main/domangcha/VERSION)
+[![Version](https://img.shields.io/badge/version-2.3.2-brightgreen?style=for-the-badge&logo=github)](https://github.com/DoCoreTeam/domangcha/blob/main/domangcha/VERSION)
 [![npm](https://img.shields.io/npm/v/domangcha?style=for-the-badge&logo=npm&color=CB3837)](https://www.npmjs.com/package/domangcha)
 [![License](https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge)](https://opensource.org/licenses/MIT)
 [![Runtimes](https://img.shields.io/badge/런타임-Claude%20Code%20%7C%20Codex-5865F2?style=for-the-badge)](#runtime-compatibility)
@@ -891,6 +892,7 @@ DC-REV  ✔  수정 정확. undefined 방어 패턴은 카카오페이 공식 �
 
 | 버전 | 기능 |
 |---|---|
+| **v2.3.2** | **단일 렌더러에서 문구 사전 분리** — `orchestration/status.py`가 300줄 제한 중 296줄까지 차서, 카드를 하나만 더 추가해도 `validate_line_limits`가 깨지는 상태였습니다. 이중 언어 문구 테이블(`LABELS`, `PLAN`, `NEXT`, `LANGS`)을 `orchestration/wording.py`로 옮겨 status.py는 레이아웃 로직만 남은 226줄이 됐습니다. 동작 변화 없음 — 모든 카드가 이전과 동일하게 렌더링되고 같은 86개 테스트가 통과합니다. |
 | **v2.3.1** | **훅 오탐 제거 + 배포 누락 가시화** — Stop 훅이 `domangcha/VERSION` + `package.json`만 보고 이 저장소를 식별해서, 자기 앱 버전을 우연히 `domangcha/VERSION`에 두는 프로젝트를 프레임워크 소스로 오인하고 매 턴 없는 매니페스트를 찾다 크래시했습니다. 이제 매니페스트 자체가 식별자입니다. post-edit 훅의 `find_root()`는 `$HOME` 위로 올라가 거기 있는 모노레포에서 `npm test`를 돌려 프로젝트 밖 파일 편집을 차단했습니다. 이제 `$HOME`에서 멈춥니다. `RepositoryValidator`는 매니페스트가 없거나 깨졌을 때 검증 오류 대신 raw 트레이스백으로 죽어서, 망가진 저장소가 죽은 엔진처럼 보였습니다. 이제 없음·읽기 실패·잘못된 JSON 모두 평범한 `errors` 항목입니다. 신규 `engine.py drift`는 설치된 `~/.domangcha` 런타임을 이 저장소와 내용 해시로 비교해 오래된 파일을 `/ceo-status`에 보고합니다. 양쪽 VERSION이 같은데 코드만 다른 상황은 버전 비교로 잡을 수 없고, 배포되지 않은 수정은 그 경로에 도달할 때까지 조용하기 때문입니다. |
 | **v2.3.0** | **진행 상황 보고 기본 활성화** — 엔진은 라우트·루프·브랜치 상태를 체크포인트와 `events.jsonl`에 기록만 하고 **렌더링하는 코드가 없었습니다**. 그래서 돌고 있는 엔진이 멈춘 엔진처럼 보였습니다. 이제 `orchestration/status.py`가 라우트·루프·그래프·병렬 브랜치 카드를 렌더링하는 단일 지점입니다(한국어 기본, `--lang en`, secret 자동 마스킹). `engine.py route\|status`는 기본이 카드 출력이고(`--format json`으로 원시 상태 유지), Claude `UserPromptSubmit` 훅이 카드와 **보고 규칙**을 주입하며, Ralph `Stop` 훅이 매 회차 실제 루프 카드를 주입하고, Codex 컨트롤 플레인도 같은 카드를 씁니다. 라우트와 이유를 먼저 알리고, 매 반복마다 회차·예산·실제 변화를 보고하고, 조인 시점에 브랜치 결과와 join 전략을 보여주고, 게이트를 사람의 말로 설명하고, 긴 단계에서 침묵하지 않습니다. |
 | **v2.2.0** | **Codex 네이티브 밀착 통합** — 자동 매칭되는 DOMANGCHA skill과 `UserPromptSubmit`, `PostToolUse`, `SubagentStop`, `Stop` lifecycle hook을 갖춘 설치형 Codex plugin을 번들했습니다. 이제 Codex가 `AGENTS.md`만 읽는 대신 라우트/task ID 자동 주입, 워크스페이스 체크포인트, 도구·검증 근거 기록, 제한된 자동 계속, 결정론적 완료 명령을 사용합니다. 인스톨러가 로컬 marketplace와 plugin을 자동 등록하며 사용자는 `/hooks`에서 최초 1회 신뢰하면 됩니다. |

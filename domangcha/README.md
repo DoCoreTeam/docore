@@ -1,4 +1,4 @@
-# DOMANGCHA Runtime Payload v2.3.1
+# DOMANGCHA Runtime Payload v2.3.2
 
 This directory is the installable DOMANGCHA payload.
 

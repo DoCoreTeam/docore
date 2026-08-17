@@ -1,6 +1,6 @@
 {
   "name": "domangcha",
-  "version": "2.3.1",
+  "version": "2.3.2",
   "description": "Adaptive DIRECT, LOOP, and GRAPH execution control for Codex.",
   "author": {
     "name": "DoCoreTeam",

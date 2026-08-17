@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -e
 
-VERSION="2.3.1"
+VERSION="2.3.2"
 INSTALL_URL="https://raw.githubusercontent.com/DoCoreTeam/domangcha/main/domangcha/install.sh"
 
 usage() {
