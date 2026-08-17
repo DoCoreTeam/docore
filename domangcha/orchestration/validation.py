@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 import re
 from pathlib import Path
-from typing import Any, Dict, Iterable, List
+from typing import Any, Callable, Dict, Iterable, List
 
 from .graph import GraphDefinition, GraphDefinitionError
 
@@ -12,11 +12,27 @@ class ValidationError(RuntimeError):
     pass
 
 
+def _guarded(label: str, check: Callable[[], List[str]]) -> List[str]:
+    """Report a broken repository as a validation error, never as a traceback."""
+    try:
+        return check()
+    except ValidationError as exc:
+        return [str(exc)]
+    except (KeyError, TypeError, ValueError) as exc:
+        return ["%s check aborted: %s: %s" % (label, type(exc).__name__, exc)]
+
+
 class RepositoryValidator:
     def __init__(self, root: Path):
         self.root = root
 
     def validate_manifests(self) -> List[str]:
+        return _guarded("manifest", self._check_manifests)
+
+    def validate_versions(self) -> List[str]:
+        return _guarded("version", self._check_versions)
+
+    def _check_manifests(self) -> List[str]:
         errors = []
         agents = self._json("domangcha/manifests/agents.json")["roles"]
         actual_agents = {p.stem for p in (self.root / "domangcha/agents").glob("dc-*.md")}
@@ -29,8 +45,8 @@ class RepositoryValidator:
             errors.append("command manifest mismatch")
         return errors
 
-    def validate_versions(self) -> List[str]:
-        version = (self.root / "domangcha/VERSION").read_text().strip()
+    def _check_versions(self) -> List[str]:
+        version = self._text("domangcha/VERSION").strip()
         errors = []
         manifest = self._json("domangcha/manifests/versions.json")
         for surface in manifest["surfaces"]:
@@ -80,5 +96,16 @@ class RepositoryValidator:
         if writers.intersection(reviewers):
             raise ValidationError("builder and reviewer identities overlap")
 
+    def _text(self, relative: str) -> str:
+        try:
+            return (self.root / relative).read_text()
+        except FileNotFoundError:
+            raise ValidationError(relative + " missing") from None
+        except OSError as exc:
+            raise ValidationError(relative + " unreadable: " + str(exc.strerror)) from None
+
     def _json(self, relative: str) -> Dict[str, Any]:
-        return json.loads((self.root / relative).read_text())
+        try:
+            return json.loads(self._text(relative))
+        except json.JSONDecodeError as exc:
+            raise ValidationError(relative + " invalid json: " + str(exc)) from None

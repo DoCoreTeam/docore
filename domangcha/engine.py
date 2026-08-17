@@ -11,6 +11,7 @@ if __package__ in {None, ""}:
 
 from domangcha.adapters.runtime import RuntimeDetector
 from domangcha.orchestration.contracts import Route
+from domangcha.orchestration.deployment import DeploymentInspector
 from domangcha.orchestration.intent import IntentNormalizer
 from domangcha.orchestration.execution import ExecutionCoordinator
 from domangcha.orchestration.router import TaskRouter
@@ -65,6 +66,10 @@ def main() -> int:
     _add_format(route)
     validate = sub.add_parser("validate", help="validate repository invariants")
     validate.add_argument("--root", default=".")
+    drift = sub.add_parser("drift", help="compare the installed runtime with this repository")
+    drift.add_argument("--root", default=".")
+    drift.add_argument("--install", default=None)
+    _add_format(drift)
     start = sub.add_parser("start", help="create a resumable execution state")
     start.add_argument("request")
     start.add_argument("--workspace", default=".")
@@ -100,6 +105,11 @@ def main() -> int:
         coordinator = ExecutionCoordinator(Path(args.workspace).resolve())
         state = coordinator.approve(args.task_id, args.node_id, args.decision == "approve")
         print(json.dumps(state, ensure_ascii=False, indent=2))
+        return 0
+    if args.command == "drift":
+        install = Path(args.install).resolve() if args.install else None
+        report = DeploymentInspector(Path(args.root).resolve(), install).report()
+        _emit(report, args, StatusReporter(args.lang).drift_card(report))
         return 0
     validator = RepositoryValidator(Path(args.root).resolve())
     errors = validator.validate_manifests() + validator.validate_versions() + validator.validate_graphs()

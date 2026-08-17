@@ -8,6 +8,21 @@ python3 ~/.domangcha/domangcha/engine.py status <task_id> --workspace <project>
 
 기본 출력은 사람이 읽는 카드다. 원시 상태는 `--format json`, 영어 카드는 `--lang en`으로 얻는다.
 
+DOMANGCHA 저장소에서 실행할 때는 배포 드리프트도 함께 보고한다. 설치본(`~/.domangcha`)은
+저장소와 별개로 갱신되므로, 저장소만 고치고 배포하지 않으면 다른 모든 프로젝트는 옛 엔진을 계속 쓴다.
+양쪽 VERSION이 같아도 내용이 다를 수 있어 내용 해시로 비교한다. 읽기 전용이고 실패시키지 않는다.
+
+```bash
+python3 ~/.domangcha/domangcha/engine.py drift --root <domangcha 저장소>
+```
+
+```text
+📦 배포 상태 ⚠️
+├ 2.3.1 → 2.3.0
+├ 오래된 파일: orchestration/validation.py
+└ 커밋·푸시 후 install.sh를 다시 실행하면 반영됩니다
+```
+
 ```text
 🚂 DOMANGCHA · GRAPH 🧭
 ├ 이유: hard graph invariant: parallel

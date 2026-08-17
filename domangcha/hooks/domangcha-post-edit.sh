@@ -28,7 +28,8 @@ esac
 find_root() {
     local dir
     dir=$(dirname "$FILE_PATH")
-    while [ "$dir" != "/" ]; do
+    # Stop at $HOME: above it a stray package.json is not this file's project.
+    while [ "$dir" != "/" ] && [ "$dir" != "$HOME" ]; do
         for m in package.json go.mod Cargo.toml requirements.txt pyproject.toml pom.xml build.gradle; do
             [ -f "$dir/$m" ] && { echo "$dir"; return; }
         done

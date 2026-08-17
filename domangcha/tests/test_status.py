@@ -170,6 +170,36 @@ class DefaultSurfaceTests(unittest.TestCase):
         result = run("domangcha/engine.py", "route", "explain this repository", "--format", "json")
         self.assertEqual(json.loads(result.stdout)["route"], "DIRECT")
 
+    def test_drift_card_names_the_stale_files(self):
+        card = StatusReporter("ko").drift_card({
+            "installed": True,
+            "install_path": "/home/.domangcha/domangcha",
+            "source_version": "2.3.1",
+            "installed_version": "2.3.0",
+            "changed": ["orchestration/validation.py"],
+            "missing": [],
+        })
+        self.assertIn("orchestration/validation.py", card)
+        self.assertIn("2.3.1", card)
+        self.assertIn("install.sh", card)
+
+    def test_drift_card_confirms_a_matching_runtime(self):
+        card = StatusReporter("ko").drift_card({
+            "installed": True,
+            "install_path": "/home/.domangcha/domangcha",
+            "source_version": "2.3.1",
+            "installed_version": "2.3.1",
+            "changed": [],
+            "missing": [],
+        })
+        self.assertIn("✅", card)
+        self.assertNotIn("install.sh", card)
+
+    def test_drift_command_reports_without_failing(self):
+        result = run("domangcha/engine.py", "drift", "--format", "json")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIn("changed", json.loads(result.stdout))
+
     def test_claude_hook_injects_the_card_and_the_reporting_contract(self):
         result = subprocess.run(
             ["python3", str(ROOT / "domangcha/hooks/domangcha-ceo-enforcer.py")],

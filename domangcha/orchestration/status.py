@@ -51,6 +51,14 @@ LABELS = {
     "none": ("없음", "none"),
     "all_ok": ("전부 성공", "all succeeded"),
     "partial": ("부분 성공", "partial success"),
+    "deploy": ("배포 상태", "deployment"),
+    "in_sync": ("설치본이 저장소와 일치합니다", "installed runtime matches this repository"),
+    "not_installed": ("설치본 없음 — ~/.domangcha 미설치", "not installed — no ~/.domangcha runtime"),
+    "stale_files": ("오래된 파일", "stale files"),
+    "deploy_hint": (
+        "커밋·푸시 후 install.sh를 다시 실행하면 반영됩니다",
+        "commit, push, then re-run install.sh to deploy",
+    ),
     "approval_note": (
         "파괴적·되돌릴 수 없는 작업은 승인을 받은 뒤에만 진행합니다",
         "destructive or irreversible work proceeds only after approval",
@@ -202,6 +210,21 @@ class StatusReporter:
         lines.extend(self._approval_lines(data.get("approvals", {})))
         lines.append(self._state_line(data.get("status")))
         return header.rstrip() + "\n" + tree(lines)
+
+    def drift_card(self, report: Any) -> str:
+        """Read-only: drift before a release is expected, so this never alarms."""
+        data = as_dict(report)
+        stale = [str(x) for x in data.get("changed", [])] + [str(x) for x in data.get("missing", [])]
+        header = "\U0001f4e6 %s %s" % (self._t("deploy"), "⚠️" if stale else "✅")
+        if not data.get("installed"):
+            return header + "\n" + tree([self._t("not_installed")])
+        lines = ["%s → %s" % (data.get("source_version"), data.get("installed_version"))]
+        if stale:
+            lines.append("%s: %s" % (self._t("stale_files"), " · ".join(sorted(stale))))
+            lines.append(self._t("deploy_hint"))
+        else:
+            lines.append(self._t("in_sync"))
+        return header + "\n" + tree(lines)
 
     def wave_card(self, wave: Dict[str, Any]) -> str:
         data = redact(dict(wave or {}))
