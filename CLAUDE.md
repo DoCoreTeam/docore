@@ -5,14 +5,18 @@ DOMANGCHA ships two install shapes. The default is a per-project loop; the full
 
 ## Install shapes
 
-| Command | Scope | What it installs |
-|---|---|---|
-| `npx domangcha` | current project | `LOOP.md`, `CLAUDE.md`, `scripts/loop.mjs`, `.claude/`, `.cursor/`, `.loop/` |
-| `npx domangcha --full` | `~/.claude`, `~/.domangcha` | the 18 agents, commands, skills, hooks, and the adaptive engine |
+There is one command and no install-mode flag. `npx domangcha` reads where it runs:
+
+| Where it runs | What it installs |
+|---|---|
+| inside a project | the loop there: `LOOP.md`, `CLAUDE.md`, `scripts/loop.mjs`, `.claude/`, `.cursor/`, `.loop/` |
+| outside a project | the harness into `~/.claude` and `~/.domangcha` |
+| `/ceo` with no harness | offers to install the harness, then runs the request |
 
 A project holding `.loop/` and `scripts/loop.mjs` owns its protocol: the global
 `UserPromptSubmit` hook yields to it instead of emitting a route card, so one protocol
-reaches the model at a time. Everything below describes the full harness.
+reaches the model at a time. `/ceo` is the exception and the escalation path — it always
+reaches the router. Everything below describes the harness.
 Loop policy is in `domangcha/policies/loop.md`.
 
 ## Request flow

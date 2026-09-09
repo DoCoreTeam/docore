@@ -5,19 +5,30 @@ contract; `domangcha/loop/templates/LOOP.md` is the copy that ships into a proje
 
 ## Installation surfaces
 
-- `npx domangcha` writes only inside the current project: `LOOP.md`, `CLAUDE.md`,
-  `scripts/loop.mjs`, `.claude/`, `.cursor/`, `.loop/`.
-- `npx domangcha --full` keeps the v2 behaviour and writes the 18-agent harness into
-  `~/.claude` and `~/.domangcha`.
-- The two never share a path, so a global v2 install and a project v3 install coexist.
+- There is one command and no install-mode flag. `npx domangcha` reads where it runs.
+- Inside a project it writes only there: `LOOP.md`, `CLAUDE.md`, `scripts/loop.mjs`,
+  `.claude/`, `.cursor/`, `.loop/`. No network, no `~/.claude`.
+- Outside a project it runs `install.sh` and writes the harness into `~/.claude` and
+  `~/.domangcha`.
+- The two never share a path, so a global harness and a project loop coexist.
+- The harness is never installed behind the user's back: `/ceo` on a machine without it
+  states what it needs and waits for approval.
 
 ## Precedence
 
 - A project carrying `.loop/` and `scripts/loop.mjs` owns its protocol.
+- `/ceo` is the one escalation path out of it and always reaches the router.
 - `hooks/domangcha-ceo-enforcer.py` detects that pair and yields instead of emitting a
   route card, so only one protocol reaches the model.
 - A half-installed project (`.loop/` without the CLI) is not treated as a loop project;
   the global router stays in charge.
+
+## Language
+
+- The loop ships Korean and English editions of every message, the plan template and the
+  protocol document; `--lang` at install time or `config set lang` later switches them.
+- The plan parser reads both editions, so a plan written in one language still opens
+  after a switch.
 
 ## Natural language is the entry point
 

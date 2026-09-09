@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // DOMANGCHA v3.0.0  scripts/loop.mjs
-// 경량 자율개발 루프의 기록 CLI 겸 훅 핸들러 (Claude Code, Cursor 공용)
+// 프로젝트 자율개발 루프의 기록 CLI 겸 훅 핸들러 (Claude Code, Cursor 공용)
 // 이 파일은 npx domangcha 가 프로젝트에 설치하며 재설치 때마다 최신본으로 갱신됨
 // 요구 사항: Node 22.13 이상 (node:sqlite 내장, 추가 npm 의존성 없음)
 // 사용법: node scripts/loop.mjs <명령> [옵션]   (명령 목록은 하단 usage 참조)
@@ -16,7 +16,7 @@ import { execSync } from 'node:child_process';
 
 let DatabaseSync;
 try { ({ DatabaseSync } = await import('node:sqlite')); }
-catch { console.error('[DOMANGCHA] node:sqlite 사용 불가, Node 22.13 이상 필요'); process.exit(1); }
+catch { console.error('[DOMANGCHA] node:sqlite unavailable / 사용 불가 — Node 22.13+ required'); process.exit(1); }
 
 const KIT_VERSION = "3.0.0";
 
@@ -70,14 +70,14 @@ function sh(cmd, opts = {}) {
 }
 function gitAvailable() { try { sh('git rev-parse --is-inside-work-tree'); return true; } catch { return false; } }
 function gitCommit(message) {
-  if (!gitAvailable()) return { skipped: 'git 저장소 아님' };
+  if (!gitAvailable()) return { skipped: L('git 저장소 아님', 'not a git repository') };
   try {
     sh('git add -A');
     const status = sh('git status --porcelain');
-    if (!status) return { skipped: '변경 없음' };
+    if (!status) return { skipped: L('변경 없음', 'no changes') };
     sh(`git commit -q -m ${JSON.stringify(message)}`);
     return { hash: sh('git rev-parse --short HEAD') };
-  } catch (e) { return { skipped: '커밋 실패 ' + String(e.message || e).split('\n')[0] }; }
+  } catch (e) { return { skipped: L('커밋 실패 ', 'commit failed ') + String(e.message || e).split('\n')[0] }; }
 }
 function gitTag(tag) {
   if (!gitAvailable()) return false;
@@ -179,6 +179,70 @@ CREATE TABLE IF NOT EXISTS policy_hits (
 );
 `;
 
+// ---------- 언어 / language ----------
+// 파일 어휘는 두 언어를 모두 파싱하고, 기록할 때만 현재 언어로 쓴다.
+// The file vocabulary parses both languages and writes only in the current one.
+const LANGS = ['ko', 'en'];
+let _lang;
+function lang() {
+  if (_lang) return _lang;
+  try { _lang = getSetting('lang') === 'en' ? 'en' : 'ko'; } catch { _lang = 'ko'; }
+  return _lang;
+}
+const EN = () => lang() === 'en';
+const L = (ko, en) => (EN() ? en : ko);
+
+const FIELD = {
+  planId: ['플랜 ID', 'Plan ID'],
+  planVersion: ['플랜 버전', 'Plan version'],
+  written: ['작성', 'Written'],
+  startCommit: ['시작 커밋', 'Start commit'],
+  status: ['상태', 'Status'],
+  instruction: ['지시', 'Instruction'],
+  target: ['목표 버전', 'Target version'],
+  mode: ['모드', 'Mode'],
+  scope: ['범위', 'Scope'],
+  criteria: ['감사 기준', 'Audit criteria'],
+  depends: ['의존', 'Depends'],
+};
+const ITEM_STATUS = {
+  pending: ['대기', 'pending'],
+  active: ['진행중', 'active'],
+  passed: ['통과', 'passed'],
+  held: ['held', 'held'],
+  cancelled: ['취소', 'cancelled'],
+};
+ITEM_STATUS.held = ['보류', 'held'];
+const PLAN_STATUS = {
+  draft: ['초안', 'draft'],
+  active: ['진행중', 'active'],
+  done: ['완료', 'done'],
+  aborted: ['중단', 'aborted'],
+};
+const MODE = { light: ['경량', 'light'], heavy: ['중량', 'heavy'] };
+const SECTION = { items: ['## 항목', '## Items'], history: ['## 변경 이력', '## History'] };
+// 두 언어판 문서를 모두 열 수 있어야 하므로 섹션은 양쪽을 다 찾는다.
+// Both language editions must open, so section lookup tries either spelling.
+function sectionIndex(text, name, last) {
+  for (const marker of SECTION[name]) {
+    const i = last ? text.lastIndexOf(marker) : text.indexOf('\n' + marker);
+    if (i >= 0) return i;
+  }
+  return -1;
+}
+const SEC = (name) => SECTION[name][EN() ? 1 : 0];
+const NONE = ['없음', 'none'];
+const isNone = (v) => NONE.includes(String(v || '').trim().toLowerCase()) || NONE.includes(String(v || '').trim());
+
+const W = (table, key) => table[key][EN() ? 1 : 0];
+const F = (name) => FIELD[name][EN() ? 1 : 0];
+const FRE = (name) => '(?:' + FIELD[name].join('|') + ')';
+function keyOf(table, word, fallback) {
+  const w = String(word || '').trim();
+  for (const k of Object.keys(table)) if (table[k].includes(w)) return k;
+  return fallback;
+}
+
 const DEFAULT_SETTINGS = {
   project_name: path.basename(ROOT),
   plan_confirm: 'true',
@@ -190,6 +254,7 @@ const DEFAULT_SETTINGS = {
   max_plan_revisions_per_item: '3',
   policy_promote_after: '2',
   policy_rewrite_after: '3',
+  lang: 'ko',
   heavy_doc: '.claude/heavy/CEO.md',
   cmd_typecheck: 'pnpm tsc --noEmit',
   cmd_lint: 'pnpm lint',
@@ -201,7 +266,7 @@ let _db;
 function db(create = false) {
   if (_db) return _db;
   if (!fs.existsSync(DB_PATH)) {
-    if (!create) die('.loop/loop.db 없음, 먼저 node scripts/loop.mjs init 실행');
+    if (!create) die(L('.loop/loop.db 없음, 먼저 node scripts/loop.mjs init 실행', '.loop/loop.db is missing; run node scripts/loop.mjs init first'));
     fs.mkdirSync(LOOP_DIR, { recursive: true });
   }
   _db = new DatabaseSync(DB_PATH);
@@ -231,7 +296,7 @@ function addEvent(kind, detail, sessionId) {
 }
 
 // ---------- 플랜 파일 ----------
-const DEFAULT_TEMPLATE = `# PLAN {{project}}: {{title}}
+const TEMPLATE_KO = `# PLAN {{project}}: {{title}}
 플랜 ID: {{plan_id}}
 플랜 버전: v0.1.0
 상태: 초안
@@ -271,20 +336,75 @@ const DEFAULT_TEMPLATE = `# PLAN {{project}}: {{title}}
 - v0.1.0 ({{date}}) 최초 작성 ({{instruction}})
 `;
 
+const TEMPLATE_EN = `# PLAN {{project}}: {{title}}
+Plan ID: {{plan_id}}
+Plan version: v0.1.0
+Status: draft
+Instruction: {{instruction}}
+Target version: {{target}}
+Written: {{date}}
+
+## Goal
+- (what the user gets when this plan is done, 1-3 lines)
+
+## Out of scope
+- (what this plan does not do, or "none")
+
+## Definition of done
+- {{cmd_typecheck}}, {{cmd_test}}, {{cmd_build}} pass
+- every user-facing string goes through an i18n key
+- settings live in the database with UI management, not in new env vars (where applicable)
+
+## References
+- (documents this whole plan must follow; for UI items name the design system INDEX path)
+
+## Items
+
+### I01 (item title)
+Status: pending
+Mode: light
+Scope: (files or directories to change; mark new files "new")
+Audit criteria:
+- (a command and its expected result, e.g. pnpm test profile passes)
+- (an observable condition, e.g. GET /api/profile returns 401 when unauthenticated)
+Depends: none
+
+## Final audit
+- (recorded after every item passes)
+
+## History
+- v0.1.0 ({{date}}) first written ({{instruction}})
+`;
+
+const DEFAULT_TEMPLATE = () => (EN() ? TEMPLATE_EN : TEMPLATE_KO);
+
+// 언어를 바꿀 때, 손대지 않은 기본 템플릿만 새 언어판으로 교체한다.
+// Switching language replaces the plan template only while it is still the untouched default.
+function retemplate() {
+  if (!fs.existsSync(TEMPLATE_PATH)) return '';
+  const current = fs.readFileSync(TEMPLATE_PATH, 'utf8');
+  if (current === DEFAULT_TEMPLATE()) return '';
+  if (current !== TEMPLATE_KO && current !== TEMPLATE_EN) {
+    return L(', PLAN.template.md 는 수정본이라 그대로 둠', ', PLAN.template.md is customised and was left alone');
+  }
+  fs.writeFileSync(TEMPLATE_PATH, DEFAULT_TEMPLATE());
+  return L(', PLAN.template.md 교체', ', PLAN.template.md replaced');
+}
+
 function readPlanText() { return fs.existsSync(PLAN_PATH) ? fs.readFileSync(PLAN_PATH, 'utf8') : null; }
 
 function parsePlan(text) {
-  const itemsStart = text.indexOf('\n## 항목');
+  const itemsStart = sectionIndex(text, 'items');
   const head = itemsStart >= 0 ? text.slice(0, itemsStart) : text;
-  const hget = (key) => { const m = head.match(new RegExp('^' + key + ':\\s*(.+)$', 'm')); return m ? m[1].trim() : null; };
+  const hget = (name) => { const m = head.match(new RegExp('^' + FRE(name) + ':\\s*(.+)$', 'm')); return m ? m[1].trim() : null; };
   const titleLine = text.split('\n').find((l) => l.startsWith('# ')) || '';
   const header = {
     title: titleLine.replace(/^# PLAN\s*[^:]*:\s*/, '').replace(/^# /, '').trim(),
-    id: hget('플랜 ID'),
-    version: hget('플랜 버전'),
-    status: hget('상태'),
-    instruction: hget('지시'),
-    target: hget('목표 버전'),
+    id: hget('planId'),
+    version: hget('planVersion'),
+    status: hget('status'),
+    instruction: hget('instruction'),
+    target: hget('target'),
   };
   const items = [];
   const re = /^### (I\d+[a-z]*)\s+(.*)$/gm;
@@ -296,44 +416,48 @@ function parsePlan(text) {
     let end = i + 1 < idx.length ? idx[i + 1].start : text.length;
     if (nextH2 >= 0 && nextH2 < end) end = nextH2 + 1;
     const block = text.slice(idx[i].start, end);
-    const st = block.match(/^상태:\s*(.+)$/m);
-    const mode = block.match(/^모드:\s*(.+)$/m);
-    items.push({ ...idx[i], end, block: block.trimEnd(), status: st ? st[1].trim() : '대기', mode: mode ? mode[1].trim() : '경량' });
+    const st = block.match(new RegExp('^' + FRE('status') + ':\\s*(.+)$', 'm'));
+    const mode = block.match(new RegExp('^' + FRE('mode') + ':\\s*(.+)$', 'm'));
+    items.push({ ...idx[i], end, block: block.trimEnd(), status: st ? st[1].trim() : W(ITEM_STATUS, 'pending'), mode: mode ? mode[1].trim() : W(MODE, 'light') });
   }
   return { header, items, text };
 }
 function readPlan(required = true) {
   const t = readPlanText();
-  if (!t) { if (required) die('.loop/PLAN.md 없음, 먼저 plan new 실행'); return null; }
+  if (!t) { if (required) die(L('.loop/PLAN.md 없음, 먼저 plan new 실행', '.loop/PLAN.md is missing; run plan new first')); return null; }
   return parsePlan(t);
 }
-function planActive(p) { return p && p.header.status && !['완료', '중단'].includes(p.header.status.split(' ')[0]); }
-function statusKey(s) { return (s || '대기').split(' ')[0]; }
+function planStatusKey(s) { return keyOf(PLAN_STATUS, String(s || '').split(' ')[0], null); }
+function planActive(p) { return p && p.header.status && !['done', 'aborted'].includes(planStatusKey(p.header.status)); }
+function statusKey(s) { return keyOf(ITEM_STATUS, String(s || '').split(' ')[0], 'pending'); }
+function modeKey(m) { return keyOf(MODE, m, 'light'); }
 function counts(p) {
-  const c = { 대기: 0, 진행중: 0, 통과: 0, 보류: 0, 취소: 0 };
+  const c = { pending: 0, active: 0, passed: 0, held: 0, cancelled: 0 };
   for (const it of p.items) { const k = statusKey(it.status); c[k] = (c[k] || 0) + 1; }
   return c;
 }
 function nextItem(p) {
-  return p.items.find((it) => statusKey(it.status) === '진행중') || p.items.find((it) => statusKey(it.status) === '대기') || null;
+  return p.items.find((it) => statusKey(it.status) === 'active') || p.items.find((it) => statusKey(it.status) === 'pending') || null;
 }
 function writePlan(text) { fs.writeFileSync(PLAN_PATH, text); }
 
 function setItemStatus(p, id, status) {
   const it = p.items.find((x) => x.id === id);
-  if (!it) die(`항목 ${id} 없음`);
+  if (!it) die(L(`항목 ${id} 없음`, `item ${id} does not exist`));
   const before = p.text.slice(0, it.start);
   let block = p.text.slice(it.start, it.end);
   const after = p.text.slice(it.end);
-  if (/^상태:.*$/m.test(block)) block = block.replace(/^상태:.*$/m, `상태: ${status}`);
-  else block = block.replace(/^(### .*)$/m, `$1\n상태: ${status}`);
+  const stRe = new RegExp('^' + FRE('status') + ':.*$', 'm');
+  const line = `${F('status')}: ${status}`;
+  if (stRe.test(block)) block = block.replace(stRe, line);
+  else block = block.replace(/^(### .*)$/m, `$1\n${line}`);
   writePlan(before + block + after);
 }
 function setPlanStatus(p, status) {
-  const itemsStart = p.text.indexOf('\n## 항목');
+  const itemsStart = sectionIndex(p.text, 'items');
   const head = itemsStart >= 0 ? p.text.slice(0, itemsStart) : p.text;
   const rest = itemsStart >= 0 ? p.text.slice(itemsStart) : '';
-  writePlan(head.replace(/^상태:.*$/m, `상태: ${status}`) + rest);
+  writePlan(head.replace(new RegExp('^' + FRE('status') + ':.*$', 'm'), `${F('status')}: ${status}`) + rest);
 }
 function bumpVersion(v, level) {
   const m = /^v(\d+)\.(\d+)\.(\d+)$/.exec(v || 'v0.1.0');
@@ -392,7 +516,7 @@ function mergeClaudeHooks() {
   const file = path.join(ROOT, '.claude', 'settings.json');
   fs.mkdirSync(path.dirname(file), { recursive: true });
   let cfg = {};
-  if (fs.existsSync(file)) { try { cfg = JSON.parse(fs.readFileSync(file, 'utf8')); } catch { die('.claude/settings.json 파싱 실패, 수동 확인 필요'); } }
+  if (fs.existsSync(file)) { try { cfg = JSON.parse(fs.readFileSync(file, 'utf8')); } catch { die(L('.claude/settings.json 파싱 실패, 수동 확인 필요', '.claude/settings.json could not be parsed; fix it by hand')); } }
   cfg.hooks = cfg.hooks || {};
   for (const [event, groups] of Object.entries(CLAUDE_HOOKS)) {
     cfg.hooks[event] = cfg.hooks[event] || [];
@@ -406,7 +530,7 @@ function mergeCursorHooks() {
   const file = path.join(ROOT, '.cursor', 'hooks.json');
   fs.mkdirSync(path.dirname(file), { recursive: true });
   let cfg = { version: 1, hooks: {} };
-  if (fs.existsSync(file)) { try { cfg = JSON.parse(fs.readFileSync(file, 'utf8')); } catch { die('.cursor/hooks.json 파싱 실패'); } }
+  if (fs.existsSync(file)) { try { cfg = JSON.parse(fs.readFileSync(file, 'utf8')); } catch { die(L('.cursor/hooks.json 파싱 실패', '.cursor/hooks.json could not be parsed')); } }
   cfg.hooks = cfg.hooks || {};
   for (const [event, list] of Object.entries(CURSOR_HOOKS.hooks)) {
     cfg.hooks[event] = cfg.hooks[event] || [];
@@ -422,38 +546,94 @@ function policyHits(id) { return q1('SELECT COUNT(*) AS c FROM policy_hits WHERE
 function renderPolicyFile() {
   const active = activePolicies();
   const retired = q("SELECT * FROM policies WHERE status != 'active' ORDER BY id");
-  const L = [`# DOMANGCHA v${KIT_VERSION} — POLICY ${getSetting('project_name')}`, ''];
-  L.push('이 파일은 자체감사로 발견한 반복 실수를 프로젝트 정책으로 누적한 기록');
-  L.push('항목 자가감사 3-g 에서 활성 정책 전 줄을 대조하고 위반 시 policy hit 로 기록');
-  L.push('추가와 폐기는 loop policy add | retire 로 수행하며 이 파일은 그 결과를 렌더링한 것');
-  L.push('');
-  L.push('## 활성 정책');
-  L.push('');
-  if (!active.length) L.push('- 없음 (같은 감사 실패가 반복되면 정책으로 승격됨)');
+  const lines = [`# DOMANGCHA v${KIT_VERSION} — POLICY ${getSetting('project_name')}`, ''];
+  lines.push(L('이 파일은 자체감사로 발견한 반복 실수를 프로젝트 정책으로 누적한 기록',
+    'This file accumulates repeated mistakes that self-audit turned into project rules.'));
+  lines.push(L('항목 자가감사 3-g 에서 활성 정책 전 줄을 대조하고 위반 시 policy hit 로 기록',
+    'Check every active rule during item self-audit 3-g and record a breach with policy hit.'));
+  lines.push(L('추가와 폐기는 loop policy add | retire 로 수행하며 이 파일은 그 결과를 렌더링한 것',
+    'Add and retire through loop policy add | retire; this file renders the result.'));
+  lines.push('');
+  lines.push(L('## 활성 정책', '## Active policies'));
+  lines.push('');
+  if (!active.length) lines.push(L('- 없음 (같은 감사 실패가 반복되면 정책으로 승격됨)',
+    '- none (a repeated audit failure gets promoted here)'));
   for (const r of active) {
-    L.push(`### ${r.id} ${r.title}`);
-    L.push(`규칙: ${r.rule}`);
-    L.push(`근거: ${r.origin || '없음'}`);
-    L.push(`위반: ${policyHits(r.id)}회`);
-    L.push(`추가: ${r.created_at.slice(0, 10)}`);
-    L.push('');
+    lines.push(`### ${r.id} ${r.title}`);
+    lines.push(`${L('규칙', 'Rule')}: ${r.rule}`);
+    lines.push(`${L('근거', 'Origin')}: ${r.origin || L('없음', 'none')}`);
+    lines.push(`${L('위반', 'Breaches')}: ${policyHits(r.id)}${L('회', '')}`);
+    lines.push(`${L('추가', 'Added')}: ${r.created_at.slice(0, 10)}`);
+    lines.push('');
   }
   if (retired.length) {
-    L.push('## 폐기 정책');
-    L.push('');
-    for (const r of retired) L.push(`- ${r.id} ${r.title} (${r.retired_reason || r.status}, ${r.retired_at ? r.retired_at.slice(0, 10) : ''})`);
-    L.push('');
+    lines.push(L('## 폐기 정책', '## Retired policies'));
+    lines.push('');
+    for (const r of retired) lines.push(`- ${r.id} ${r.title} (${r.retired_reason || r.status}, ${r.retired_at ? r.retired_at.slice(0, 10) : ''})`);
+    lines.push('');
   }
   fs.mkdirSync(LOOP_DIR, { recursive: true });
-  fs.writeFileSync(POLICY_PATH, L.join('\n'));
+  fs.writeFileSync(POLICY_PATH, lines.join('\n'));
 }
 function policyLines(prefix) {
   const active = activePolicies();
   if (!active.length) return [];
-  const L = [`${prefix} 적용 중인 프로젝트 정책 ${active.length}건 (.loop/POLICY.md), 자가감사 3-g 에서 전 줄 대조 필수`];
-  for (const r of active.slice(0, 10)) L.push(`${prefix} ${r.id} ${r.title}: ${r.rule}`);
-  if (active.length > 10) L.push(`${prefix} 이하 ${active.length - 10}건은 policy list 로 확인`);
-  return L;
+  const lines = [`${prefix} ${L(`적용 중인 프로젝트 정책 ${active.length}건 (.loop/POLICY.md), 자가감사 3-g 에서 전 줄 대조 필수`,
+    `${active.length} active project ${active.length === 1 ? 'policy' : 'policies'} (.loop/POLICY.md), check every line during self-audit 3-g`)}`];
+  for (const r of active.slice(0, 10)) lines.push(`${prefix} ${r.id} ${r.title}: ${r.rule}`);
+  if (active.length > 10) lines.push(`${prefix} ${L(`이하 ${active.length - 10}건은 policy list 로 확인`, `${active.length - 10} more, see policy list`)}`);
+  return lines;
+}
+
+// ---------- /ceo 승격 게이트 / escalation gate ----------
+// 기본은 이 루프다. /ceo 는 전체 하네스를 부르며, 없으면 그때 설치를 제안한다.
+// This loop is the default. /ceo calls the full harness and offers to install it on demand.
+const CEO_RE = /^\s*\/ceo\b/i;
+const HARNESS = path.join(os.homedir(), '.domangcha', 'domangcha', 'engine.py');
+const HARNESS_INSTALL = 'curl -fsSL https://raw.githubusercontent.com/DoCoreTeam/domangcha/main/domangcha/install.sh | bash';
+function escalationLines() {
+  if (fs.existsSync(HARNESS)) {
+    // 전역 enforcer 훅이 라우트 카드를 렌더링하므로 여기서는 한 줄만 남긴다.
+    return [L('[DOMANGCHA] /ceo 감지: 전체 하네스로 승격, 끝나면 LOOP.md 로 복귀',
+      '[DOMANGCHA] /ceo detected: escalating to the full harness, returning to LOOP.md afterwards')];
+  }
+  return [
+    L('[DOMANGCHA] /ceo 는 전체 하네스(18 에이전트 · DIRECT/LOOP/GRAPH · 게이트)를 요구하는데 이 머신에는 아직 없습니다.',
+      '[DOMANGCHA] /ceo needs the full harness (18 agents, DIRECT/LOOP/GRAPH, gates) and it is not on this machine yet.'),
+    L('[DOMANGCHA] 사용자에게 설치 여부를 묻고 승인받은 뒤에만 아래를 실행할 것:',
+      '[DOMANGCHA] Ask the user first and run this only after they approve:'),
+    `[DOMANGCHA]   ${HARNESS_INSTALL}`,
+    L('[DOMANGCHA] 설치는 ~/.claude 와 ~/.domangcha 에 쓰고 네트워크가 필요합니다 (이 프로젝트는 바뀌지 않음).',
+      '[DOMANGCHA] It writes to ~/.claude and ~/.domangcha and needs network access; this project is not modified.'),
+    L('[DOMANGCHA] 거절하면 이 요청을 LOOP.md 절차로 그대로 진행할 것 — 루프만으로도 처리 가능합니다.',
+      '[DOMANGCHA] If they decline, handle the request through LOOP.md as usual; the loop alone can do it.'),
+  ];
+}
+
+// ---------- 진행 카드 / progress card ----------
+// 저장소 불변식: 반복마다 회차와 진전을 보고한다.
+// Repository invariant: report iteration and progress on every pass.
+function progressCard(p) {
+  if (!p) return null;
+  const c = counts(p);
+  const total = p.items.length || 1;
+  const done = c.passed;
+  const pct = Math.round((done / total) * 100);
+  const filled = Math.round(pct / 10);
+  const bar = '▓'.repeat(filled) + '░'.repeat(10 - filled);
+  const nx = nextItem(p);
+  const retries = nx ? (latestImpl(p.header.id, nx.id) || {}).attempt || 0 : 0;
+  const room = Math.max(0, num('max_audit_retries') - retries);
+  const pol = activePolicies().length;
+  const parts = [
+    `🔁 DOMANGCHA · ${p.header.id} ${p.header.version} ${bar} ${pct}%`,
+    `${L('항목', 'items')} ${done}/${p.items.length}`,
+    `${L('재시도 여유', 'retries left')} ${room}/${num('max_audit_retries')}`,
+  ];
+  if (c.held) parts.push(`${L('보류', 'held')} ${c.held}`);
+  if (pol) parts.push(`${L('정책', 'policies')} ${pol}`);
+  parts.push(nx ? `${L('다음', 'next')} ${nx.id}` : L('종합 감사 단계', 'final audit'));
+  return parts.join(' · ');
 }
 
 // ---------- 출력 도우미 ----------
@@ -461,25 +641,27 @@ function resumeText() {
   const p = readPlan(false);
   const name = getSetting('project_name');
   if (!p) {
-    const head = [`[DOMANGCHA v${KIT_VERSION}] 프로젝트 ${name}, 활성 플랜 없음 (.loop/PLAN.md 부재), 새 지시는 plan new 로 시작`];
+    const head = [`[DOMANGCHA v${KIT_VERSION}] ${L('프로젝트', 'project')} ${name}, ${L('활성 플랜 없음 (.loop/PLAN.md 부재), 새 지시는 plan new 로 시작', 'no active plan (.loop/PLAN.md absent); start a new instruction with plan new')}`];
     return head.concat(policyLines('[DOMANGCHA]')).join('\n');
   }
   const c = counts(p);
   const lines = [];
-  lines.push(`[DOMANGCHA v${KIT_VERSION}] 프로젝트 ${name}, 플랜 ${p.header.id} ${p.header.version} "${p.header.title}", 상태 ${p.header.status}, 목표 ${p.header.target}`);
-  lines.push(`[DOMANGCHA] 항목 통과 ${c.통과} / 진행중 ${c.진행중} / 대기 ${c.대기} / 보류 ${c.보류} / 취소 ${c.취소}, 전체 ${p.items.length}`);
+  lines.push(`[DOMANGCHA v${KIT_VERSION}] ${L('프로젝트', 'project')} ${name}, ${L('플랜', 'plan')} ${p.header.id} ${p.header.version} "${p.header.title}", ${L('상태', 'status')} ${p.header.status}, ${L('목표', 'target')} ${p.header.target}`);
+  const _card = progressCard(p);
+  if (_card) lines.push(_card);
+  lines.push(`[DOMANGCHA] ${L('항목 통과', 'items passed')} ${c.passed} / ${L('진행중', 'active')} ${c.active} / ${L('대기', 'pending')} ${c.pending} / ${L('보류', 'held')} ${c.held} / ${L('취소', 'cancelled')} ${c.cancelled}, ${L('전체', 'total')} ${p.items.length}`);
   const cur = currentItem();
   const nx = nextItem(p);
-  if (nx && statusKey(nx.status) === '진행중') lines.push(`[DOMANGCHA] 이전 컨텍스트에서 진행중이던 항목 ${nx.id}, 구현 상태 불명이므로 재감사 대상`);
-  else if (cur) lines.push(`[DOMANGCHA] 기록상 진행 항목 ${cur} (플랜 상태와 불일치 시 플랜 우선)`);
-  if (nx) { lines.push('[DOMANGCHA] 다음 대상 항목'); lines.push(nx.block.slice(0, 1800)); }
-  else if (planActive(p)) lines.push('[DOMANGCHA] 대기 항목 없음, 종합 감사 단계');
+  if (nx && statusKey(nx.status) === 'active') lines.push(`[DOMANGCHA] ${L(`이전 컨텍스트에서 진행중이던 항목 ${nx.id}, 구현 상태 불명이므로 재감사 대상`, `item ${nx.id} was in progress in an earlier context; its state is unknown, so re-audit it`)}`);
+  else if (cur) lines.push(`[DOMANGCHA] ${L(`기록상 진행 항목 ${cur} (플랜 상태와 불일치 시 플랜 우선)`, `records show ${cur} in progress (the plan file wins on disagreement)`)}`);
+  if (nx) { lines.push(L('[DOMANGCHA] 다음 대상 항목', '[DOMANGCHA] next item')); lines.push(nx.block.slice(0, 1800)); }
+  else if (planActive(p)) lines.push(L('[DOMANGCHA] 대기 항목 없음, 종합 감사 단계', '[DOMANGCHA] no pending items; final audit stage'));
   const ivs = q('SELECT id, item_id, content FROM interventions WHERE plan_id = ? AND resulting_plan_version IS NULL AND effect IS NULL ORDER BY id DESC LIMIT 3', p.header.id || '');
-  for (const iv of ivs.reverse()) lines.push(`[DOMANGCHA] 최근 개입 ${iv.id}${iv.item_id ? ' (' + iv.item_id + ' 진행 중)' : ''}: ${iv.content.replace(/\s+/g, ' ').slice(0, 160)}`);
+  for (const iv of ivs.reverse()) lines.push(`[DOMANGCHA] ${L('최근 개입', 'recent intervention')} ${iv.id}${iv.item_id ? ' (' + iv.item_id + ')' : ''}: ${iv.content.replace(/\s+/g, ' ').slice(0, 160)}`);
   const cmds = ['cmd_typecheck', 'cmd_lint', 'cmd_test', 'cmd_build'].map((k) => `${k.slice(4)}=${getSetting(k)}`).join(', ');
-  lines.push(`[DOMANGCHA] 감사 명령 ${cmds}`);
+  lines.push(`[DOMANGCHA] ${L('감사 명령', 'audit commands')} ${cmds}`);
   lines.push(...policyLines('[DOMANGCHA]'));
-  lines.push('[DOMANGCHA] 재개 규칙과 감사 기준은 LOOP.md 기준');
+  lines.push(L('[DOMANGCHA] 재개 규칙과 감사 기준은 LOOP.md 기준', '[DOMANGCHA] resume rules and audit criteria come from LOOP.md'));
   return lines.join('\n');
 }
 function passesThisSession() {
@@ -496,7 +678,8 @@ cmds.init = (a) => {
   db(true);
   for (const [k, v] of Object.entries(DEFAULT_SETTINGS)) if (!q1('SELECT 1 FROM settings WHERE key = ?', k)) setSetting(k, v);
   if (a.project) setSetting('project_name', a.project);
-  if (!fs.existsSync(TEMPLATE_PATH)) fs.writeFileSync(TEMPLATE_PATH, DEFAULT_TEMPLATE);
+  if (a.lang) { if (!LANGS.includes(String(a.lang))) die(`--lang ${LANGS.join('|')}`); setSetting('lang', a.lang); _lang = null; }
+  if (!fs.existsSync(TEMPLATE_PATH)) fs.writeFileSync(TEMPLATE_PATH, DEFAULT_TEMPLATE());
   const gi = path.join(LOOP_DIR, '.gitignore');
   if (!fs.existsSync(gi)) fs.writeFileSync(gi, 'loop.db\nloop.db-wal\nloop.db-shm\nexport/\n');
   fs.mkdirSync(ARCHIVE_DIR, { recursive: true });
@@ -514,25 +697,25 @@ cmds.init = (a) => {
   registerProject(getSetting('project_name'));
   renderPolicyFile();
   addEvent('init', KIT_VERSION);
-  out(`[DOMANGCHA v${KIT_VERSION}] 초기화 완료: ${path.relative(ROOT, DB_PATH)}, ${path.relative(ROOT, POLICY_PATH)}, ${hooksFile}${cursorFile ? ', ' + cursorFile : ''}, 레지스트리 ${REGISTRY_PATH}`);
+  out(`[DOMANGCHA v${KIT_VERSION}] ${L('초기화 완료', 'initialised')}: ${path.relative(ROOT, DB_PATH)}, ${path.relative(ROOT, POLICY_PATH)}, ${hooksFile}${cursorFile ? ', ' + cursorFile : ''}, ${L('레지스트리', 'registry')} ${REGISTRY_PATH}`);
   out(resumeText());
 };
 
 cmds.status = (a) => {
   if (a.all) {
     const reg = readRegistry();
-    if (!reg.projects.length) return out('등록된 프로젝트 없음');
+    if (!reg.projects.length) return out(L('등록된 프로젝트 없음', 'no registered projects'));
     for (const pr of reg.projects) {
       const planFile = path.join(pr.path, '.loop', 'PLAN.md');
       if (!fs.existsSync(planFile)) {
         const adir = path.join(pr.path, '.loop', 'archive');
         const last = fs.existsSync(adir) ? fs.readdirSync(adir).filter((f) => f.endsWith('.md')).sort().pop() : null;
-        out(`${pr.name}  활성 플랜 없음${last ? '  최근 보관 ' + last : ''}  ${pr.path}`);
+        out(`${pr.name}  ${L('활성 플랜 없음', 'no active plan')}${last ? '  ' + L('최근 보관', 'last archived') + ' ' + last : ''}  ${pr.path}`);
         continue;
       }
       const p = parsePlan(fs.readFileSync(planFile, 'utf8'));
       const c = counts(p); const nx = nextItem(p);
-      out(`${pr.name}  ${p.header.id} ${p.header.version} ${p.header.status}  통과 ${c.통과}/${p.items.length}  다음 ${nx ? nx.id + ' ' + nx.title : '없음'}  ${pr.path}`);
+      out(`${pr.name}  ${p.header.id} ${p.header.version} ${p.header.status}  ${L('통과', 'passed')} ${c.passed}/${p.items.length}  ${L('다음', 'next')} ${nx ? nx.id + ' ' + nx.title : L('없음', 'none')}  ${pr.path}`);
     }
     return;
   }
@@ -547,7 +730,7 @@ cmds.hook = (a) => {
   const sessionId = input.session_id || input.conversation_id || null;
   const isCursor = typeof input.hook_event_name === 'string' && /^[a-z]/.test(input.hook_event_name);
   const source = isCursor ? 'cursor' : 'claude_code';
-  if (!fs.existsSync(DB_PATH)) { if (event === 'session') out(`[DOMANGCHA v${KIT_VERSION}] 미초기화, node scripts/loop.mjs init 필요`); return; }
+  if (!fs.existsSync(DB_PATH)) { if (event === 'session') out(`[DOMANGCHA v${KIT_VERSION}] ${L('미초기화, node scripts/loop.mjs init 필요', 'not initialised; run node scripts/loop.mjs init')}`); return; }
   if (event === 'prompt') {
     const prompt = String(input.prompt || '').trim();
     if (!prompt) { if (isCursor) out('{"continue":true}'); return; }
@@ -557,22 +740,32 @@ cmds.hook = (a) => {
       run('INSERT INTO interventions(id, content, source, session_id, plan_id, plan_version, item_id, created_at) VALUES (?,?,?,?,?,?,?,?)',
         id, prompt, source, sessionId, p.header.id, p.header.version, currentItem(), now());
       if (isCursor) { out('{"continue":true}'); return; }
-      const L = [`[DOMANGCHA v${KIT_VERSION}] 개입 기록 ${id} · 플랜 ${p.header.id} ${p.header.version}${currentItem() ? ' · 진행 항목 ' + currentItem() : ''}`];
-      L.push('[DOMANGCHA] 다음 행동: 이 개입이 플랜을 바꾸는지 판단 (LOOP.md 2절 개입 처리)');
-      L.push(`[DOMANGCHA] 바꾸면 plan revise --level patch|minor --note "무엇을 왜" --ref ${id} 후 계속, 안 바꾸면 답변 후 현재 항목 계속`);
-      L.push('[DOMANGCHA] 멈춤·중단 지시면 즉시 hold 또는 plan abort, 현재 플랜과 무관한 새 기능이면 완료 후 새 플랜으로 분리 제안');
-      L.push(...policyLines('[DOMANGCHA]'));
-      out(L.join('\n'));
+      const msg = [`[DOMANGCHA v${KIT_VERSION}] ${L('개입 기록', 'intervention recorded')} ${id} · ${L('플랜', 'plan')} ${p.header.id} ${p.header.version}${currentItem() ? ' · ' + L('진행 항목', 'current item') + ' ' + currentItem() : ''}`];
+      const card = progressCard(p);
+      if (card) msg.push(card);
+      if (CEO_RE.test(prompt)) { msg.push(...escalationLines()); out(msg.join('\n')); return; }
+      msg.push(L('[DOMANGCHA] 다음 행동: 이 개입이 플랜을 바꾸는지 판단 (LOOP.md 2절 개입 처리)',
+        '[DOMANGCHA] next: decide whether this intervention changes the plan (LOOP.md section 2)'));
+      msg.push(L(`[DOMANGCHA] 바꾸면 plan revise --level patch|minor --note "무엇을 왜" --ref ${id} 후 계속, 안 바꾸면 답변 후 현재 항목 계속`,
+        `[DOMANGCHA] if it does: plan revise --level patch|minor --note "what and why" --ref ${id}, then continue; if not, answer and stay on the current item`));
+      msg.push(L('[DOMANGCHA] 멈춤·중단 지시면 즉시 hold 또는 plan abort, 현재 플랜과 무관한 새 기능이면 완료 후 새 플랜으로 분리 제안',
+        '[DOMANGCHA] on a stop instruction, hold or plan abort at once; for a feature unrelated to this plan, propose a separate plan after this one'));
+      msg.push(...policyLines('[DOMANGCHA]'));
+      out(msg.join('\n'));
     } else {
       const id = nextId('instructions', 'ins');
       run('INSERT INTO instructions(id, content, source, session_id, created_at) VALUES (?,?,?,?,?)', id, prompt, source, sessionId, now());
       if (isCursor) { out('{"continue":true}'); return; }
-      const L = [`[DOMANGCHA v${KIT_VERSION}] 지시 기록 ${id} · 활성 플랜 없음`];
-      L.push('[DOMANGCHA] 다음 행동: 구현·수정·추가 지시면 코드에 손대기 전에 LOOP.md 1절대로 플랜부터 작성');
-      L.push(`[DOMANGCHA] plan new --title "제목" --instruction ${id} --target vX.Y.Z → PLAN.md 작성 → plan check 통과 → plan confirm`);
-      L.push('[DOMANGCHA] 단순 질문·조회·설명 요청이면 플랜 없이 바로 답변 (LOOP.md 1절 예외)');
-      L.push(...policyLines('[DOMANGCHA]'));
-      out(L.join('\n'));
+      const msg = [`[DOMANGCHA v${KIT_VERSION}] ${L('지시 기록', 'instruction recorded')} ${id} · ${L('활성 플랜 없음', 'no active plan')}`];
+      if (CEO_RE.test(prompt)) { msg.push(...escalationLines()); out(msg.join('\n')); return; }
+      msg.push(L('[DOMANGCHA] 다음 행동: 구현·수정·추가 지시면 코드에 손대기 전에 LOOP.md 1절대로 플랜부터 작성',
+        '[DOMANGCHA] next: for anything that changes the repository, write the plan before touching code (LOOP.md section 1)'));
+      msg.push(L(`[DOMANGCHA] plan new --title "제목" --instruction ${id} --target vX.Y.Z → PLAN.md 작성 → plan check 통과 → plan confirm`,
+        `[DOMANGCHA] plan new --title "title" --instruction ${id} --target vX.Y.Z → write PLAN.md → plan check → plan confirm`));
+      msg.push(L('[DOMANGCHA] 단순 질문·조회·설명 요청이면 플랜 없이 바로 답변 (LOOP.md 1절 예외)',
+        '[DOMANGCHA] a question, lookup or explanation is answered directly, with no plan (LOOP.md section 1 exception)'));
+      msg.push(...policyLines('[DOMANGCHA]'));
+      out(msg.join('\n'));
     }
     return;
   }
@@ -595,20 +788,20 @@ cmds.hook = (a) => {
     out(resumeText());
     return;
   }
-  die(`알 수 없는 훅 이벤트 ${event}`);
+  die(L(`알 수 없는 훅 이벤트 ${event}`, `unknown hook event ${event}`));
 };
 
 cmds.plan = (a) => {
   const sub = a._[0];
   if (sub === 'new') {
     const cur = readPlan(false);
-    if (planActive(cur) && !a.force) die(`활성 플랜 ${cur.header.id} ${cur.header.version} 존재, 완료 후 진행하거나 --force 로 보관 후 생성`);
-    if (cur) { const dest = archivePlan(cur); addEvent('archive', dest); out(`[DOMANGCHA] 기존 플랜 보관 ${dest}`); }
+    if (planActive(cur) && !a.force) die(L(`활성 플랜 ${cur.header.id} ${cur.header.version} 존재, 완료 후 진행하거나 --force 로 보관 후 생성`, `plan ${cur.header.id} ${cur.header.version} is still active; finish it or pass --force to archive and start a new one`));
+    if (cur) { const dest = archivePlan(cur); addEvent('archive', dest); out(`[DOMANGCHA] ${L('기존 플랜 보관', 'archived previous plan')} ${dest}`); }
     const n = q1('SELECT COUNT(DISTINCT plan_id) AS c FROM plan_versions').c;
     const planId = `P${pad(n + 1)}`;
-    const tpl = fs.existsSync(TEMPLATE_PATH) ? fs.readFileSync(TEMPLATE_PATH, 'utf8') : DEFAULT_TEMPLATE;
+    const tpl = fs.existsSync(TEMPLATE_PATH) ? fs.readFileSync(TEMPLATE_PATH, 'utf8') : DEFAULT_TEMPLATE();
     const vars = {
-      project: getSetting('project_name'), title: a.title || '(제목)', plan_id: planId,
+      project: getSetting('project_name'), title: a.title || L('(제목)', '(title)'), plan_id: planId,
       instruction: a.instruction || '(지시 ID)', target: a.target || '(목표 버전)', date: today(),
       cmd_typecheck: getSetting('cmd_typecheck'), cmd_test: getSetting('cmd_test'), cmd_build: getSetting('cmd_build'),
     };
@@ -617,51 +810,51 @@ cmds.plan = (a) => {
     setSetting('current_item', '');
     snapshot('instruction', a.instruction || null);
     addEvent('plan_new', planId);
-    out(`[DOMANGCHA] 플랜 ${planId} 생성 ${path.relative(ROOT, PLAN_PATH)}, 항목 작성 후 plan check 실행`);
+    out(`[DOMANGCHA] ${L(`플랜 ${planId} 생성`, `plan ${planId} created`)} ${path.relative(ROOT, PLAN_PATH)}, ${L('항목 작성 후 plan check 실행', 'write the items then run plan check')}`);
     return;
   }
   const p = readPlan();
   if (sub === 'check') {
     const problems = [];
-    if (!p.items.length) problems.push('항목 없음');
-    if (!/^v\d+\.\d+\.\d+$/.test(p.header.target || '')) problems.push('목표 버전 형식 오류 (v0.0.0)');
-    if (/\(제목\)|\(지시 ID\)|\(목표 버전\)|\(항목 제목\)/.test(p.text)) problems.push('템플릿 자리표시자 잔존');
+    if (!p.items.length) problems.push(L('항목 없음', 'no items'));
+    if (!/^v\d+\.\d+\.\d+$/.test(p.header.target || '')) problems.push(L('목표 버전 형식 오류 (v0.0.0)', 'target version must look like v0.0.0'));
+    if (/\(제목\)|\(지시 ID\)|\(목표 버전\)|\(항목 제목\)/.test(p.text)) problems.push(L('템플릿 자리표시자 잔존', 'template placeholders still present'));
     const seen = new Set();
     for (const it of p.items) {
-      if (seen.has(it.id)) problems.push(`${it.id} 중복`); seen.add(it.id);
-      if (!/^범위:\s*\S/m.test(it.block)) problems.push(`${it.id} 범위 없음`);
-      const crit = (it.block.split(/^감사 기준:\s*$/m)[1] || '').split(/^(?![-\s])\S/m)[0];
+      if (seen.has(it.id)) problems.push(`${it.id} ${L('중복', 'is duplicated')}`); seen.add(it.id);
+      if (!new RegExp('^' + FRE('scope') + ':\\s*\\S', 'm').test(it.block)) problems.push(`${it.id} ${L('범위 없음', 'has no scope')}`);
+      const crit = (it.block.split(new RegExp('^' + FRE('criteria') + ':\\s*$', 'm'))[1] || '').split(/^(?![-\s])\S/m)[0];
       const n = (crit.match(/^- \S/gm) || []).length;
-      if (n < 1) problems.push(`${it.id} 감사 기준 없음`);
-      if (/\(명령과 기대 결과|\(관측 가능한 조건/.test(it.block)) problems.push(`${it.id} 감사 기준 자리표시자 잔존`);
-      const dep = (it.block.match(/^의존:\s*(.+)$/m) || [])[1];
-      if (dep && dep !== '없음') for (const d of dep.split(/[,\s]+/).filter(Boolean)) if (!p.items.some((x) => x.id === d)) problems.push(`${it.id} 의존 ${d} 없음`);
+      if (n < 1) problems.push(`${it.id} ${L('감사 기준 없음', 'has no audit criteria')}`);
+      if (/\(명령과 기대 결과|\(관측 가능한 조건|\(a command and its expected result|\(an observable condition/.test(it.block)) problems.push(`${it.id} ${L('감사 기준 자리표시자 잔존', 'still has audit-criteria placeholders')}`);
+      const dep = (it.block.match(new RegExp('^' + FRE('depends') + ':\\s*(.+)$', 'm')) || [])[1];
+      if (dep && !isNone(dep)) for (const d of dep.split(/[,\s]+/).filter(Boolean)) if (!p.items.some((x) => x.id === d)) problems.push(`${it.id} ${L(`의존 ${d} 없음`, `depends on ${d}, which does not exist`)}`);
     }
-    if (problems.length) { out('[DOMANGCHA] 플랜 점검 실패'); problems.forEach((x) => out('- ' + x)); process.exit(2); }
-    out(`[DOMANGCHA] 플랜 점검 통과, 항목 ${p.items.length}개${flag('plan_confirm') ? ', 사용자 확인 후 plan confirm 실행' : ', plan confirm 실행 후 착수'}`);
+    if (problems.length) { out(L('[DOMANGCHA] 플랜 점검 실패', '[DOMANGCHA] plan check failed')); problems.forEach((x) => out('- ' + x)); process.exit(2); }
+    out(`[DOMANGCHA] ${L('플랜 점검 통과, 항목', 'plan check passed, items')} ${p.items.length}${flag('plan_confirm') ? L(', 사용자 확인 후 plan confirm 실행', '; get the user\'s confirmation, then plan confirm') : L(', plan confirm 실행 후 착수', '; run plan confirm and start')}`);
     return;
   }
   if (sub === 'confirm') {
-    setPlanStatus(p, '진행중');
-    if (gitAvailable() && !/^시작 커밋:/m.test(p.text)) {
-      try { const h = sh('git rev-parse --short HEAD'); const t = readPlanText(); writePlan(t.replace(/^(작성:.*)$/m, `$1\n시작 커밋: ${h}`)); } catch { /* 커밋 없음 */ }
+    setPlanStatus(p, W(PLAN_STATUS, 'active'));
+    if (gitAvailable() && !new RegExp('^' + FRE('startCommit') + ':', 'm').test(p.text)) {
+      try { const h = sh('git rev-parse --short HEAD'); const t = readPlanText(); writePlan(t.replace(new RegExp('^(' + FRE('written') + ':.*)$', 'm'), `$1\n${F('startCommit')}: ${h}`)); } catch { /* 커밋 없음 */ }
     }
     run("UPDATE interventions SET effect = 'plan_review', resulting_plan_version = ? WHERE plan_id = ? AND item_id IS NULL AND effect IS NULL AND resulting_plan_version IS NULL", p.header.version, p.header.id);
     snapshot('confirm', a.ref || null);
     addEvent('plan_confirm', p.header.id);
-    out(`[DOMANGCHA] 플랜 ${p.header.id} ${p.header.version} 진행중, 첫 항목은 start ${nextItem(readPlan()).id}`);
+    out(`[DOMANGCHA] ${L(`플랜 ${p.header.id} ${p.header.version} 진행중, 첫 항목은`, `plan ${p.header.id} ${p.header.version} is active; first item`)} start ${nextItem(readPlan()).id}`);
     return;
   }
   if (sub === 'revise') {
     const level = a.level || 'patch';
     const v = bumpVersion(p.header.version, level);
-    const note = a.note || '(변경 사유 없음)';
+    const note = a.note || L('(변경 사유 없음)', '(no reason given)');
     const ref = a.ref || null;
-    let text = p.text.replace(/^플랜 버전:.*$/m, `플랜 버전: ${v}`);
-    const histIdx = text.lastIndexOf('## 변경 이력');
+    let text = p.text.replace(new RegExp('^' + FRE('planVersion') + ':.*$', 'm'), `${F('planVersion')}: ${v}`);
+    const histIdx = sectionIndex(text, 'history', true);
     const line = `- ${v} (${today()}) ${note}${ref ? ' (' + ref + ')' : ''}`;
     if (histIdx >= 0) text = text.trimEnd() + '\n' + line + '\n';
-    else text = text.trimEnd() + '\n\n## 변경 이력\n' + line + '\n';
+    else text = text.trimEnd() + `\n\n${SEC('history')}\n` + line + '\n';
     writePlan(text);
     const trigger = ref && ref.startsWith('iv_') ? 'intervention' : ref && ref.startsWith('audit:') ? 'audit' : 'manual';
     snapshot(trigger, ref);
@@ -669,47 +862,47 @@ cmds.plan = (a) => {
     if (ref && ref.startsWith('audit:')) {
       const itemId = ref.slice(6);
       const c = q1("SELECT COUNT(*) AS c FROM plan_versions WHERE plan_id = ? AND trigger = 'audit' AND trigger_ref = ?", p.header.id, ref).c;
-      if (c >= num('max_plan_revisions_per_item')) out(`[DOMANGCHA] 주의: ${itemId} 감사 기인 플랜 갱신 ${c}회, 한계 ${num('max_plan_revisions_per_item')}회 도달, 사용자 판단 요청 권고`);
+      if (c >= num('max_plan_revisions_per_item')) out(`[DOMANGCHA] ${L(`주의: ${itemId} 감사 기인 플랜 갱신 ${c}회, 한계 ${num('max_plan_revisions_per_item')}회 도달, 사용자 판단 요청 권고`, `warning: ${c} plan revisions caused by ${itemId}, limit ${num('max_plan_revisions_per_item')} reached; ask the user to decide`)}`);
     }
-    out(`[DOMANGCHA] 플랜 ${p.header.id} ${p.header.version} -> ${v} (${trigger})`);
+    out(`[DOMANGCHA] ${L('플랜', 'plan')} ${p.header.id} ${p.header.version} -> ${v} (${trigger})`);
     return;
   }
-  if (sub === 'snapshot') { const r = snapshot(a.trigger || 'manual', a.ref || null); out(`[DOMANGCHA] 스냅샷 ${r.skipped ? '변경 없음' : '저장'} ${r.version}`); return; }
-  if (sub === 'next') { const nx = nextItem(p); out(nx ? nx.block : '[DOMANGCHA] 대기 항목 없음'); return; }
+  if (sub === 'snapshot') { const r = snapshot(a.trigger || 'manual', a.ref || null); out(`[DOMANGCHA] ${L('스냅샷', 'snapshot')} ${r.skipped ? L('변경 없음', 'unchanged') : L('저장', 'saved')} ${r.version}`); return; }
+  if (sub === 'next') { const nx = nextItem(p); out(nx ? nx.block : L('[DOMANGCHA] 대기 항목 없음', '[DOMANGCHA] no pending items')); return; }
   if (sub === 'abort') {
-    setPlanStatus(p, '중단');
+    setPlanStatus(p, W(PLAN_STATUS, 'aborted'));
     snapshot('abort', a.ref || null);
     const dest = archivePlan(readPlan());
     setSetting('current_item', '');
     addEvent('archive', dest);
-    out(`[DOMANGCHA] 플랜 중단, 보관 ${dest}`);
+    out(`[DOMANGCHA] ${L('플랜 중단, 보관', 'plan aborted, archived')} ${dest}`);
     return;
   }
-  die('plan 하위 명령: new | check | confirm | revise | snapshot | next | abort');
+  die(L('plan 하위 명령: new | check | confirm | revise | snapshot | next | abort', 'plan subcommands: new | check | confirm | revise | snapshot | next | abort'));
 };
 
 cmds.start = (a) => {
-  const id = a._[0]; if (!id) die('항목 ID 필요');
+  const id = a._[0]; if (!id) die(L('항목 ID 필요', 'item id required'));
   const p = readPlan();
-  if (!planActive(p) || statusKey(p.header.status) !== '진행중') die(`플랜 상태 ${p.header.status}, plan confirm 후 착수`);
-  const it = p.items.find((x) => x.id === id); if (!it) die(`항목 ${id} 없음`);
-  if (statusKey(it.status) === '통과' && !a.force) die(`${id} 이미 통과, 재작업은 --force`);
-  const blocked = p.items.filter((x) => statusKey(x.status) === '진행중' && x.id !== id);
-  if (blocked.length && !a.force) die(`진행중 항목 ${blocked.map((x) => x.id).join(',')} 존재, 먼저 pass/fail/hold 처리`);
-  const dep = (it.block.match(/^의존:\s*(.+)$/m) || [])[1];
-  if (dep && dep !== '없음') {
-    const unmet = dep.split(/[,\s]+/).filter(Boolean).filter((d) => { const x = p.items.find((y) => y.id === d); return !x || statusKey(x.status) !== '통과'; });
-    if (unmet.length && !a.force) die(`${id} 의존 미충족 ${unmet.join(',')}`);
+  if (!planActive(p) || planStatusKey(p.header.status) !== 'active') die(L(`플랜 상태 ${p.header.status}, plan confirm 후 착수`, `plan status is ${p.header.status}; run plan confirm before starting`));
+  const it = p.items.find((x) => x.id === id); if (!it) die(L(`항목 ${id} 없음`, `item ${id} does not exist`));
+  if (statusKey(it.status) === 'passed' && !a.force) die(L(`${id} 이미 통과, 재작업은 --force`, `${id} already passed; pass --force to redo it`));
+  const blocked = p.items.filter((x) => statusKey(x.status) === 'active' && x.id !== id);
+  if (blocked.length && !a.force) die(L(`진행중 항목 ${blocked.map((x) => x.id).join(',')} 존재, 먼저 pass/fail/hold 처리`, `items ${blocked.map((x) => x.id).join(',')} are still active; pass, fail or hold them first`));
+  const dep = (it.block.match(new RegExp('^' + FRE('depends') + ':\\s*(.+)$', 'm')) || [])[1];
+  if (dep && !isNone(dep)) {
+    const unmet = dep.split(/[,\s]+/).filter(Boolean).filter((d) => { const x = p.items.find((y) => y.id === d); return !x || statusKey(x.status) !== 'passed'; });
+    if (unmet.length && !a.force) die(L(`${id} 의존 미충족 ${unmet.join(',')}`, `${id} has unmet dependencies: ${unmet.join(',')}`));
   }
   const attempt = q1('SELECT COUNT(*) AS c FROM implementations WHERE plan_id = ? AND item_id = ?', p.header.id, id).c + 1;
   run('INSERT INTO implementations(plan_id, plan_version, item_id, attempt, audit_result, started_at) VALUES (?,?,?,?,?,?)', p.header.id, p.header.version, id, attempt, 'started', now());
-  setItemStatus(p, id, '진행중');
+  setItemStatus(p, id, W(ITEM_STATUS, 'active'));
   setSetting('current_item', id);
   run("UPDATE interventions SET effect = 'plan_review' WHERE plan_id = ? AND item_id IS NULL AND effect IS NULL AND resulting_plan_version IS NULL", p.header.id);
   snapshot('status', `start:${id}`);
-  out(`[DOMANGCHA] ${id} 착수 (시도 ${attempt}/${num('max_audit_retries')})${it.mode.startsWith('중량') ? ', 중량 모드: ' + getSetting('heavy_doc') + ' 규정 적용' : ''}`);
+  out(`[DOMANGCHA] ${id} ${L('착수', 'started')} (${L('시도', 'attempt')} ${attempt}/${num('max_audit_retries')})${modeKey(it.mode) === 'heavy' ? L(', 중량 모드: ' + getSetting('heavy_doc') + ' 규정 적용', ', heavy mode: apply the rules in ' + getSetting('heavy_doc')) : ''}`);
   out(readPlan().items.find((x) => x.id === id).block);
-  out(`[DOMANGCHA] 감사 명령 typecheck=${getSetting('cmd_typecheck')}, test=${getSetting('cmd_test')}`);
+  out(`[DOMANGCHA] ${L('감사 명령', 'audit commands')} typecheck=${getSetting('cmd_typecheck')}, test=${getSetting('cmd_test')}`);
 };
 
 function latestImpl(planId, itemId) {
@@ -717,18 +910,18 @@ function latestImpl(planId, itemId) {
 }
 
 cmds.pass = (a) => {
-  const id = a._[0]; if (!id) die('항목 ID 필요');
-  if (!a.summary) die('--summary "어떻게 구현했는지" 필수');
+  const id = a._[0]; if (!id) die(L('항목 ID 필요', 'item id required'));
+  if (!a.summary) die(L('--summary "어떻게 구현했는지" 필수', '--summary "what you implemented" is required'));
   const p = readPlan();
-  const it = p.items.find((x) => x.id === id); if (!it) die(`항목 ${id} 없음`);
-  const row = latestImpl(p.header.id, id); if (!row || row.audit_result !== 'started') die(`${id} 착수 기록 없음, start ${id} 먼저`);
+  const it = p.items.find((x) => x.id === id); if (!it) die(L(`항목 ${id} 없음`, `item ${id} does not exist`));
+  const row = latestImpl(p.header.id, id); if (!row || row.audit_result !== 'started') die(L(`${id} 착수 기록 없음, start ${id} 먼저`, `no start record for ${id}; run start ${id} first`));
   const files = a.files ? String(a.files).split(',').map((s) => s.trim()).filter(Boolean) : changedFiles();
   let commitHash = null; let commitNote = '';
   if (flag('auto_commit') && !a['no-commit']) {
-    setItemStatus(p, id, '통과');
+    setItemStatus(p, id, W(ITEM_STATUS, 'passed'));
     const r = gitCommit(`${p.header.target}-${id}: ${it.title}`);
-    if (r.hash) { commitHash = r.hash; commitNote = `, 커밋 ${r.hash}`; } else commitNote = `, 커밋 생략 (${r.skipped})`;
-  } else setItemStatus(p, id, '통과');
+    if (r.hash) { commitHash = r.hash; commitNote = `, ${L('커밋', 'commit')} ${r.hash}`; } else commitNote = `, ${L('커밋 생략', 'commit skipped')} (${r.skipped})`;
+  } else setItemStatus(p, id, W(ITEM_STATUS, 'passed'));
   run('UPDATE implementations SET summary = ?, files = ?, audit_result = ?, audit_notes = ?, commit_hash = ?, finished_at = ? WHERE id = ?',
     a.summary, JSON.stringify(files), 'pass', a.notes || null, commitHash, now(), row.id);
   run("UPDATE interventions SET effect = 'absorbed' WHERE plan_id = ? AND item_id = ? AND effect IS NULL AND resulting_plan_version IS NULL", p.header.id, id);
@@ -736,59 +929,59 @@ cmds.pass = (a) => {
   snapshot('status', `pass:${id}`);
   const p2 = readPlan(); const c = counts(p2); const nx = nextItem(p2);
   const k = passesThisSession(); const every = num('checkpoint_every');
-  out(`[DOMANGCHA] ${id} 통과 (${c.통과}/${p2.items.length})${commitNote}, 이번 컨텍스트 통과 ${k}개`);
-  out(nx ? `[DOMANGCHA] 다음 항목 ${nx.id} ${nx.title}` : '[DOMANGCHA] 대기 항목 없음, 종합 감사 단계 (final)');
-  if (k >= every && nx) out(`[DOMANGCHA] 체크포인트: 플랜 ${p2.header.version} 저장됨, 여기서 /clear 후 재개 권장 (checkpoint_every=${every})`);
+  out(`[DOMANGCHA] ${id} ${L('통과', 'passed')} (${c.passed}/${p2.items.length})${commitNote}, ${L('이번 컨텍스트 통과', 'passed this context')} ${k}`);
+  out(nx ? `[DOMANGCHA] ${L('다음 항목', 'next item')} ${nx.id} ${nx.title}` : L('[DOMANGCHA] 대기 항목 없음, 종합 감사 단계 (final)', '[DOMANGCHA] no pending items; final audit stage (final)'));
+  if (k >= every && nx) out(`[DOMANGCHA] ${L(`체크포인트: 플랜 ${p2.header.version} 저장됨, 여기서 /clear 후 재개 권장 (checkpoint_every=${every})`, `checkpoint: plan ${p2.header.version} saved; a /clear here and resume is recommended (checkpoint_every=${every})`)}`);
 };
 
 cmds.fail = (a) => {
-  const id = a._[0]; if (!id) die('항목 ID 필요');
-  if (!a.reason) die('--reason 필수');
+  const id = a._[0]; if (!id) die(L('항목 ID 필요', 'item id required'));
+  if (!a.reason) die(L('--reason 필수', '--reason is required'));
   const p = readPlan();
-  const row = latestImpl(p.header.id, id); if (!row || row.audit_result !== 'started') die(`${id} 착수 기록 없음`);
+  const row = latestImpl(p.header.id, id); if (!row || row.audit_result !== 'started') die(L(`${id} 착수 기록 없음`, `no start record for ${id}`));
   run('UPDATE implementations SET audit_result = ?, audit_notes = ?, files = ?, finished_at = ? WHERE id = ?', 'fail', a.reason, JSON.stringify(changedFiles()), now(), row.id);
   const limit = num('max_audit_retries');
-  out(`[DOMANGCHA] ${id} 감사 실패 (시도 ${row.attempt}/${limit}): ${a.reason}`);
-  if (row.attempt >= limit) out(`[DOMANGCHA] 재시도 한계 도달, hold ${id} --reason 로 보류하고 사용자 판단 요청`);
-  else out(`[DOMANGCHA] 수정 후 start ${id} 로 재착수 (플랜 갱신이 필요하면 먼저 plan revise --ref audit:${id})`);
+  out(`[DOMANGCHA] ${id} ${L('감사 실패 (시도', 'audit failed (attempt')} ${row.attempt}/${limit}): ${a.reason}`);
+  if (row.attempt >= limit) out(L(`[DOMANGCHA] 재시도 한계 도달, hold ${id} --reason 로 보류하고 사용자 판단 요청`, `[DOMANGCHA] retry limit reached; hold ${id} --reason and ask the user to decide`));
+  else out(L(`[DOMANGCHA] 수정 후 start ${id} 로 재착수 (플랜 갱신이 필요하면 먼저 plan revise --ref audit:${id})`, `[DOMANGCHA] fix it and run start ${id} again (if the plan itself must change, plan revise --ref audit:${id} first)`));
   const fails = q1("SELECT COUNT(*) AS c FROM implementations WHERE plan_id = ? AND item_id = ? AND audit_result = 'fail'", p.header.id || '', id).c;
   const promote = num('policy_promote_after');
   if (fails >= promote) {
-    out(`[DOMANGCHA] 자체감사: ${id} 감사 실패 ${fails}회 누적 (승격 기준 ${promote}회), 같은 실수가 반복되고 있음`);
-    out(`[DOMANGCHA] 원인이 이 항목 밖에서도 재발할 일반 규칙이면 policy add --title "짧은 제목" --rule "무엇을 하지 말고 무엇을 할 것" --origin audit:${id} 로 정책에 기록할 것`);
-    out('[DOMANGCHA] 이 항목 한정 실수면 정책으로 올리지 말고 수정만 할 것');
+    out(`[DOMANGCHA] ${L(`자체감사: ${id} 감사 실패 ${fails}회 누적 (승격 기준 ${promote}회), 같은 실수가 반복되고 있음`, `self-audit: ${id} has failed ${fails} times (promotion threshold ${promote}); the same mistake is repeating`)}`);
+    out(`[DOMANGCHA] ${L(`원인이 이 항목 밖에서도 재발할 일반 규칙이면 policy add --title "짧은 제목" --rule "무엇을 하지 말고 무엇을 할 것" --origin audit:${id} 로 정책에 기록할 것`, `if the cause is a general rule that would recur elsewhere, record it: policy add --title "short title" --rule "what not to do and what to do instead" --origin audit:${id}`)}`);
+    out(L('[DOMANGCHA] 이 항목 한정 실수면 정책으로 올리지 말고 수정만 할 것', '[DOMANGCHA] if it is specific to this item, just fix it and do not promote a policy'));
   }
 };
 
 cmds.hold = (a) => {
-  const id = a._[0]; if (!id) die('항목 ID 필요');
-  if (!a.reason) die('--reason 필수');
+  const id = a._[0]; if (!id) die(L('항목 ID 필요', 'item id required'));
+  if (!a.reason) die(L('--reason 필수', '--reason is required'));
   const p = readPlan();
   const row = latestImpl(p.header.id, id);
   if (row && row.audit_result === 'started') run('UPDATE implementations SET audit_result = ?, audit_notes = ?, finished_at = ? WHERE id = ?', 'hold', a.reason, now(), row.id);
-  setItemStatus(p, id, `보류 (${a.reason})`);
+  setItemStatus(p, id, `${W(ITEM_STATUS, 'held')} (${a.reason})`);
   setSetting('current_item', '');
   snapshot('status', `hold:${id}`);
-  out(`[DOMANGCHA] ${id} 보류: ${a.reason}, 사용자 판단 대기`);
+  out(`[DOMANGCHA] ${id} ${L('보류', 'held')}: ${a.reason}, ${L('사용자 판단 대기', 'waiting on the user')}`);
 };
 
 cmds.checkpoint = (a) => {
   const r = snapshot('checkpoint', a.note || null);
   addEvent('checkpoint', a.note || null);
   const p = readPlan(false);
-  out(`[DOMANGCHA] 체크포인트 ${r ? r.version : '(플랜 없음)'} ${r && !r.skipped ? '스냅샷 저장' : '변경 없음'}, 이번 컨텍스트 통과 ${passesThisSession()}개${p ? ', 다음 ' + (nextItem(p) ? nextItem(p).id : '없음') : ''}`);
+  out(`[DOMANGCHA] ${L('체크포인트', 'checkpoint')} ${r ? r.version : L('(플랜 없음)', '(no plan)')} ${r && !r.skipped ? L('스냅샷 저장', 'snapshot saved') : L('변경 없음', 'unchanged')}, ${L('이번 컨텍스트 통과', 'passed this context')} ${passesThisSession()}${p ? ', ' + L('다음', 'next') + ' ' + (nextItem(p) ? nextItem(p).id : L('없음', 'none')) : ''}`);
 };
 
 cmds.final = (a) => {
-  const result = a.result; if (!['pass', 'fail'].includes(result)) die('--result pass|fail 필수');
-  if (!a.summary) die('--summary 필수');
+  const result = a.result; if (!['pass', 'fail'].includes(result)) die(L('--result pass|fail 필수', '--result pass|fail is required'));
+  if (!a.summary) die(L('--summary 필수', '--summary is required'));
   const p = readPlan();
-  const open = p.items.filter((x) => !['통과', '취소'].includes(statusKey(x.status)));
-  if (open.length && result === 'pass') die(`미완 항목 ${open.map((x) => x.id).join(',')} 존재, 종합 감사 통과 불가`);
-  if (/\(전 항목 통과 후 기록\)/.test(p.text)) die('PLAN.md 종합 감사 절에 결과 기록 후 실행 (자리표시자 잔존)');
+  const open = p.items.filter((x) => !['passed', 'cancelled'].includes(statusKey(x.status)));
+  if (open.length && result === 'pass') die(L(`미완 항목 ${open.map((x) => x.id).join(',')} 존재, 종합 감사 통과 불가`, `items ${open.map((x) => x.id).join(',')} are unfinished; the final audit cannot pass`));
+  if (/\(전 항목 통과 후 기록\)|\(recorded after every item passes\)/.test(p.text)) die(L('PLAN.md 종합 감사 절에 결과 기록 후 실행 (자리표시자 잔존)', 'record the result in the PLAN.md final-audit section first (placeholder still present)'));
   addEvent('final_audit', `${result}: ${a.summary}`);
-  if (result === 'fail') { snapshot('final', 'fail'); out(`[DOMANGCHA] 종합 감사 실패 기록: ${a.summary}, 보완 항목을 plan revise 로 추가 후 계속`); return; }
-  setPlanStatus(p, '완료');
+  if (result === 'fail') { snapshot('final', 'fail'); out(`[DOMANGCHA] ${L(`종합 감사 실패 기록: ${a.summary}, 보완 항목을 plan revise 로 추가 후 계속`, `final audit recorded as failed: ${a.summary}; add the remedial items with plan revise and return to section 2`)}`); return; }
+  setPlanStatus(p, W(PLAN_STATUS, 'done'));
   snapshot('final', 'pass');
   const target = p.header.target;
   const pkg = path.join(ROOT, 'package.json');
@@ -802,9 +995,9 @@ cmds.final = (a) => {
   if (flag('auto_commit')) {
     const r = gitCommit(`${target}: ${p.header.title}`);
     note = r.hash ? `, 커밋 ${r.hash}` : `, 커밋 생략 (${r.skipped})`;
-    if (r.hash && flag('auto_tag')) note += gitTag(target) ? `, 태그 ${target}` : ', 태그 실패';
+    if (r.hash && flag('auto_tag')) note += gitTag(target) ? `, ${L('태그', 'tag')} ${target}` : L(', 태그 실패', ', tag failed');
   }
-  out(`[DOMANGCHA] 플랜 ${p.header.id} 완료 ${target}${note}, 보관 ${dest}`);
+  out(`[DOMANGCHA] ${L('플랜', 'plan')} ${p.header.id} ${L('완료', 'done')} ${target}${note}, ${L('보관', 'archived')} ${dest}`);
 };
 
 cmds.mark = (a) => {
@@ -827,7 +1020,14 @@ cmds.history = (a) => {
 
 cmds.config = (a) => {
   const sub = a._[0];
-  if (sub === 'set') { if (!a._[1] || a._[2] === undefined) die('config set <key> <value>'); setSetting(a._[1], a._[2]); out(`${a._[1]}=${a._[2]}`); return; }
+  if (sub === 'set') {
+    if (!a._[1] || a._[2] === undefined) die('config set <key> <value>');
+    if (a._[1] === 'lang' && !LANGS.includes(String(a._[2]))) die(`lang ${LANGS.join('|')}`);
+    setSetting(a._[1], a._[2]);
+    if (a._[1] === 'lang') { _lang = null; out(`lang=${a._[2]}${retemplate()}`); return; }
+    out(`${a._[1]}=${a._[2]}`);
+    return;
+  }
   if (sub === 'get') { out(String(getSetting(a._[1]) ?? '')); return; }
   const rows = q('SELECT key, value FROM settings ORDER BY key');
   const merged = { ...DEFAULT_SETTINGS }; for (const r of rows) merged[r.key] = r.value;
@@ -841,7 +1041,7 @@ cmds.export = () => {
     const rows = q(`SELECT * FROM ${t}`);
     fs.writeFileSync(path.join(dir, `${t}.jsonl`), rows.map((r) => JSON.stringify(r)).join('\n') + (rows.length ? '\n' : ''));
   }
-  out(`[DOMANGCHA] 내보내기 완료 ${path.relative(ROOT, dir)}`);
+  out(`[DOMANGCHA] ${L('내보내기 완료', 'exported')} ${path.relative(ROOT, dir)}`);
 };
 
 cmds.policy = (a) => {
@@ -849,53 +1049,73 @@ cmds.policy = (a) => {
   const p = readPlan(false);
   if (sub === 'list' || sub === 'check') {
     const active = activePolicies();
-    if (!active.length) { out('[DOMANGCHA] 활성 정책 없음, 같은 감사 실패가 반복되면 policy add 로 승격'); return; }
-    out(`[DOMANGCHA] 활성 정책 ${active.length}건 — 자가감사 3-g 대조 목록`);
-    for (const r of active) out(`  ${r.id} ${r.title}\n    규칙: ${r.rule}\n    근거: ${r.origin || '없음'} · 위반 ${policyHits(r.id)}회`);
-    if (sub === 'check') out('[DOMANGCHA] 각 줄을 이번 변경분에 대조하고 위반 시 policy hit P00x --note "무엇을 어겼는지" 기록');
+    if (!active.length) { out(L('[DOMANGCHA] 활성 정책 없음, 같은 감사 실패가 반복되면 policy add 로 승격', '[DOMANGCHA] no active policies; a repeated audit failure gets promoted with policy add')); return; }
+    out(`[DOMANGCHA] ${L(`활성 정책 ${active.length}건 — 자가감사 3-g 대조 목록`, `${active.length} active ${active.length === 1 ? 'policy' : 'policies'} — the self-audit 3-g checklist`)}`);
+    for (const r of active) out(`  ${r.id} ${r.title}\n    ${L('규칙', 'rule')}: ${r.rule}\n    ${L('근거', 'origin')}: ${r.origin || L('없음', 'none')} · ${L('위반', 'breaches')} ${policyHits(r.id)}`);
+    if (sub === 'check') out(L('[DOMANGCHA] 각 줄을 이번 변경분에 대조하고 위반 시 policy hit P00x --note "무엇을 어겼는지" 기록', '[DOMANGCHA] check every line against this change and record a breach with policy hit P00x --note "what you broke"'));
     return;
   }
   if (sub === 'add') {
-    if (!a.title) die('--title "정책 제목" 필수');
-    if (!a.rule) die('--rule "무엇을 하지 말고 무엇을 할 것" 필수');
+    if (!a.title) die(L('--title "정책 제목" 필수', '--title "policy title" is required'));
+    if (!a.rule) die(L('--rule "무엇을 하지 말고 무엇을 할 것" 필수', '--rule "what not to do and what to do instead" is required'));
     const id = 'P' + String(q1('SELECT COUNT(*) AS c FROM policies').c + 1).padStart(3, '0');
     run('INSERT INTO policies(id, title, rule, origin, status, created_at) VALUES (?,?,?,?,?,?)',
       id, a.title, a.rule, a.origin || null, 'active', now());
     renderPolicyFile();
     addEvent('policy_add', `${id} ${a.title}`);
-    out(`[DOMANGCHA] 정책 ${id} 기록: ${a.title}`);
-    out(`[DOMANGCHA] 규칙: ${a.rule}`);
-    out('[DOMANGCHA] .loop/POLICY.md 갱신됨, 이후 모든 항목 자가감사 3-g 와 프롬프트 훅에서 자동 재주입');
+    out(`[DOMANGCHA] ${L('정책', 'policy')} ${id} ${L('기록', 'recorded')}: ${a.title}`);
+    out(`[DOMANGCHA] ${L('규칙', 'rule')}: ${a.rule}`);
+    out(L('[DOMANGCHA] .loop/POLICY.md 갱신됨, 이후 모든 항목 자가감사 3-g 와 프롬프트 훅에서 자동 재주입', '[DOMANGCHA] .loop/POLICY.md updated; it is re-injected in every later self-audit 3-g and prompt hook'));
     return;
   }
   if (sub === 'hit') {
-    const id = a._[0]; if (!id) die('정책 ID 필요 (예: policy hit P001)');
+    const id = a._[0]; if (!id) die(L('정책 ID 필요 (예: policy hit P001)', 'policy id required (e.g. policy hit P001)'));
     const row = q1("SELECT * FROM policies WHERE id = ? AND status = 'active'", id);
-    if (!row) die(`활성 정책 ${id} 없음, policy list 확인`);
+    if (!row) die(L(`활성 정책 ${id} 없음, policy list 확인`, `no active policy ${id}; check policy list`));
     run('INSERT INTO policy_hits(policy_id, plan_id, plan_version, item_id, note, created_at) VALUES (?,?,?,?,?,?)',
       id, p ? p.header.id : null, p ? p.header.version : null, currentItem() || null, a.note || null, now());
     const c = policyHits(id);
     renderPolicyFile();
-    out(`[DOMANGCHA] 정책 위반 ${id} 기록 (누적 ${c}회): ${row.title}`);
+    out(`[DOMANGCHA] ${L(`정책 위반 ${id} 기록 (누적 ${c}회)`, `policy breach ${id} recorded (${c} total)`)}: ${row.title}`);
     const limit = num('policy_rewrite_after');
-    if (c >= limit) out(`[DOMANGCHA] 자체감사: ${id} 를 ${c}회 어겼음, 정책 문구가 실행 가능하지 않다는 뜻이므로 policy retire 후 더 구체적인 규칙으로 다시 add 할 것`);
+    if (c >= limit) out(`[DOMANGCHA] ${L(`자체감사: ${id} 를 ${c}회 어겼음, 정책 문구가 실행 가능하지 않다는 뜻이므로 policy retire 후 더 구체적인 규칙으로 다시 add 할 것`, `self-audit: ${id} has been broken ${c} times, so it is not written as something you can act on; policy retire it and add a more specific rule`)}`);
     return;
   }
   if (sub === 'retire') {
-    const id = a._[0]; if (!id) die('정책 ID 필요');
-    if (!a.reason) die('--reason 필수');
-    const row = q1("SELECT * FROM policies WHERE id = ?", id); if (!row) die(`정책 ${id} 없음`);
+    const id = a._[0]; if (!id) die(L('정책 ID 필요', 'policy id required'));
+    if (!a.reason) die(L('--reason 필수', '--reason is required'));
+    const row = q1("SELECT * FROM policies WHERE id = ?", id); if (!row) die(L(`정책 ${id} 없음`, `policy ${id} does not exist`));
     run("UPDATE policies SET status = 'retired', retired_at = ?, retired_reason = ? WHERE id = ?", now(), a.reason, id);
     renderPolicyFile();
     addEvent('policy_retire', `${id} ${a.reason}`);
-    out(`[DOMANGCHA] 정책 ${id} 폐기: ${a.reason}`);
+    out(`[DOMANGCHA] ${L('정책', 'policy')} ${id} ${L('폐기', 'retired')}: ${a.reason}`);
     return;
   }
-  die(`알 수 없는 policy 하위 명령 ${sub} (list|check|add|hit|retire)`);
+  die(L(`알 수 없는 policy 하위 명령 ${sub} (list|check|add|hit|retire)`, `unknown policy subcommand ${sub} (list|check|add|hit|retire)`));
 };
 
-cmds.help = () => out(`DOMANGCHA v${KIT_VERSION} — 경량 자율개발 루프 CLI
-  init [--project 이름] [--cursor]        .loop 초기화, 훅 병합, 레지스트리 등록
+cmds.help = () => out(EN() ? `DOMANGCHA v${KIT_VERSION} — project autonomous dev loop
+  init [--project NAME] [--lang ko|en] [--cursor]   set up .loop, merge hooks, register the project
+  status [--all]                          current plan state (--all covers every project)
+  resume                                  resume context (the SessionStart hook calls this)
+  plan new --title T --instruction ins_x --target vX.Y.Z [--force]
+  plan check | confirm | next | snapshot | abort
+  plan revise --level patch|minor --note "reason" --ref iv_x|audit:Ixx
+  start Ixx [--force]                     begin an item (status active, attempt +1)
+  pass Ixx --summary "what you built" [--files a,b] [--notes "audit evidence"] [--no-commit]
+  fail Ixx --reason "why it failed"
+  hold Ixx --reason "why it is blocked"
+  checkpoint [--note]                     snapshot and record a checkpoint
+  final --result pass|fail --summary "final audit summary"
+  mark iv_x --effect answer|scope_change|order_change|stop|note
+  policy list | check                     active policies (check is the self-audit 3-g list)
+  policy add --title T --rule R [--origin audit:Ixx|iv_x]   promote a repeated mistake
+  policy hit P00x [--note]                record a breach (repeats suggest a rewrite)
+  policy retire P00x --reason "reason"
+  history [--limit N] | config [set k v | get k] | export
+  hook session|prompt|edit|precompact     hook handlers (stdin JSON)
+  config set lang ko|en                   switch the language of every message and template` : `DOMANGCHA v${KIT_VERSION} — 프로젝트 자율개발 루프
+  init [--project 이름] [--lang ko|en] [--cursor]   .loop 초기화, 훅 병합, 레지스트리 등록
   status [--all]                          현재 플랜 상태 (--all 은 전 프로젝트)
   resume                                  재개용 컨텍스트 출력 (SessionStart 훅이 호출)
   plan new --title T --instruction ins_x --target vX.Y.Z [--force]
@@ -913,11 +1133,12 @@ cmds.help = () => out(`DOMANGCHA v${KIT_VERSION} — 경량 자율개발 루프 
   policy hit P00x [--note]                정책 위반 기록 (누적되면 정책 재작성 권고)
   policy retire P00x --reason "사유"
   history [--limit N] | config [set k v | get k] | export
-  hook session|prompt|edit|precompact     훅 핸들러 (stdin JSON)`);
+  hook session|prompt|edit|precompact     훅 핸들러 (stdin JSON)
+  config set lang ko|en                   모든 메시지와 템플릿의 언어 전환`);
 
 // ---------- 진입 ----------
 const argv = parseArgs(process.argv.slice(2));
 const cmd = argv._.shift() || 'help';
-if (!cmds[cmd]) { console.error(`[DOMANGCHA] 알 수 없는 명령 ${cmd}`); cmds.help(); process.exit(1); }
+if (!cmds[cmd]) { console.error(`[DOMANGCHA] unknown command / 알 수 없는 명령 ${cmd}`); cmds.help(); process.exit(1); }
 try { cmds[cmd](argv); }
-catch (e) { console.error('[DOMANGCHA] 오류: ' + (e && e.message ? e.message : e)); process.exit(1); }
+catch (e) { console.error('[DOMANGCHA] error / 오류: ' + (e && e.message ? e.message : e)); process.exit(1); }

@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // DOMANGCHA v3.0.0  bin/domangcha-loop.mjs
 // 경량 설치기: 현재 작업 디렉터리에 자율개발 루프를 설치한다.
-// 전역 18 에이전트 설치는 domangcha --full 이 담당하며 이 파일은 ~/.claude 를 건드리지 않는다.
+// 하네스 설치는 domangcha.sh 가 프로젝트 밖에서 판단해 맡으며, 이 파일은 ~/.claude 를 건드리지 않는다.
 
 import fs from 'node:fs';
 import path from 'node:path';
@@ -14,6 +14,15 @@ const TEMPLATES = path.join(PKG_ROOT, 'domangcha', 'loop', 'templates');
 const ROOT = process.cwd();
 const args = process.argv.slice(2);
 const has = (f) => args.includes(f);
+const optionValue = (f) => { const i = args.indexOf(f); return i >= 0 ? args[i + 1] : undefined; };
+const LANGS = ['ko', 'en'];
+const langArg = optionValue('--lang');
+if (langArg !== undefined && !LANGS.includes(langArg)) {
+  console.error(`[DOMANGCHA] --lang ${LANGS.join('|')}`);
+  process.exit(1);
+}
+const LANG = langArg || 'ko';
+const L = (ko, en) => (LANG === 'en' ? en : ko);
 
 const fail = (m) => { console.error(`[DOMANGCHA] ${m}`); process.exit(1); };
 const say = (m) => console.log(`[DOMANGCHA] ${m}`);
@@ -48,13 +57,13 @@ function copyAlways(rel) {
 }
 
 console.log('');
-console.log(`  DOMANGCHA v${VERSION} — 경량 자율개발 루프 설치`);
-console.log(`  대상: ${ROOT}`);
+console.log(`  DOMANGCHA v${VERSION} — ${L('프로젝트 자율개발 루프 설치', 'installing the project autonomous dev loop')}`);
+console.log(`  ${L('대상', 'target')}: ${ROOT}`);
 console.log('');
 
 if (!fs.existsSync(path.join(ROOT, '.git'))) {
   execSync('git init -q', { cwd: ROOT, stdio: 'ignore' });
-  say('git 저장소 초기화');
+  say(L('git 저장소 초기화', 'initialised a git repository'));
 }
 
 // 기존 CLAUDE.md 자동 이관 (기본 동작, --no-migrate 로 끔)
@@ -75,9 +84,14 @@ if (!has('--no-migrate') && fs.existsSync(claudeMd)) {
 
 copyAlways(path.join('scripts', 'loop.mjs')); // 항상 최신 CLI 로 갱신
 const placed = [];
+// 프로토콜 문서는 언어판이 따로 있고, 프로젝트에는 고른 판 하나만 놓는다.
+// The protocol documents ship per language; a project receives only the edition it chose.
+for (const [rel, source] of [['LOOP.md', LANG === 'en' ? 'LOOP.en.md' : 'LOOP.md'],
+                             ['CLAUDE.md', LANG === 'en' ? 'CLAUDE.en.md' : 'CLAUDE.md']]) {
+  const dest = path.join(ROOT, rel);
+  if (!fs.existsSync(dest)) { fs.copyFileSync(path.join(TEMPLATES, source), dest); placed.push(rel); }
+}
 for (const rel of [
-  'LOOP.md',
-  'CLAUDE.md',
   path.join('.claude', 'commands', 'plan.md'),
   path.join('.claude', 'commands', 'loop.md'),
   path.join('.claude', 'commands', 'policy.md'),
@@ -90,22 +104,24 @@ if (has('--agents')) {
     if (fs.lstatSync(dest, { throwIfNoEntry: false })) fs.rmSync(dest, { force: true });
     fs.symlinkSync('LOOP.md', dest);
   }
-  say('AGENTS.md, GEMINI.md 심볼릭 링크 생성 (Codex, Gemini CLI 용)');
+  say(L('AGENTS.md, GEMINI.md 심볼릭 링크 생성 (Codex, Gemini CLI 용)', 'symlinked AGENTS.md and GEMINI.md for Codex and Gemini CLI'));
 }
 
-say(`scripts/loop.mjs 갱신${placed.length ? `, 신규 ${placed.join(', ')}` : ', 기존 규정 파일 보존'}`);
-if (migrated) say(`기존 CLAUDE.md → ${migrated} 자동 이관 (LOOP.md 5절 중량 모드에서 읽음)`);
+say(`${L('scripts/loop.mjs 갱신', 'refreshed scripts/loop.mjs')}${placed.length ? L(`, 신규 ${placed.join(', ')}`, `, added ${placed.join(', ')}`) : L(', 기존 규정 파일 보존', ', kept your existing rule files')}`);
+if (migrated) say(L(`기존 CLAUDE.md → ${migrated} 자동 이관 (LOOP.md 5절 중량 모드에서 읽음)`, `moved your CLAUDE.md to ${migrated}, read back for heavy items (LOOP.md section 5)`));
 
 const name = path.basename(ROOT);
-execSync(`node scripts/loop.mjs init --project ${JSON.stringify(name)} --cursor`, { cwd: ROOT, stdio: 'inherit' });
+execSync(`node scripts/loop.mjs init --project ${JSON.stringify(name)} --lang ${LANG} --cursor`, { cwd: ROOT, stdio: 'inherit' });
 
 try {
   execSync('git add -A', { cwd: ROOT, stdio: 'ignore' });
-  execSync(`git commit -qm "v${VERSION}: DOMANGCHA 경량 루프 설치"`, { cwd: ROOT, stdio: 'ignore' });
+  execSync(`git commit -qm "v${VERSION}: DOMANGCHA 프로젝트 루프 설치"`, { cwd: ROOT, stdio: 'ignore' });
 } catch { /* 변경 없음 또는 git author 미설정, 무시 */ }
 
 console.log('');
-say(`설치 완료 · 프로젝트 ${name}`);
-say('다음 단계: Claude Code 를 열고 하고 싶은 일을 자연어로 그냥 말하면 됨 (슬래시 커맨드 불필요)');
-say('전체 18 에이전트 설치가 필요하면 npx domangcha --full');
+say(L(`설치 완료 · 프로젝트 ${name}`, `installed · project ${name}`));
+say(L('다음 단계: Claude Code 를 열고 하고 싶은 일을 자연어로 그냥 말하면 됨 (슬래시 커맨드 불필요)',
+  'next: open Claude Code and just say what you want in plain language, no slash command needed'));
+say(L('더 큰 작업은 /ceo 로 시작하면 하네스로 올라갑니다 (필요할 때 설치를 제안합니다)',
+  'start a bigger request with /ceo to raise it to the harness, which offers to install itself when needed'));
 console.log('');

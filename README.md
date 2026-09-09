@@ -12,8 +12,8 @@
 ### 🚗💨 DOMANGCHA — Adaptive Engineering for Claude Code & OpenAI Codex
 
 **Your coding agent is powerful. DOMANGCHA gives it the right amount of orchestration.**
-`npx domangcha` drops a plan-first autonomous loop into the project you are standing in.
-Need the full crew? `npx domangcha --full` installs all 18 specialists, DIRECT/LOOP/GRAPH routing, and the gates.
+One command, no install-mode flag: `npx domangcha` reads where you are and installs what that place needs.
+Plain language runs a plan-first loop; `/ceo` raises the same work to all 18 specialists.
 
 *Your AI getaway car from development hell.*
 
@@ -32,7 +32,7 @@ Need the full crew? `npx domangcha --full` installs all 18 specialists, DIRECT/L
 > *— Michael Dohyeon Kim, KDC CEO · builder of DOMANGCHA*
 
 ```bash
-# New in v3 — installs into THIS project, not your home directory
+# In a project it installs the loop here; outside one it installs the harness.
 npx domangcha
 ```
 
@@ -42,8 +42,8 @@ Build a Stripe invoicing tool for freelancers — invoices, email, paid/overdue 
 ```
 
 ```bash
-# Prefer the full 18-agent harness? It is unchanged, one flag away.
-npx domangcha --full
+# Want the 18-agent harness for one request? Ask for it. It installs itself if missing.
+/ceo "Refactor payments end to end and ship it"
 ```
 
 </div>
@@ -97,40 +97,51 @@ You press Enter
 
 ---
 
-## 🪶 Two install shapes
+## 🪶 One command, no install-mode flag
 
-v3 changes the default. `npx domangcha` no longer installs into your home directory —
-it installs a self-contained loop into the project you are standing in.
+v3 changes the default. `npx domangcha` no longer installs into your home directory as a matter of
+course — it reads where you are and installs what that place needs.
 
-| | `npx domangcha` (default) | `npx domangcha --full` |
+| Where you run it | What it installs | Cost |
 |---|---|---|
-| **Scope** | current project | `~/.claude`, `~/.domangcha` |
-| **Writes** | `LOOP.md`, `CLAUDE.md`, `scripts/loop.mjs`, `.claude/`, `.cursor/`, `.loop/` | 18 agents, 19 commands, skills, hooks, adaptive engine |
-| **Protocol** | plan → item → self-audit, one file to read | DIRECT / LOOP / GRAPH routing with gates |
-| **State** | `.loop/loop.db`, `.loop/PLAN.md`, `.loop/POLICY.md` | `~/.claude/knowledge-registry/` |
-| **Requires** | Node 22.13+ (`node:sqlite`) | bash, Python 3, git |
-| **Offline** | yes — templates ship in the package | no — pulls `install.sh` from GitHub |
+| **inside a project** | the loop, right there: `LOOP.md`, `CLAUDE.md`, `scripts/loop.mjs`, `.claude/`, `.cursor/`, `.loop/` | offline, seconds, never writes to `~/.claude` |
+| **outside a project** | the harness into `~/.claude` and `~/.domangcha` | network, the full 18 agents and skills |
+| **`/ceo` with no harness** | offers to install the harness, then runs your request | only when you ask for it |
 
-The two never share a path, so **an existing global v2 install keeps working**. When you open a
-project that has `.loop/` and `scripts/loop.mjs`, the global router steps aside and the project's
-`LOOP.md` takes over — one protocol reaches the model at a time, never both.
+A project is a directory carrying `.git`, `package.json`, `pyproject.toml`, `go.mod`, `Cargo.toml`,
+`pom.xml`, `build.gradle`, `Gemfile`, `composer.json`, `Makefile` or `CMakeLists.txt`.
 
-### No slash command required
+The two never share a path, so **an existing global install keeps working**. Run `npx domangcha`
+inside a project you already use and only that project gains the loop.
 
-`/plan`, `/loop`, and `/policy` are installed, but they are optional. The project's
-`UserPromptSubmit` hook records every prompt as an instruction or an intervention and prints the
-next action alongside it, so plain natural language drives the loop:
+### Natural language runs the loop; `/ceo` raises it
+
+There is one authority at a time. Inside a loop project the global router steps aside and `LOOP.md`
+drives — except for `/ceo`, which is exactly how you ask for more:
 
 ```
 you  ▸ add a login screen
 
-hook ▸ [DOMANGCHA v3.0.0] 지시 기록 ins_0001 · 활성 플랜 없음
-     ▸ 다음 행동: 구현·수정·추가 지시면 코드에 손대기 전에 LOOP.md 1절대로 플랜부터 작성
-     ▸ 단순 질문·조회·설명 요청이면 플랜 없이 바로 답변
+hook ▸ [DOMANGCHA v3.0.0] instruction recorded ins_0001 · no active plan
+     ▸ next: for anything that changes the repository, write the plan before touching code
+     ▸ a question, lookup or explanation is answered directly, with no plan
+```
+
+```
+you  ▸ /ceo refactor payments end to end and ship it
+
+hook ▸ [DOMANGCHA] /ceo needs the full harness and it is not on this machine yet.
+     ▸ Ask the user first and run this only after they approve:
+     ▸   curl -fsSL .../install.sh | bash
+     ▸ If they decline, handle the request through LOOP.md as usual.
 ```
 
 Read-only requests — questions, lookups, explanations — are answered without a plan. Anything that
-changes the repository goes through PLAN → item → self-audit → pass.
+changes the repository goes through PLAN → item → self-audit → pass, and every pass reports where it is:
+
+```
+🔁 DOMANGCHA · P0001 v0.3.0 ▓▓▓▓▓▓░░░░ 60% · items 3/5 · retries left 2/3 · policies 1 · next I04
+```
 
 ### Policies the agent writes for itself
 
@@ -138,12 +149,11 @@ A context reset normally erases "you already told me that." The loop turns repea
 durable rules instead:
 
 ```
-fail I01 ▸ i18n 키 없이 하드코딩
-fail I01 ▸ 또 i18n 키 없이 하드코딩
-         ▸ 자체감사: I01 감사 실패 2회 누적, 같은 실수가 반복되고 있음
-         ▸ 일반 규칙이면 policy add --origin audit:I01 로 정책에 기록할 것
+fail I01 ▸ hardcoded the strings again
+         ▸ self-audit: I01 has failed 2 times (promotion threshold 2); the same mistake is repeating
+         ▸ if the cause is a general rule that would recur elsewhere, record it with policy add
 
-policy add ▸ P001 i18n 키 강제
+policy add ▸ P001 i18n keys
 ```
 
 `P001` is then re-injected on **every later prompt**, in `resume` after a context reset, and in the
@@ -152,6 +162,12 @@ lose it. A rule broken three times is treated as badly written: the CLI tells yo
 rewrite it rather than repeat it. Rules must be judgeable from a diff or a command output —
 "be careful about i18n" is rejected in favour of "adding a user-facing string means editing the ko
 and en message files in the same commit."
+
+### Korean and English
+
+The loop speaks both. `--lang en` at install time, or `loop config set lang en` later, switches every
+message, the plan template and the protocol document. The parser reads both editions, so a plan
+written in one language still opens after the switch.
 
 ---
 
@@ -250,7 +266,7 @@ Runtime behavior is capability-based—not hard-coded to provider model names. M
 
 #### Codex-native attachment
 
-`npx domangcha --full` installs the bundled DOMANGCHA plugin into a local Codex marketplace and enables its native skill. After installation, open `/hooks` once and trust the DOMANGCHA hook definition. From the next new Codex thread:
+Installing the harness (run `npx domangcha` outside a project) puts the bundled DOMANGCHA plugin into a local Codex marketplace and enables its native skill. After installation, open `/hooks` once and trust the DOMANGCHA hook definition. From the next new Codex thread:
 
 - `UserPromptSubmit` automatically creates a canonical task and injects its route and task ID.
 - the `domangcha` skill tells Codex how to execute and report through that same state.
@@ -537,40 +553,18 @@ Complex feature requests still use the familiar PLANNER → BUILDER → EVALUATO
 
 ## 🆕 What's New
 
-| Version | Feature |
+| Version | What changed |
 |---|---|
-| **v3.0.0** | **The default install is now per-project, not global** — `npx domangcha` used to `curl \| bash` a remote installer that wrote 18 agents, 183 skills, and hooks into `~/.claude`, which is a lot of machinery to accept before you know whether you want it, and it made the shipped npm payload dead weight. The default now installs a self-contained loop into the current directory (`LOOP.md`, `scripts/loop.mjs`, `.claude/`, `.cursor/`, `.loop/`) straight from the package, so it works offline and touches nothing outside the project. The full harness is unchanged behind `npx domangcha --full`, and the two never share a path — an existing global v2 install keeps working. A project holding `.loop/` and `scripts/loop.mjs` owns its protocol: the global `UserPromptSubmit` hook detects the pair and yields, so a route card and a `LOOP.md` protocol never both reach the model. An existing `CLAUDE.md` is moved to `.claude/heavy/CEO.md` and read back only for items marked heavy. **Slash commands became optional** — the prompt hook records every prompt as an instruction or intervention and prints the next action, so plain natural language drives the loop; read-only requests skip the plan. **New: policy self-learning** — two audit failures on one item surface a promotion prompt, a promoted rule lands in `.loop/POLICY.md`, and it is re-injected on every prompt, in `resume`, and in each item's `policy check`, so a context reset cannot lose it; a rule broken three times is retired and rewritten rather than repeated. Requires Node 22.13+ for the loop CLI (`node:sqlite`); `--full` is unaffected. |
-| **v2.3.2** | **The single renderer stops carrying the phrasebook** — `orchestration/status.py` had reached 296 of its 300-line budget, so the next card would have broken `validate_line_limits`. The bilingual vocabulary (`LABELS`, `PLAN`, `NEXT`, `LANGS`) moved to `orchestration/wording.py`, leaving status.py at 226 lines with layout logic only. No behavior change: every card renders byte-identically and the same 86 tests pass. |
-| **v2.3.1** | **Hooks stop misfiring on unrelated projects, and stale deployments become visible** — the Stop hook identified this repository by `domangcha/VERSION` + `package.json` alone, so any project that happens to keep its own `domangcha/VERSION` was validated as if it were the framework source and crashed on the missing manifest every turn; the manifest itself is now the identifier. The post-edit hook's `find_root()` walked past `$HOME` and ran `npm test` in whatever monorepo lived there, blocking edits to files outside any project; it now stops at `$HOME`. `RepositoryValidator` reported a missing or malformed manifest as a raw traceback instead of a validation error, so a broken repository looked like a crashed engine — missing, unreadable, and invalid JSON are now ordinary entries in `errors`. New `engine.py drift` compares the installed `~/.domangcha` runtime against this repository by content hash and reports stale files in `/ceo-status`: both VERSION files agree while the code differs, so a version check cannot see this, and a fix that never shipped stays silent until the stale path is reached. |
-| **v2.3.0** | **Progress reporting is on by default** — the engine used to record route, loop, and branch state into checkpoints and `events.jsonl` with nothing rendering it, so a running engine looked like a stalled one. `orchestration/status.py` is now the single renderer for route, loop, graph, and parallel-branch cards (Korean by default, `--lang en`, secrets redacted). `engine.py route\|status` prints a card by default (`--format json` keeps the raw state), the Claude `UserPromptSubmit` hook injects the card plus a reporting contract, the Ralph `Stop` hook injects the live loop card every iteration, and the Codex control plane renders the same cards. Announce the route and why, report iteration and budget every pass, show branch results and join strategy at fan-in, explain gates in plain language, and never go silent through a long step. |
-| **v2.2.0** | **Native Codex attachment** — bundles an installable Codex plugin with an implicitly matching DOMANGCHA skill and `UserPromptSubmit`, `PostToolUse`, `SubagentStop`, and `Stop` lifecycle hooks. Codex now receives automatic route/task injection, workspace checkpoints, tool and validation evidence, bounded continuation, and a deterministic completion command instead of relying on `AGENTS.md` alone. The installer registers the local marketplace and plugin automatically; users approve the hook definition once through `/hooks`. |
-| **v2.1.1** | **Full public README restored and modernized** — restores the original bilingual hero, real sprint and bug-fix walkthroughs, 18-role catalog, five gates, release history, complete 19-command reference, requirements, and every install/update path. Legacy mandatory-pipeline claims are rewritten for adaptive DIRECT/LOOP/GRAPH behavior and Claude Code/Codex parity. |
-| **v2.1.0** | **Adaptive DIRECT · LOOP · GRAPH architecture** — one deterministic TaskRouter evolves CEO SIZE ASSESSMENT, FAST PATH, Ralph, and FULL PIPELINE into a single authority. Adds typed graph contracts, bounded retry and joins, checkpoint/resume, human gates, budgets, structured events, Claude Code + Codex adapters, shared policies, authoritative manifests, and deterministic CI tests. Existing `/ceo-*` commands and all 18 roles remain compatible. |
-| **v2.0.58** | **Browser verification now Chrome-extension-first** — app real-screen/visual/interaction QA now defaults to the Claude-in-Chrome extension (`mcp__claude-in-chrome__*`) instead of Playwright, since the extension verifies directly in the user's live Chrome session with no separate driver. New **"브라우저 검증 정책"** [BV-1]/[BV-2] in `ceo-standards`: [BV-1] Chrome extension = default; [BV-2] Playwright = fallback only (headless CI / regression suites / extension unavailable). Reflected in `/ceo-test` (STEP 4), `/ceo-debug` (STEP 4), `/ceo-ship` (STEP 5), 🟥 DC-QA, 🟩 DC-DEV-FE, and the install Playwright setup (repositioned as fallback). **Unaffected:** the `insane-search` engine's Playwright, which is for external URL-body scraping (WAF bypass), not app verification. |
-| **v2.0.57** | **insane-search vendored — blocked-site bypass for research agents** — the [insane-search](https://github.com/fivetaku/insane-search) skill (MIT) is now vendored into `skills/insane-search/` and installed to `~/.claude/skills/`. 🟦 DC-RES and 🟦 DC-OSS now use its Phase 0→3 adaptive engine (`python3 -m engine`, curl_cffi TLS impersonation + Playwright) as the **default reader for fetching any external URL body** — not just an on-block fallback. Phase 0 tries official public APIs first (X/Reddit/YouTube/HN/arXiv), so plain URLs cost nothing extra, and WAF/bot-walled sites (Naver, Medium, StackOverflow, LinkedIn…) get bypassed automatically. Keyword discovery still goes through WebSearch/`gh search`; only URL-body fetching routes through the engine. Upstream plugin's GitHub-star/`${CLAUDE_PLUGIN_ROOT}` Step-0 hook stripped for vendored use. |
-| **v2.0.56** | **Model tier re-assignment — dev on Opus, planning on Fable** — code-writing agents 🟩 DC-DEV-BE/FE/DB/OPS/MOB/INT now run on **`claude-opus-4-8`** (top coding model), and planning/judgment agents 🟦 DC-BIZ/RES/OSS run on **`claude-fable-5`** (fast). 🟥 DC-SEC/REV stay on `claude-opus-4-7`; 🟦 DC-ANA/KNW + 🟥 DC-QA stay on `claude-sonnet-4-6`; 🟩 DC-WRT/DOC/SEO + 🟨 DC-TOK stay on Haiku. Applied to all 9 agent frontmatters and the model-assignment table in root/global/project CLAUDE.md and `ceo-system` SKILL. |
-| **v2.0.55** | **Feature Implementation Defaults baked in** — "build feature X" now auto-includes the full entity lifecycle by default. Every feature ships **full CRUD** (Create/Read/Update/Delete, soft-delete default), and collection entities get a **List** with four affordances built in: **search, sort, filter, and performant loading (server pagination by default; cursor for large sets; infinite-scroll via Q&A)**. List state (search/sort/filter/page) syncs to the URL. Encoded in `ceo-standards`, the 🟩 DC-DEV-BE/FE/DB agents, and CEO core rule 3-2 — DOC-FIRST completion criteria auto-expand these and 🟥 DC-REV/QA fail the sprint if any are missing. Opt out only by explicitly excluding in Q&A. |
-| **v2.0.54** | **Ralph Loop is now a real engine, not a prompt** — `/ceo-ralph` used to be markdown instructions with no driver, so it stopped mid-task. v2.0.54 adds `domangcha-ralph-loop.py`, a **blocking Stop hook** that re-reads `.ralph/status.json` and forces continuation (`exit 2`) while `active && !exit_signal && loop_count < max_loops && breaker CLOSED`. Safety guards: `active` flag (zero effect outside a ralph loop), `max_loops` (default 30, hard ceiling 100), Circuit Breaker, atomic status writes. The CEO enforcer no longer injects the conflicting one-shot pipeline block for `/ceo-ralph` — it injects a ralph-specific reminder (max 2 Q&A, never stop, autonomous decisions). The loop now actually runs to completion. |
-| **v2.0.51** | **FAST PATH Bug-Fix Demo (EN + KO)** — "Watch a Bug Fix" and "버그 수정 현장" sections added. Shows the full FAST PATH flow: RIPPLE CHECK → 00-summary.md → surgical fix → DC-REV → GATE 1-5 → deploy. EN scenario: Stripe webhook raw-body bug. KO scenario: 카카오페이 `tid` undefined guard. |
-| **v2.0.50** | **README Sprint Demo — full agent detail + Korean scenario** — EN "Watch a Real Sprint" now shows DC-KNW GUARD advisory output, DC-DOC, and DC-TOK for every sprint. All agents have concrete, role-specific output (not just ✔). Korean "실제 스프린트 보기" section added with a KakaoPay-powered running crew app scenario. `error-registry` ERR-007 added: mandatory 7-point README section checklist on every update. |
-| **v2.0.48** | **Auto-untrack existing `docs/` subdirs on update** — `install.sh` now runs `git rm -r --cached` on already-tracked `docs/` subdirectories when you `npx domangcha` on an existing project. Supports Korean/Unicode folder names via `core.quotepath=false`. Works on both fresh installs and updates. |
-| **v2.0.47** | **Auto-inject `docs/*/` into user project `.gitignore`** — `npx domangcha` now automatically appends `docs/*/` to your project's `.gitignore` so local planning docs are never accidentally committed. 3-guard protection: skips `$HOME`, the DOMANGCHA repo itself, and non-git directories. Opt-out via `DOMANGCHA_SKIP_GITIGNORE=1`. |
-| **v2.0.46** | **DC-KNW Security Hardening** — `dc-knw.md` adds 7 security rules: path traversal guard (reject `..`/absolute paths), frontmatter injection defense (escape `---` delimiters, fixed schema only), GUARD output quoted as data blocks, `.knw-queue/` size cap (100 files / 8KB per entry). |
-| **v2.0.45** | **Knowledge Registry (DC-KNW — 18th Agent)** — `domangcha/knowledge-registry/` with 5 type folders (error/pattern/decision/workflow/skill), `.knw-queue/` approval pipeline, 3 seed entries from error-registry, and `/ceo-knowledge /ceo-learn /ceo-promote /ceo-forget` command suite. DC-KNW added to CORE (runs GUARD mode at every PHASE 1 as advisory). |
-| **v2.0.44** | **DOC-FIRST enforced on all 4 stacks** — Ralph Loop now creates `docs/` before the autonomous loop starts (Phase 0 in `fix_plan.md`). Superpowers routes `writing-plans → approval → DOC-FIRST → executing-plans → GATE → deploy`. gstack DOC-FIRST via FULL PIPELINE made explicit. Standard also marked. Knowledge Registry system designed (DC-KNW, 18th agent) — implementation sprint in v2.0.45+. |
-| **v2.0.43** | **Dynamic Stack Selection Rubric** — PHASE 0.3 now uses a 12-condition scoring table (`stack-selection-rubric.md`) instead of hardcoded 80/60/45/25 scores. Standard no longer always wins — each stack earns points based on actual task characteristics. |
-| **v2.0.42** | **Gap Analysis + §6 Full Propagation** — §6 EXEC-001~004 rules added to `ceo-core/SKILL.md` and `ceo-sprint/SKILL.md`. Version update procedure now includes `~/.claude/CLAUDE.md` step in all 3 CLAUDE.md files. `ceo-system/SKILL.md` version procedure expanded to full 11-step list (was 6, missing `package.json` + root files). |
-| **v2.0.41** | **Execution Integrity Rules (§6)** — 4 hard rules added to all CLAUDE.md files: no unverified completion, no mid-implementation stops, CLI direct execution, session report mandatory. EXEC-001~004 added to error-registry. GATE 2 now outputs a line-by-line checklist from `04-completion-criteria.md`. |
-| **v2.0.40** | **Docs path slug sync** — README pipeline diagrams and `rule_doc_first.md` memory template updated to `YYYY-MM-DD-vX.X.X-<slug>/` convention. package.json description trimmed for npm search. |
-| **v2.0.39** | **README + GitHub branding overhaul** — new hero "Claude Code without DOMANGCHA is half the toolkit", functional-first positioning, docs folder naming convention `YYYY-MM-DD-vX.X.X-<slug>`, npm keywords +4 (harness/agent-orchestration/vibe-coding/subagents). |
-| **v2.0.38** | **Memory sync moved to Step 5** — memory templates now refresh before Playwright/git-hooks, so `set -e` failures can never skip the sync. Adds `rule_grand_principles.md` template + memory row in `/ceo-update` table. |
-| **v2.0.37** | **Grand Principles (Karpathy)** — Andrej Karpathy's 4 coding grand principles merged into all CLAUDE.md files and `coding-style.md`. Think Before Coding / Simplicity First / Surgical Changes / Goal-Driven Execution — with DOMANGCHA context. |
-| **v2.0.36** | **npx-first updates** — `/ceo-update` and `/ceo-version` now use `npx domangcha` as primary, `curl \| bash` as fallback. Fixes stale bin version + `curl -fsSL` safety flag. |
-| **v2.0.35** | **DC-ANA (17th Agent)** — DOMANGCHA's internal codebase analyst. Absorbs all ECC code-explorer capabilities. Auto-triggered for gap analysis, refactoring, and LARGE/HEAVY tasks. `code-explorer` (ECC) calls now banned. |
-| **v2.0.34** | **FAST PATH Lightweight DOC** — Every task, even small fixes, generates a `00-summary.md`. No more undocumented changes. |
-| **v2.0.33** | **Memory Sync** — rule memories auto-refresh on every `npx domangcha` update. User feedback and project context are never overwritten. |
-| **v2.0.31** | **Tradeoff Check** — CEO surfaces architectural risks and side effects before any Q&A or implementation begins. |
-| **v2.0.30** | Agent color-coding system — visual group identification across all pipeline output. |
+| **v3.0.0** | One flag-free command installs by location; plain language runs a project loop, `/ceo` raises it to the harness; policies self-learn; Korean and English |
+| **v2.3.2** | The single renderer stops carrying the phrasebook |
+| **v2.3.1** | Hooks stop misfiring on unrelated projects, and stale deployments become visible |
+| **v2.3.0** | Progress reporting is on by default |
+| **v2.2.0** | Native Codex attachment |
+| **v2.1.1** | Full public README restored and modernized |
+| **v2.1.0** | Adaptive DIRECT · LOOP · GRAPH architecture |
+| **v2.0.58** | Browser verification now Chrome-extension-first |
+
+24 older releases: [full changelog](https://github.com/DoCoreTeam/domangcha/releases)
 
 ---
 
@@ -580,7 +574,7 @@ Complex feature requests still use the familiar PLANNER → BUILDER → EVALUATO
 
 Files are installed to `~/.claude/` on first run. They do **not** auto-update while a project is in progress — the version at install time is what runs.
 
-**To update:** re-run `npx domangcha --full` (v3 renamed this path; the bare command now installs the project loop). Your error registry and project registries are preserved. Rule memories in `~/.claude/projects/*/memory/` are automatically refreshed with the latest version's rule definitions — user feedback and project context are never overwritten.
+**To update the harness:** run `curl -fsSL https://raw.githubusercontent.com/DoCoreTeam/domangcha/main/domangcha/install.sh | bash`, or `npx domangcha` from outside a project. Your error registry and project registries are preserved. Rule memories in `~/.claude/projects/*/memory/` are automatically refreshed with the latest version's rule definitions — user feedback and project context are never overwritten.
 
 **Auto-update prompt (built-in):** Every `/ceo` call silently checks the npm registry for a newer version. If one exists, you'll see:
 
@@ -589,7 +583,7 @@ Files are installed to `~/.claude/` on first run. They do **not** auto-update wh
 Update before continuing? (y/n):
 ```
 
-- `y` → runs `npx domangcha --full`, updates in-place, then continues with your task
+- `y` → reinstalls the harness in place, then continues with your task
 - `n` / Enter → skips and continues without updating
 
 Version check failures (offline, etc.) are silently ignored — your task is never blocked.
@@ -598,7 +592,7 @@ Version check failures (offline, etc.) are silently ignored — your task is nev
 
 ## 🖥️ Commands
 
-### Lightweight loop (`npx domangcha`)
+### Project loop (`npx domangcha` inside a project)
 
 Optional — natural language triggers the same protocol through the prompt hook.
 
@@ -617,7 +611,7 @@ node scripts/loop.mjs policy check      # the self-audit checklist
 node scripts/loop.mjs help              # every subcommand
 ```
 
-### Full harness (`npx domangcha --full`)
+### Full harness (`/ceo`, or `npx domangcha` outside a project)
 
 Commands are intent adapters into the same TaskRouter. They do not create independent orchestration systems.
 
@@ -662,7 +656,7 @@ Non-negotiable. Gate 1 enforces on every file.
 
 DOMANGCHA is a runtime-aware developer harness for Claude Code and OpenAI Codex. It uses native capabilities when available and preserves the same routing, safety, state, and reviewer-separation guarantees across runtimes.
 
-| | Lightweight loop (default) | Full harness (`--full`) |
+| | Project loop (inside a project) | Harness (outside a project, or `/ceo`) |
 |---|---|---|
 | Coding agent | Claude Code, or Cursor | Claude Code, or OpenAI Codex |
 | Node.js | **22.13+** — `node:sqlite`, no npm dependencies | 14+ for npm installation |
@@ -674,25 +668,24 @@ DOMANGCHA is a runtime-aware developer harness for Claude Code and OpenAI Codex.
 
 ## 🚀 Install · Update
 
-**Lightweight loop — the v3 default.** Run it inside the project you want it in.
+There is one command and it has no install-mode flag.
 
 ```bash
-npx domangcha                 # install into the current project
+npx domangcha                 # inside a project: the loop, here, offline
+                              # outside a project: the harness into ~/.claude
+npx domangcha --lang en       # English protocol documents and CLI (default is Korean)
 npx domangcha --no-migrate    # keep an existing CLAUDE.md where it is
 npx domangcha --agents        # also symlink AGENTS.md and GEMINI.md to LOOP.md
 ```
 
-Re-running refreshes `scripts/loop.mjs` and leaves every rule file you have edited alone.
-Requires Node 22.13+ (`node:sqlite`, no npm dependencies).
+Re-running inside a project refreshes `scripts/loop.mjs` and leaves every rule file you have edited
+alone. The loop needs Node 22.13+ (`node:sqlite`, no npm dependencies).
 
-**Full 18-agent harness — the v2 behaviour, unchanged.**
+**The harness** installs when you run the command outside a project, when `/ceo` asks for it, or
+directly:
 
 ```bash
-npx domangcha --full
-# or
 curl -sSL https://raw.githubusercontent.com/DoCoreTeam/domangcha/main/domangcha/install.sh | bash
-# or
-npm install -g domangcha && domangcha --full
 ```
 
 Re-running always pulls the latest. Your registries (errors, instincts, history) are preserved.
@@ -701,9 +694,10 @@ Re-running always pulls the latest. Your registries (errors, instincts, history)
 
 Nothing breaks and nothing is removed.
 
-- **Keep everything as-is** — run `npx domangcha --full`. Identical to `npx domangcha` on v2.x.
+- **Keep everything as-is** — your harness is untouched. Refresh it with the curl one-liner above,
+  or by running `npx domangcha` from outside any project.
 - **Try the loop on one project** — `cd` into it and run `npx domangcha`. Your global install is
-  untouched; the global router yields inside that project only.
+  untouched; inside that project the router yields to `LOOP.md`, and `/ceo` brings it straight back.
 - **Already have a project `CLAUDE.md`?** It moves to `.claude/heavy/CEO.md` automatically and is
   read back for items marked heavy. Pass `--no-migrate` to keep it in place.
 - **Going back** — delete `LOOP.md`, `scripts/loop.mjs`, and `.loop/`, then restore `CLAUDE.md`
@@ -729,8 +723,8 @@ Nothing breaks and nothing is removed.
 ### 🚗💨 돔황차 — Claude Code와 OpenAI Codex를 위한 적응형 엔지니어링
 
 **강력한 코딩 에이전트에 필요한 만큼의 오케스트레이션만 더합니다.**
-`npx domangcha` 는 지금 서 있는 프로젝트에 계획 우선 자율개발 루프를 설치합니다.
-18명 전체 크루가 필요하면 `npx domangcha --full` 한 줄이면 됩니다.
+명령 하나, 설치 방식 플래그 없음: `npx domangcha` 가 실행한 자리를 보고 필요한 것을 설치합니다.
+자연어는 계획 우선 루프를 돌리고, `/ceo` 는 같은 일을 18명 크루로 올립니다.
 
 *개발 지옥에서 도망쳐 — 돔황차🚗💨*
 
@@ -747,7 +741,7 @@ Nothing breaks and nothing is removed.
 > *— Michael Dohyeon Kim, KDC CEO · DOMANGCHA 제작자*
 
 ```bash
-# v3 신규 — 홈 디렉터리가 아니라 지금 이 프로젝트에 설치됩니다
+# 프로젝트 안이면 여기에 루프를, 프로젝트 밖이면 하네스를 설치합니다
 npx domangcha
 ```
 
@@ -757,35 +751,33 @@ npx domangcha
 ```
 
 ```bash
-# 기존 18 에이전트 전체 설치가 필요하면 그대로 남아 있습니다
-npx domangcha --full
+# 이번 작업만 18 에이전트로 올리고 싶으면 그렇게 말하면 됩니다 (없으면 설치를 제안합니다)
+/ceo "결제 전체 리팩터링하고 배포까지"
 ```
 
 ---
 
-### 🪶 두 가지 설치 방식
+### 🪶 명령 하나, 설치 방식 플래그 없음
 
-v3 는 기본값이 바뀌었습니다. `npx domangcha` 는 더 이상 홈 디렉터리에 설치하지 않고,
-지금 서 있는 프로젝트 안에 자립형 루프를 설치합니다.
+v3 는 기본값이 바뀌었습니다. `npx domangcha` 는 무조건 홈 디렉터리에 설치하지 않고,
+**실행한 자리를 보고 그 자리에 필요한 것을 설치합니다.**
 
-| | `npx domangcha` (기본) | `npx domangcha --full` |
+| 어디서 실행했나 | 무엇을 설치하나 | 비용 |
 |---|---|---|
-| **설치 범위** | 현재 프로젝트 | `~/.claude`, `~/.domangcha` |
-| **생성 파일** | `LOOP.md`, `CLAUDE.md`, `scripts/loop.mjs`, `.claude/`, `.cursor/`, `.loop/` | 18 에이전트, 19 커맨드, 스킬, 훅, 적응형 엔진 |
-| **프로토콜** | 플랜 → 항목 → 자가감사, 읽을 파일 하나 | DIRECT / LOOP / GRAPH 라우팅 + 게이트 |
-| **상태 저장** | `.loop/loop.db`, `.loop/PLAN.md`, `.loop/POLICY.md` | `~/.claude/knowledge-registry/` |
-| **요구 사항** | Node 22.13 이상 (`node:sqlite`) | bash, Python 3, git |
-| **오프라인** | 가능 — 템플릿이 패키지에 동봉됨 | 불가 — GitHub 에서 `install.sh` 를 받아옴 |
+| **프로젝트 안** | 그 자리에 루프: `LOOP.md`, `CLAUDE.md`, `scripts/loop.mjs`, `.claude/`, `.cursor/`, `.loop/` | 오프라인, 수 초, `~/.claude` 무접촉 |
+| **프로젝트 밖** | `~/.claude` 와 `~/.domangcha` 에 하네스 | 네트워크 필요, 18 에이전트와 스킬 전부 |
+| **`/ceo` 인데 하네스 없음** | 설치 여부를 물어보고, 승인하면 설치 후 요청 실행 | 요청했을 때만 |
 
-두 방식은 경로를 전혀 공유하지 않으므로 **기존 v2 전역 설치가 그대로 살아 있습니다.**
-`.loop/` 와 `scripts/loop.mjs` 가 있는 프로젝트를 열면 전역 라우터가 스스로 물러나고
-그 프로젝트의 `LOOP.md` 가 주도합니다. 두 프로토콜이 동시에 모델에 닿는 일은 없습니다.
+프로젝트로 인정하는 기준은 `.git`, `package.json`, `pyproject.toml`, `go.mod`, `Cargo.toml`,
+`pom.xml`, `build.gradle`, `Gemfile`, `composer.json`, `Makefile`, `CMakeLists.txt` 중 하나가 있는 디렉터리입니다.
 
-### 슬래시 커맨드 없이 자연어로
+두 방식은 경로를 전혀 공유하지 않으므로 **기존 전역 설치가 그대로 살아 있습니다.**
+이미 쓰던 프로젝트에서 `npx domangcha` 를 실행해도 그 프로젝트만 루프를 갖게 됩니다.
 
-`/plan`, `/loop`, `/policy` 가 설치되지만 전부 선택 사항입니다.
-프로젝트의 `UserPromptSubmit` 훅이 매 프롬프트를 지시 또는 개입으로 기록하고
-다음 행동을 함께 출력하므로, 그냥 자연어로 말하면 루프가 돕니다.
+### 자연어는 루프, `/ceo` 는 승격
+
+한 번에 하나의 권위만 말합니다. 루프 프로젝트 안에서는 전역 라우터가 물러나고 `LOOP.md` 가 주도하는데,
+`/ceo` 만은 예외입니다 — 더 큰 것이 필요하다고 말하는 방법이 바로 그것입니다.
 
 ```
 당신 ▸ 로그인 화면 만들어줘
@@ -795,8 +787,21 @@ v3 는 기본값이 바뀌었습니다. `npx domangcha` 는 더 이상 홈 디�
      ▸ 단순 질문·조회·설명 요청이면 플랜 없이 바로 답변
 ```
 
+```
+당신 ▸ /ceo 결제 전체 리팩터링하고 배포까지
+
+훅   ▸ [DOMANGCHA] /ceo 는 전체 하네스를 요구하는데 이 머신에는 아직 없습니다.
+     ▸ 사용자에게 설치 여부를 묻고 승인받은 뒤에만 아래를 실행할 것:
+     ▸   curl -fsSL .../install.sh | bash
+     ▸ 거절하면 이 요청을 LOOP.md 절차로 그대로 진행할 것
+```
+
 질문, 조회, 설명처럼 저장소를 바꾸지 않는 요청은 플랜 없이 바로 답합니다.
-저장소를 바꾸는 일만 플랜 → 항목 → 자가감사 → 통과를 거칩니다.
+저장소를 바꾸는 일만 플랜 → 항목 → 자가감사 → 통과를 거치고, 매 패스마다 지금 어디인지 보고합니다.
+
+```
+🔁 DOMANGCHA · P0001 v0.3.0 ▓▓▓▓▓▓░░░░ 60% · 항목 3/5 · 재시도 여유 2/3 · 정책 1 · 다음 I04
+```
 
 ### 에이전트가 스스로 쓰는 정책
 
@@ -804,10 +809,9 @@ v3 는 기본값이 바뀌었습니다. `npx domangcha` 는 더 이상 홈 디�
 루프는 반복된 실수를 그때그때 지속되는 규칙으로 바꿔 둡니다.
 
 ```
-fail I01 ▸ i18n 키 없이 하드코딩
-fail I01 ▸ 또 i18n 키 없이 하드코딩
-         ▸ 자체감사: I01 감사 실패 2회 누적, 같은 실수가 반복되고 있음
-         ▸ 일반 규칙이면 policy add --origin audit:I01 로 정책에 기록할 것
+fail I01 ▸ 또 하드코딩
+         ▸ 자체감사: I01 감사 실패 2회 누적 (승격 기준 2회), 같은 실수가 반복되고 있음
+         ▸ 일반 규칙이면 policy add 로 정책에 기록할 것
 
 policy add ▸ P001 i18n 키 강제
 ```
@@ -820,6 +824,12 @@ policy add ▸ P001 i18n 키 강제
 규칙은 diff 나 명령 출력으로 위반 여부를 판정할 수 있어야 하며,
 "i18n 을 잘 지킨다" 대신 "사용자 노출 문자열을 추가하면 같은 커밋에서 ko en 메시지 파일을 함께 수정한다"
 같은 형태만 인정합니다.
+
+### 한국어와 영어
+
+루프는 두 언어를 다 씁니다. 설치할 때 `--lang en`, 또는 나중에 `loop config set lang en` 으로
+모든 메시지·플랜 템플릿·프로토콜 문서가 바뀝니다. 파서는 두 언어판을 모두 읽으므로
+한 언어로 쓴 플랜도 전환 후 그대로 열립니다.
 
 ---
 
@@ -1061,41 +1071,18 @@ DC-REV  ✔  수정 정확. undefined 방어 패턴은 카카오페이 공식 �
 
 ### 🆕 최신 업데이트
 
-| 버전 | 기능 |
+| 버전 | 바뀐 것 |
 |---|---|
-| **v3.0.0** | **기본 설치가 전역이 아니라 프로젝트 단위로 바뀜** — 기존 `npx domangcha` 는 원격 인스톨러를 `curl \| bash` 로 받아 `~/.claude` 에 18 에이전트, 183 스킬, 훅을 한꺼번에 설치했습니다. 써 볼지 결정하기도 전에 받아들여야 하는 양이 너무 컸고, 정작 npm 에 실린 패키지 본체는 쓰이지 않는 짐이었습니다. 이제 기본 동작은 패키지에 동봉된 템플릿으로 현재 디렉터리에 자립형 루프(`LOOP.md`, `scripts/loop.mjs`, `.claude/`, `.cursor/`, `.loop/`)를 설치합니다. 네트워크 없이 동작하고 프로젝트 밖은 건드리지 않습니다. 전체 하네스는 `npx domangcha --full` 뒤로 그대로 보존했고, 두 방식은 경로를 공유하지 않으므로 **기존 v2 전역 설치가 계속 동작합니다.** `.loop/` 와 `scripts/loop.mjs` 를 가진 프로젝트는 자기 프로토콜을 소유합니다. 전역 `UserPromptSubmit` 훅이 이 둘을 감지하면 스스로 물러나므로 라우트 카드와 `LOOP.md` 프로토콜이 동시에 모델에 닿지 않습니다. 기존 `CLAUDE.md` 는 `.claude/heavy/CEO.md` 로 자동 이관되어 중량 항목에서만 다시 읽힙니다. **슬래시 커맨드는 선택 사항이 됐습니다** — 프롬프트 훅이 매 입력을 지시 또는 개입으로 기록하고 다음 행동을 출력하므로 자연어만으로 루프가 돌고, 저장소를 바꾸지 않는 요청은 플랜을 건너뜁니다. **신규: 정책 자가학습** — 한 항목이 2회 감사 실패하면 승격 후보로 알리고, 승격된 규칙은 `.loop/POLICY.md` 에 남아 매 프롬프트·`resume`·항목별 `policy check` 세 경로로 재주입되므로 컨텍스트가 초기화돼도 사라지지 않습니다. 같은 정책을 3회 어기면 반복하는 대신 폐기하고 다시 쓰도록 안내합니다. 루프 CLI 는 `node:sqlite` 때문에 Node 22.13 이상이 필요하며, `--full` 은 영향받지 않습니다. |
-| **v2.3.2** | **단일 렌더러에서 문구 사전 분리** — `orchestration/status.py`가 300줄 제한 중 296줄까지 차서, 카드를 하나만 더 추가해도 `validate_line_limits`가 깨지는 상태였습니다. 이중 언어 문구 테이블(`LABELS`, `PLAN`, `NEXT`, `LANGS`)을 `orchestration/wording.py`로 옮겨 status.py는 레이아웃 로직만 남은 226줄이 됐습니다. 동작 변화 없음 — 모든 카드가 이전과 동일하게 렌더링되고 같은 86개 테스트가 통과합니다. |
-| **v2.3.1** | **훅 오탐 제거 + 배포 누락 가시화** — Stop 훅이 `domangcha/VERSION` + `package.json`만 보고 이 저장소를 식별해서, 자기 앱 버전을 우연히 `domangcha/VERSION`에 두는 프로젝트를 프레임워크 소스로 오인하고 매 턴 없는 매니페스트를 찾다 크래시했습니다. 이제 매니페스트 자체가 식별자입니다. post-edit 훅의 `find_root()`는 `$HOME` 위로 올라가 거기 있는 모노레포에서 `npm test`를 돌려 프로젝트 밖 파일 편집을 차단했습니다. 이제 `$HOME`에서 멈춥니다. `RepositoryValidator`는 매니페스트가 없거나 깨졌을 때 검증 오류 대신 raw 트레이스백으로 죽어서, 망가진 저장소가 죽은 엔진처럼 보였습니다. 이제 없음·읽기 실패·잘못된 JSON 모두 평범한 `errors` 항목입니다. 신규 `engine.py drift`는 설치된 `~/.domangcha` 런타임을 이 저장소와 내용 해시로 비교해 오래된 파일을 `/ceo-status`에 보고합니다. 양쪽 VERSION이 같은데 코드만 다른 상황은 버전 비교로 잡을 수 없고, 배포되지 않은 수정은 그 경로에 도달할 때까지 조용하기 때문입니다. |
-| **v2.3.0** | **진행 상황 보고 기본 활성화** — 엔진은 라우트·루프·브랜치 상태를 체크포인트와 `events.jsonl`에 기록만 하고 **렌더링하는 코드가 없었습니다**. 그래서 돌고 있는 엔진이 멈춘 엔진처럼 보였습니다. 이제 `orchestration/status.py`가 라우트·루프·그래프·병렬 브랜치 카드를 렌더링하는 단일 지점입니다(한국어 기본, `--lang en`, secret 자동 마스킹). `engine.py route\|status`는 기본이 카드 출력이고(`--format json`으로 원시 상태 유지), Claude `UserPromptSubmit` 훅이 카드와 **보고 규칙**을 주입하며, Ralph `Stop` 훅이 매 회차 실제 루프 카드를 주입하고, Codex 컨트롤 플레인도 같은 카드를 씁니다. 라우트와 이유를 먼저 알리고, 매 반복마다 회차·예산·실제 변화를 보고하고, 조인 시점에 브랜치 결과와 join 전략을 보여주고, 게이트를 사람의 말로 설명하고, 긴 단계에서 침묵하지 않습니다. |
-| **v2.2.0** | **Codex 네이티브 밀착 통합** — 자동 매칭되는 DOMANGCHA skill과 `UserPromptSubmit`, `PostToolUse`, `SubagentStop`, `Stop` lifecycle hook을 갖춘 설치형 Codex plugin을 번들했습니다. 이제 Codex가 `AGENTS.md`만 읽는 대신 라우트/task ID 자동 주입, 워크스페이스 체크포인트, 도구·검증 근거 기록, 제한된 자동 계속, 결정론적 완료 명령을 사용합니다. 인스톨러가 로컬 marketplace와 plugin을 자동 등록하며 사용자는 `/hooks`에서 최초 1회 신뢰하면 됩니다. |
-| **v2.1.1** | **기존 공개 README 수준 완전 복원 및 현대화** — 영문·한국어 히어로, 실제 스프린트·버그 수정 데모, 18개 역할, 5개 게이트, 변경 이력, 19개 전체 명령어, 요구사항, 모든 설치·업데이트 경로를 복원했습니다. 과거의 전체 파이프라인 강제 설명은 DIRECT/LOOP/GRAPH 적응형 실행과 Claude Code/Codex 동등성에 맞게 교체했습니다. |
-| **v2.1.0** | **적응형 DIRECT · LOOP · GRAPH 아키텍처** — CEO SIZE ASSESSMENT, FAST PATH, Ralph, FULL PIPELINE을 하나의 결정론적 TaskRouter 권한으로 통합했습니다. 타입 그래프 계약, 제한된 재시도와 조인, 체크포인트/재개, 사람 승인 게이트, 예산, 구조화 이벤트, Claude Code + Codex 어댑터, 공유 정책과 권위 매니페스트를 추가했습니다. 기존 `/ceo-*` 명령과 18개 역할은 유지됩니다. |
-| **v2.0.58** | **브라우저 검증 기본을 Chrome 확장 우선으로 전환** — 실행 중인 앱의 실화면·시각·인터랙션 QA를 Playwright 대신 **Claude-in-Chrome 확장**(`mcp__claude-in-chrome__*`) 기본으로 변경. 확장은 사용자 실제 Chrome 세션에서 별도 드라이버 없이 바로 검증 가능. `ceo-standards`에 **"브라우저 검증 정책"** [BV-1]/[BV-2] 신설: [BV-1] Chrome 확장=기본, [BV-2] Playwright=폴백(헤드리스 CI·회귀 스위트·확장 미가용 시에만). `/ceo-test`(STEP 4)·`/ceo-debug`(STEP 4)·`/ceo-ship`(STEP 5)·🟥 DC-QA·🟩 DC-DEV-FE 및 install Playwright 셋업(폴백으로 재포지셔닝)에 일괄 반영. **무관·유지:** `insane-search` 엔진의 Playwright는 외부 URL 본문 스크래핑(WAF 우회)용으로 본 정책과 별개. |
-| **v2.0.57** | **insane-search 내장 — 리서치 에이전트 차단 우회** — [insane-search](https://github.com/fivetaku/insane-search) 스킬(MIT)을 `skills/insane-search/`로 vendoring하고 `~/.claude/skills/`에 설치. 🟦 DC-RES·🟦 DC-OSS가 외부 URL 본문 수집 시 Phase 0→3 적응형 엔진(`python3 -m engine`, curl_cffi TLS 임퍼소네이션 + Playwright)을 **차단 여부와 무관하게 기본 리더로 우선 사용**(fallback 아님). Phase 0가 공식 공개 API(X·Reddit·YouTube·HN·arXiv)를 먼저 시도해 일반 URL도 손해 없고, WAF/봇 차단 사이트(Naver·Medium·StackOverflow·LinkedIn 등)는 자동 우회. 키워드 탐색은 WebSearch·`gh search`, URL 본문 수집만 엔진 경유. 업스트림 플러그인의 GitHub-star/`${CLAUDE_PLUGIN_ROOT}` Step-0 훅은 vendoring용으로 제거. |
-| **v2.0.56** | **모델 티어 재배정 — 개발은 Opus, 기획은 Fable** — 코드 개발 에이전트 🟩 DC-DEV-BE/FE/DB/OPS/MOB/INT을 **`claude-opus-4-8`**(최고 코딩 모델)로, 기획/판단 에이전트 🟦 DC-BIZ/RES/OSS를 **`claude-fable-5`**(고속)로 전환. 🟥 DC-SEC/REV는 `claude-opus-4-7` 유지, 🟦 DC-ANA/KNW + 🟥 DC-QA는 `claude-sonnet-4-6` 유지, 🟩 DC-WRT/DOC/SEO + 🟨 DC-TOK는 Haiku 유지. 에이전트 frontmatter 9개와 루트/글로벌/프로젝트 CLAUDE.md·`ceo-system` SKILL의 배정 테이블에 일괄 반영. |
-| **v2.0.55** | **기능 구현 기본 정책 내장 (Feature Defaults)** — "X 기능 만들어줘"만 해도 엔티티 수명주기 전체가 기본 포함됨. 모든 기능에 **CRUD 전체**(생성/조회/수정/삭제, 소프트삭제 기본), 컬렉션 엔티티엔 **List + 4어포던스 기본 탑재**: **검색·정렬·필터 + 성능 로딩(기본 서버 페이지네이션, 대용량 cursor, 피드형은 Q&A로 무한스크롤)**. 검색/정렬/필터/페이지 상태는 URL에 동기화. `ceo-standards`·🟩 DC-DEV-BE/FE/DB 에이전트·CEO 핵심규칙 3-2에 내장 — DOC-FIRST 완료기준에 자동 전개되고 🟥 DC-REV/QA가 누락 시 FAIL. Q&A에서 명시 제외해야만 빠짐. |
-| **v2.0.54** | **Ralph Loop이 진짜 엔진이 됨 (프롬프트 → 코드)** — 기존 `/ceo-ralph`는 드라이버 없는 마크다운 지침이라 중간에 멈췄음. v2.0.54에서 **Stop hook 루프 엔진** `domangcha-ralph-loop.py` 추가: `.ralph/status.json`을 읽어 `active && !exit_signal && loop_count<max_loops && breaker CLOSED`면 `exit 2`로 재진입을 강제해 **끝까지 루프**. 안전가드 — `active` 플래그(루프 밖 세션엔 무영향), `max_loops`(기본30·절대상한100), Circuit Breaker, atomic status 쓰기. enforcer는 `/ceo-ralph`에 충돌하던 1회성 파이프라인 블록 대신 **ralph 전용 reminder**(질문 최대2·멈춤금지·자율결정) 주입. 이제 루프가 실제로 완료까지 돈다. |
-| **v2.0.51** | **FAST PATH 버그 수정 데모 (EN + KO)** — "Watch a Bug Fix"와 "버그 수정 현장" 신규 추가. RIPPLE CHECK → 00-summary.md → 외과적 수정 → 🟥 DC-REV → GATE 1-5 → 배포 전체 흐름 시각화. EN: Stripe webhook raw-body 버그. KO: 카카오페이 `tid` undefined 가드 누락. |
-| **v2.0.50** | **README 스프린트 데모 전면 강화 + 한국 시나리오** — EN "Watch a Real Sprint"에 DC-KNW GUARD 어드바이저리 블록, DC-DOC, DC-TOK 출력 추가. 전 에이전트 출력이 역할별 구체적 내용으로 확장. 한국 시나리오 "실제 스프린트 보기" 신규 작성(동네 러닝 크루 앱, 카카오페이 회비 정산). `error-registry` ERR-007 추가: 업데이트마다 7개 README 섹션 전수 점검 필수. |
-| **v2.0.49** | **docs/ 자동 언트래킹 개선** — `install.sh` 캐시 무효화 + `update_notice` semver 방향 비교 수정. 버전 배지 자동 갱신 보강. |
-| **v2.0.48** | **기존 `docs/` 하위 폴더 언트래킹 자동화** — `npx domangcha` 실행 시 이미 git 추적 중인 `docs/` 하위 폴더를 `git rm -r --cached`로 자동 언트래킹. 한글/유니코드 폴더명 지원 (`core.quotepath=false`). 신규 설치·업데이트 모두 적용. |
-| **v2.0.47** | **사용자 프로젝트 `.gitignore` 자동 처리** — `npx domangcha` 실행 시 사용자 프로젝트의 `.gitignore`에 `docs/*/` 자동 주입. 기획 문서가 실수로 커밋되지 않도록 방지. 3중 가드: `$HOME` 스킵, DOMANGCHA 레포 자체 스킵, git 레포 없음 스킵. 비활성화: `DOMANGCHA_SKIP_GITIGNORE=1`. |
-| **v2.0.46** | **DC-KNW 보안 강화** — `dc-knw.md`에 7개 보안 규칙 추가: path traversal 방어(../ 거부), frontmatter injection 방어(--- 이스케이프, 고정 스키마), GUARD 출력 인용 블록 처리, .knw-queue/ 크기 제한(100파일/8KB). |
-| **v2.0.45** | **Knowledge Registry (DC-KNW — 18번째 직원)** — `domangcha/knowledge-registry/` 5개 타입 폴더(error/pattern/decision/workflow/skill), `.knw-queue/` 승인 파이프라인, error-registry 시드 3개 엔트리, `/ceo-knowledge /ceo-learn /ceo-promote /ceo-forget` 명령어. DC-KNW가 CORE 에이전트로 매 PHASE 1마다 GUARD 모드 자동 실행 (advisory only). |
-| **v2.0.44** | **전체 4개 스택 DOC-FIRST 강제화** — Ralph Loop: fix_plan.md Phase 0에 docs/ 생성 단계 추가, Superpowers: writing-plans → 승인 → DOC-FIRST → executing-plans → GATE → deploy 흐름 명시, gstack/Standard도 DOC-FIRST 표기 일관화. Knowledge Registry(DC-KNW 18번째 직원) 설계 완료 → v2.0.45에서 구현. |
-| **v2.0.43** | **동적 스택 선택 루브릭** — PHASE 0.3에 12개 조건 × 4 스택 점수 테이블(`stack-selection-rubric.md`) 도입. 하드코딩 80/60/45/25 대신 업무 특성에 따라 점수 계산 → Standard 자동 1위 편향 제거. |
-| **v2.0.42** | **갭분석 + §6 전체 전파** — `ceo-core/SKILL.md`와 `ceo-sprint/SKILL.md`에 §6 EXEC-001~004 추가. 버전 업데이트 절차에 `~/.claude/CLAUDE.md` 항목 명시 (3개 CLAUDE.md 전부). `ceo-system/SKILL.md` 버전 절차 6개→11개 확장 (`package.json` 및 루트 파일 누락 수정). |
-| **v2.0.41** | **실행 신뢰성 원칙 §6** — 모든 CLAUDE.md에 4개 강제 규칙 추가: 완료 미검증 금지, 중간 멈춤 금지, CLI 직접 실행, 세션 리포트 필수. EXEC-001~004 error-registry 등록. GATE 2에 `04-completion-criteria.md` 라인별 체크리스트 강화. |
-| **v2.0.40** | **Docs 경로 slug 동기화** — README 파이프라인 다이어그램 및 `rule_doc_first.md` 메모리 템플릿을 `YYYY-MM-DD-vX.X.X-<slug>/` 컨벤션으로 업데이트. package.json description 트림. |
-| **v2.0.39** | **README + GitHub 브랜딩 개편** — 새 히어로 "DOMANGCHA 없는 Claude Code는 반쪽짜리", 기능 중심 포지셔닝, docs 폴더명 컨벤션 `YYYY-MM-DD-vX.X.X-<slug>`, npm keywords +4 추가. |
-| **v2.0.38** | **메모리 동기화 Step 5로 이동** — Playwright/git-hooks 실패 전에 메모리 템플릿이 갱신됨. `set -e`로 인한 스킵 완전 차단. `rule_grand_principles.md` 템플릿 + `/ceo-update` 테이블 memory 항목 추가. |
-| **v2.0.37** | **대원칙 (Karpathy)** — Andrej Karpathy의 4대 코딩 원칙을 모든 CLAUDE.md와 `coding-style.md`에 병합. Think Before Coding / Simplicity First / Surgical Changes / Goal-Driven Execution — DOMANGCHA 컨텍스트 적용. |
-| **v2.0.36** | **npx 우선 업데이트** — `/ceo-update`, `/ceo-version`이 `npx domangcha`를 1순위, `curl \| bash`를 fallback으로 사용. bin 버전 싱크 + `curl -fsSL` 보안 플래그 통일. |
-| **v2.0.35** | **DC-ANA (17번째 에이전트)** — DOMANGCHA 전용 내부 코드베이스 분석가. ECC code-explorer 기능 완전 흡수. 갭분석·리팩터링·LARGE/HEAVY 업무 시 자동 소환. `code-explorer`(ECC) 직접 호출 금지. |
-| **v2.0.34** | **FAST PATH 경량 DOC** — 소규모 수정도 `00-summary.md` 자동 생성. 문서 없는 변경 원천 차단. |
-| **v2.0.33** | **메모리 자동 동기화** — `npx domangcha` 업데이트 시 규칙 메모리 자동 갱신. 사용자 피드백/프로젝트 컨텍스트는 절대 덮어쓰지 않음. |
-| **v2.0.31** | **트레이드오프 체크** — Q&A 및 구현 시작 전 CEO가 아키텍처 리스크와 부작용을 사전에 표면화. |
-| **v2.0.30** | 에이전트 컬러 코딩 시스템 — 파이프라인 출력 전체에서 그룹 시각적 식별. |
+| **v3.0.0** | 플래그 없는 한 명령이 실행 위치를 보고 설치, 자연어는 프로젝트 루프 · `/ceo` 는 하네스로 승격, 정책 자가학습, 한국어·영어 지원 |
+| **v2.3.2** | 단일 렌더러에서 문구 사전 분리 |
+| **v2.3.1** | 훅 오탐 제거 + 배포 누락 가시화 |
+| **v2.3.0** | 진행 상황 보고 기본 활성화 |
+| **v2.2.0** | Codex 네이티브 밀착 통합 |
+| **v2.1.1** | 기존 공개 README 수준 완전 복원 및 현대화 |
+| **v2.1.0** | 적응형 DIRECT · LOOP · GRAPH 아키텍처 |
+| **v2.0.58** | 브라우저 검증 기본을 Chrome 확장 우선으로 전환 |
+
+이전 25개 릴리스: [전체 변경 이력](https://github.com/DoCoreTeam/domangcha/releases)
 
 ---
 
@@ -1204,7 +1191,7 @@ join 전략을 보여주고, 승인 게이트 앞에서 무엇을 왜 승인받�
 
 ### 🖥️ 명령어
 
-#### 경량 루프 (`npx domangcha`)
+#### 프로젝트 루프 (프로젝트 안에서 `npx domangcha`)
 
 선택 사항입니다 — 자연어로 말해도 프롬프트 훅이 같은 프로토콜을 주입합니다.
 
@@ -1223,7 +1210,7 @@ node scripts/loop.mjs policy check      # 자가감사 대조 목록
 node scripts/loop.mjs help              # 전체 하위 명령
 ```
 
-#### 전체 하네스 (`npx domangcha --full`)
+#### 하네스 (`/ceo`, 또는 프로젝트 밖에서 `npx domangcha`)
 
 | 명령어 | 동작 |
 |---|---|
@@ -1264,7 +1251,7 @@ node scripts/loop.mjs help              # 전체 하위 명령
 
 ### 📦 요구사항
 
-| | 경량 루프 (기본) | 전체 하네스 (`--full`) |
+| | 프로젝트 루프 (프로젝트 안) | 하네스 (프로젝트 밖, 또는 `/ceo`) |
 |---|---|---|
 | 코딩 에이전트 | Claude Code 또는 Cursor | Claude Code 또는 OpenAI Codex |
 | Node.js | **22.13 이상** — `node:sqlite`, npm 의존성 없음 | npm 설치용 14 이상 |
@@ -1276,25 +1263,23 @@ node scripts/loop.mjs help              # 전체 하위 명령
 
 ### 🚀 설치 · 업데이트
 
-**경량 루프 — v3 기본값.** 설치하고 싶은 프로젝트 안에서 실행합니다.
+명령은 하나이고 설치 방식을 고르는 플래그는 없습니다.
 
 ```bash
-npx domangcha                 # 현재 프로젝트에 설치
+npx domangcha                 # 프로젝트 안: 그 자리에 루프, 오프라인
+                              # 프로젝트 밖: ~/.claude 에 하네스
+npx domangcha --lang en       # 프로토콜 문서와 CLI 를 영어로 (기본은 한국어)
 npx domangcha --no-migrate    # 기존 CLAUDE.md 를 그 자리에 그대로 둠
 npx domangcha --agents        # AGENTS.md, GEMINI.md 를 LOOP.md 로 심볼릭 링크
 ```
 
-다시 실행하면 `scripts/loop.mjs` 만 최신으로 갱신하고, 당신이 손댄 규정 파일은 그대로 둡니다.
-Node 22.13 이상이 필요합니다 (`node:sqlite`, npm 의존성 없음).
+프로젝트 안에서 다시 실행하면 `scripts/loop.mjs` 만 최신으로 갱신하고, 당신이 손댄 규정 파일은
+그대로 둡니다. 루프는 Node 22.13 이상이 필요합니다 (`node:sqlite`, npm 의존성 없음).
 
-**전체 18 에이전트 하네스 — 기존 v2 동작 그대로.**
+**하네스**는 프로젝트 밖에서 명령을 실행하거나, `/ceo` 가 요청하거나, 아래를 직접 실행할 때 설치됩니다.
 
 ```bash
-npx domangcha --full
-# 또는
 curl -sSL https://raw.githubusercontent.com/DoCoreTeam/domangcha/main/domangcha/install.sh | bash
-# 또는
-npm install -g domangcha && domangcha --full
 ```
 
 인스톨러를 다시 실행하면 항상 최신 버전을 가져옵니다. 레지스트리(에러, 본능, 히스토리)는 보존됩니다. `~/.claude/projects/*/memory/`의 규칙 메모리는 최신 버전 정의로 자동 갱신되며, 사용자 피드백/프로젝트 컨텍스트는 절대 덮어쓰지 않습니다.
@@ -1303,8 +1288,8 @@ npm install -g domangcha && domangcha --full
 
 깨지는 것도, 없어지는 것도 없습니다.
 
-- **지금 그대로 쓰고 싶다** — `npx domangcha --full` 을 실행하세요. v2.x 의 `npx domangcha` 와 완전히 동일합니다.
-- **한 프로젝트에서만 루프를 써 보고 싶다** — 그 폴더에서 `npx domangcha` 를 실행하세요. 전역 설치는 그대로 있고, 그 프로젝트 안에서만 전역 라우터가 물러납니다.
+- **지금 그대로 쓰고 싶다** — 하네스는 건드려지지 않았습니다. 위 curl 명령이나, 프로젝트 밖에서 `npx domangcha` 로 갱신하세요.
+- **한 프로젝트에서만 루프를 써 보고 싶다** — 그 폴더에서 `npx domangcha` 를 실행하세요. 전역 설치는 그대로 있고, 그 프로젝트 안에서만 라우터가 `LOOP.md` 에 자리를 내주며 `/ceo` 로 바로 되돌아옵니다.
 - **프로젝트에 이미 `CLAUDE.md` 가 있다면?** 자동으로 `.claude/heavy/CEO.md` 로 옮겨지고 중량 항목에서 다시 읽힙니다. 그 자리에 두려면 `--no-migrate` 를 붙이세요.
 - **되돌리려면** — `LOOP.md`, `scripts/loop.mjs`, `.loop/` 를 지우고 `.claude/heavy/CEO.md` 를 `CLAUDE.md` 로 복원하면 전역 하네스가 즉시 다시 동작합니다.
 

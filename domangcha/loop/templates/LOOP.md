@@ -1,4 +1,4 @@
-# DOMANGCHA v3.0.0 — LOOP 경량 자율개발 루프 프로토콜
+# DOMANGCHA v3.0.0 — LOOP 프로젝트 자율개발 루프 프로토콜
 
 이 파일은 매 세션 로드되는 유일한 작업 규정
 이 프로젝트의 규정은 전역 규정(~/.claude/CLAUDE.md 의 DOMANGCHA 전체 설치본)보다 우선함
@@ -52,7 +52,7 @@ UserPromptSubmit 훅이 매 프롬프트를 지시 또는 개입으로 기록하
 
 1 loop start Ixx 실행, 출력된 항목 블록의 범위와 감사 기준을 작업 기준으로 삼음, 중량 모드면 heavy_doc 를 먼저 읽음
 2 범위 안에서 구현
-3 자가감사 6항 실행
+3 자가감사 7항 실행
   a 범위 일치: git status 의 변경 파일이 항목 범위와 일치, 범위 밖 변경은 되돌리거나 사유를 요약에 기록
   b 정적 검사: cmd_typecheck 통과, lint 설정이 있으면 cmd_lint 통과
   c 항목 감사 기준: 기준 줄마다 실제 실행 또는 확인, 근거를 한 줄씩 확보
@@ -120,6 +120,7 @@ UserPromptSubmit 훅이 매 프롬프트를 지시 또는 개입으로 기록하
 - 모드가 중량인 항목은 start 시 heavy_doc (기본 .claude/heavy/CEO.md) 를 읽고 그 규정을 해당 항목에만 적용
 - 중량 규정 적용 결과도 pass --notes 에 기록
 - 경량 항목에서는 heavy_doc 를 읽지 않음
+- /ceo 는 요청 전체를 하네스로 올림, 하네스가 없으면 루프가 먼저 설치를 제안함
 
 ## 6 정책 자가학습
 

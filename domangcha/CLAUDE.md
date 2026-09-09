@@ -4,9 +4,9 @@ This file contains Claude-specific integration only. Shared execution policy liv
 
 ## Two install shapes
 
-- `npx domangcha` installs the lightweight loop into the current project only (`loop/templates/` → project root). It never writes to `~/.claude`.
-- `npx domangcha --full` runs `install.sh` and installs everything below into `~/.claude` and `~/.domangcha`.
-- `hooks/domangcha-ceo-enforcer.py` yields when the project carries `.loop/` and `scripts/loop.mjs`, so a global install and a loop project never both speak.
+- `npx domangcha` decides by location: inside a project it installs the loop there (`loop/templates/` → project root) and never writes to `~/.claude`; outside a project it runs `install.sh` and installs everything below into `~/.claude` and `~/.domangcha`.
+- `hooks/domangcha-ceo-enforcer.py` yields when the project carries `.loop/` and `scripts/loop.mjs`, so a global install and a loop project never both speak — except for `/ceo`, which always reaches the router and is the documented escalation path.
+- `loop/templates/scripts/loop.mjs` gates `/ceo` on machines without the harness and offers to install it, so a loop-only project still has a route up.
 
 ## Claude integration
 
