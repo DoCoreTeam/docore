@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// DOMANGCHA v3.0.1  scripts/loop.mjs
+// DOMANGCHA v3.0.2  scripts/loop.mjs
 // 프로젝트 자율개발 루프의 기록 CLI 겸 훅 핸들러 (Claude Code, Cursor 공용)
 // 이 파일은 npx domangcha 가 프로젝트에 설치하며 재설치 때마다 최신본으로 갱신됨
 // 요구 사항: Node 22.13 이상 (node:sqlite 내장, 추가 npm 의존성 없음)
@@ -18,7 +18,7 @@ let DatabaseSync;
 try { ({ DatabaseSync } = await import('node:sqlite')); }
 catch { console.error('[DOMANGCHA] node:sqlite unavailable / 사용 불가 — Node 22.13+ required'); process.exit(1); }
 
-const KIT_VERSION = "3.0.1";
+const KIT_VERSION = "3.0.2";
 
 // ---------- 경로 ----------
 function findRoot(start) {
@@ -284,6 +284,15 @@ function setSetting(key, value) {
 }
 const flag = (key) => String(getSetting(key)) === 'true';
 const num = (key) => Number(getSetting(key));
+
+// 프로젝트가 이미 loop 스크립트를 갖고 있는지만 확인한다 (쓰기 없음).
+// Read-only check for an existing loop script; nothing is written.
+function hasLoopScript() {
+  const pkg = path.join(ROOT, 'package.json');
+  if (!fs.existsSync(pkg)) return false;
+  try { return Boolean((JSON.parse(fs.readFileSync(pkg, 'utf8')).scripts || {}).loop); }
+  catch { return true; }
+}
 
 function nextId(table, prefix) {
   const r = q1(`SELECT COUNT(*) AS c FROM ${table}`);
@@ -718,18 +727,15 @@ cmds.init = (a) => {
   if (!fs.existsSync(path.join(ARCHIVE_DIR, '.gitkeep'))) fs.writeFileSync(path.join(ARCHIVE_DIR, '.gitkeep'), '');
   const hooksFile = mergeClaudeHooks();
   const cursorFile = (a.cursor || fs.existsSync(path.join(ROOT, '.cursor'))) ? mergeCursorHooks() : null;
-  const pkg = path.join(ROOT, 'package.json');
-  if (fs.existsSync(pkg)) {
-    try {
-      const j = JSON.parse(fs.readFileSync(pkg, 'utf8'));
-      j.scripts = j.scripts || {};
-      if (!j.scripts.loop) { j.scripts.loop = 'node scripts/loop.mjs'; fs.writeFileSync(pkg, JSON.stringify(j, null, 2) + '\n'); }
-    } catch { /* package.json 손상 시 건너뜀 */ }
-  }
+  // package.json 은 프로젝트의 것이므로 고치지 않고, 원하면 직접 추가하도록 안내만 한다.
+  // package.json belongs to the project: suggest the script, never write it.
+  const suggestScript = !hasLoopScript();
   registerProject(getSetting('project_name'));
   renderPolicyFile();
   addEvent('init', KIT_VERSION);
   out(`[DOMANGCHA v${KIT_VERSION}] ${L('초기화 완료', 'initialised')}: ${path.relative(ROOT, DB_PATH)}, ${path.relative(ROOT, POLICY_PATH)}, ${hooksFile}${cursorFile ? ', ' + cursorFile : ''}, ${L('레지스트리', 'registry')} ${REGISTRY_PATH}`);
+  if (suggestScript) out(`[DOMANGCHA] ${L('짧게 쓰려면 package.json 에 직접 추가: "loop": "node scripts/loop.mjs" (자동으로 고치지 않음)',
+    'for a shorter command add this to package.json yourself: "loop": "node scripts/loop.mjs" (nothing is written for you)')}`);
   out(resumeText());
 };
 

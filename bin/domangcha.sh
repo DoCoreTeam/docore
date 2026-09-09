@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -e
 
-VERSION="3.0.1"
+VERSION="3.0.2"
 INSTALL_URL="https://raw.githubusercontent.com/DoCoreTeam/domangcha/main/domangcha/install.sh"
 
 # npm links bin entries as symlinks, so resolve the real file before locating siblings.

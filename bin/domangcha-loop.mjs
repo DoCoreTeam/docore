@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// DOMANGCHA v3.0.1  bin/domangcha-loop.mjs
+// DOMANGCHA v3.0.2  bin/domangcha-loop.mjs
 // 경량 설치기: 현재 작업 디렉터리에 자율개발 루프를 설치한다.
 // 하네스 설치는 domangcha.sh 가 프로젝트 밖에서 판단해 맡으며, 이 파일은 ~/.claude 를 건드리지 않는다.
 
@@ -82,6 +82,16 @@ if (!has('--no-migrate') && fs.existsSync(claudeMd)) {
   }
 }
 
+// 이미 깔려 있던 판을 먼저 읽어, 갱신인지 신규인지 사람에게 분명히 알린다.
+// Read the version already here first, so an update is announced as an update.
+function installedLoopVersion() {
+  const f = path.join(ROOT, 'scripts', 'loop.mjs');
+  if (!fs.existsSync(f)) return null;
+  const m = fs.readFileSync(f, 'utf8').match(/^const KIT_VERSION = "([^"]+)";$/m);
+  return m ? m[1] : 'unknown';
+}
+const previous = installedLoopVersion();
+
 copyAlways(path.join('scripts', 'loop.mjs')); // 항상 최신 CLI 로 갱신
 const placed = [];
 // 프로토콜 문서는 언어판이 따로 있고, 프로젝트에는 고른 판 하나만 놓는다.
@@ -107,7 +117,17 @@ if (has('--agents')) {
   say(L('AGENTS.md, GEMINI.md 심볼릭 링크 생성 (Codex, Gemini CLI 용)', 'symlinked AGENTS.md and GEMINI.md for Codex and Gemini CLI'));
 }
 
-say(`${L('scripts/loop.mjs 갱신', 'refreshed scripts/loop.mjs')}${placed.length ? L(`, 신규 ${placed.join(', ')}`, `, added ${placed.join(', ')}`) : L(', 기존 규정 파일 보존', ', kept your existing rule files')}`);
+if (previous && previous !== VERSION) {
+  say(L(`업데이트: scripts/loop.mjs ${previous} → ${VERSION}`, `updated: scripts/loop.mjs ${previous} → ${VERSION}`));
+  say(L('규정 파일(LOOP.md, CLAUDE.md)과 .loop/ 상태는 그대로 둡니다. 새 규정을 받으려면 그 파일을 지우고 다시 실행하세요.',
+    'your rule files (LOOP.md, CLAUDE.md) and .loop/ state are left alone; delete a rule file and re-run to take the new edition.'));
+} else if (previous === VERSION) {
+  say(L(`이미 최신입니다 (${VERSION}). 바뀐 것 없음`, `already current (${VERSION}); nothing changed`));
+} else {
+  say(L('scripts/loop.mjs 설치', 'installed scripts/loop.mjs'));
+}
+if (placed.length) say(L(`신규 ${placed.join(', ')}`, `added ${placed.join(', ')}`));
+else if (!previous) say(L('기존 규정 파일 보존', 'kept your existing rule files'));
 if (migrated) say(L(`기존 CLAUDE.md → ${migrated} 자동 이관 (LOOP.md 5절 중량 모드에서 읽음)`, `moved your CLAUDE.md to ${migrated}, read back for heavy items (LOOP.md section 5)`));
 
 const name = path.basename(ROOT);

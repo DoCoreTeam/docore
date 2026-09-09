@@ -161,6 +161,18 @@ class LoopRuntimeTests(unittest.TestCase):
         self.loop("policy", "retire", "P001", "--reason", "구조 변경")
         self.assertNotIn("P001 i18n", self.loop("resume"))
 
+    def test_init_never_writes_to_the_project_package_json(self):
+        """package.json belongs to the project; the installer suggests, it does not edit."""
+        pkg = self.project / "package.json"
+        original = '{\n  "name": "sample",\n  "version": "1.0.0"\n}\n'
+        pkg.write_text(original)
+        self.loop("init", "--project", "sample")
+        self.assertEqual(pkg.read_text(), original)
+
+    def test_init_suggests_the_loop_script_without_writing_it(self):
+        (self.project / "package.json").write_text('{"name": "sample", "version": "1.0.0"}\n')
+        self.assertIn('"loop": "node scripts/loop.mjs"', self.loop("init", "--project", "sample"))
+
     def test_every_prompt_carries_the_reporting_contract(self):
         """The global hook yields inside a loop project, so the loop must carry the contract."""
         output = self.loop("hook", "prompt", stdin=json.dumps({"prompt": "로그인 만들어줘"}))

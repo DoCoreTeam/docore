@@ -17,7 +17,7 @@ Plain language runs a plan-first loop; `/ceo` raises the same work to all 18 spe
 
 *Your AI getaway car from development hell.*
 
-[![Version](https://img.shields.io/badge/version-3.0.1-brightgreen?style=for-the-badge&logo=github)](https://github.com/DoCoreTeam/domangcha/blob/main/domangcha/VERSION)
+[![Version](https://img.shields.io/badge/version-3.0.2-brightgreen?style=for-the-badge&logo=github)](https://github.com/DoCoreTeam/domangcha/blob/main/domangcha/VERSION)
 [![npm](https://img.shields.io/npm/v/domangcha?style=for-the-badge&logo=npm&color=CB3837)](https://www.npmjs.com/package/domangcha)
 [![License](https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge)](https://opensource.org/licenses/MIT)
 [![Runtimes](https://img.shields.io/badge/Runtimes-Claude%20Code%20%7C%20Codex-5865F2?style=for-the-badge)](#runtime-compatibility)
@@ -122,7 +122,7 @@ drives — except for `/ceo`, which is exactly how you ask for more:
 ```
 you  ▸ add a login screen
 
-hook ▸ [DOMANGCHA v3.0.1] instruction recorded ins_0001 · no active plan
+hook ▸ [DOMANGCHA v3.0.2] instruction recorded ins_0001 · no active plan
      ▸ next: for anything that changes the repository, write the plan before touching code
      ▸ a question, lookup or explanation is answered directly, with no plan
 ```
@@ -555,6 +555,7 @@ Complex feature requests still use the familiar PLANNER → BUILDER → EVALUATO
 
 | Version | What changed |
 |---|---|
+| **v3.0.2** | Never edits your package.json; an update says it is an update; `npm i` vs `npx` spelled out |
 | **v3.0.1** | The loop carries the reporting contract itself, so progress is reported inside a loop project too |
 | **v3.0.0** | One flag-free command installs by location; plain language runs a project loop, `/ceo` raises it to the harness; policies self-learn; Korean and English |
 | **v2.3.2** | The single renderer stops carrying the phrasebook |
@@ -669,15 +670,47 @@ DOMANGCHA is a runtime-aware developer harness for Claude Code and OpenAI Codex.
 
 ## 🚀 Install · Update
 
+> **Run it, do not add it as a dependency.** npm shows `npm i domangcha` on every package
+> page; DOMANGCHA is a tool you run, not a library you import. Use `npx` — or `pnpm dlx` /
+> `yarn dlx` in a pnpm or Yarn project. Running `npm i` inside a pnpm workspace fails with
+> `Cannot read properties of null (reading 'matches')`, which is npm choking on pnpm's
+> `node_modules`, and it can desynchronise your lockfile.
+
 There is one command and it has no install-mode flag.
 
 ```bash
 npx domangcha                 # inside a project: the loop, here, offline
                               # outside a project: the harness into ~/.claude
+pnpm dlx domangcha            # same thing in a pnpm project
+yarn dlx domangcha            # same thing in a Yarn project
+
 npx domangcha --lang en       # English protocol documents and CLI (default is Korean)
 npx domangcha --no-migrate    # keep an existing CLAUDE.md where it is
 npx domangcha --agents        # also symlink AGENTS.md and GEMINI.md to LOOP.md
 ```
+
+### Already installed? Updating
+
+Run the same command again. It tells you what it did:
+
+```
+[DOMANGCHA] updated: scripts/loop.mjs 3.0.0 → 3.0.1
+[DOMANGCHA] your rule files (LOOP.md, CLAUDE.md) and .loop/ state are left alone;
+            delete a rule file and re-run to take the new edition.
+```
+
+- **The CLI is always refreshed.** `scripts/loop.mjs` is replaced with the version you just pulled.
+- **Your rules and state are never overwritten.** `LOOP.md`, `CLAUDE.md`, the slash commands and
+  everything under `.loop/` survive, because you may have edited them. To take a new edition of a
+  rule file, delete that file and run again.
+- **Nothing is written to `package.json`.** The installer suggests a `loop` script and leaves the
+  writing to you.
+- **The harness updates separately** — it lives in `~/.claude`, not in your project:
+  ```bash
+  curl -sSL https://raw.githubusercontent.com/DoCoreTeam/domangcha/main/domangcha/install.sh | bash
+  ```
+  or run `npx domangcha` from outside any project. Your registries are preserved.
+- **Which version am I on?** `node scripts/loop.mjs help` prints it, and every hook line carries it.
 
 Re-running inside a project refreshes `scripts/loop.mjs` and leaves every rule file you have edited
 alone. The loop needs Node 22.13+ (`node:sqlite`, no npm dependencies).
@@ -729,7 +762,7 @@ Nothing breaks and nothing is removed.
 
 *개발 지옥에서 도망쳐 — 돔황차🚗💨*
 
-[![Version](https://img.shields.io/badge/version-3.0.1-brightgreen?style=for-the-badge&logo=github)](https://github.com/DoCoreTeam/domangcha/blob/main/domangcha/VERSION)
+[![Version](https://img.shields.io/badge/version-3.0.2-brightgreen?style=for-the-badge&logo=github)](https://github.com/DoCoreTeam/domangcha/blob/main/domangcha/VERSION)
 [![npm](https://img.shields.io/npm/v/domangcha?style=for-the-badge&logo=npm&color=CB3837)](https://www.npmjs.com/package/domangcha)
 [![License](https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge)](https://opensource.org/licenses/MIT)
 [![Runtimes](https://img.shields.io/badge/런타임-Claude%20Code%20%7C%20Codex-5865F2?style=for-the-badge)](#runtime-compatibility)
@@ -783,7 +816,7 @@ v3 는 기본값이 바뀌었습니다. `npx domangcha` 는 무조건 홈 디렉
 ```
 당신 ▸ 로그인 화면 만들어줘
 
-훅   ▸ [DOMANGCHA v3.0.1] 지시 기록 ins_0001 · 활성 플랜 없음
+훅   ▸ [DOMANGCHA v3.0.2] 지시 기록 ins_0001 · 활성 플랜 없음
      ▸ 다음 행동: 구현·수정·추가 지시면 코드에 손대기 전에 LOOP.md 1절대로 플랜부터 작성
      ▸ 단순 질문·조회·설명 요청이면 플랜 없이 바로 답변
 ```
@@ -1074,6 +1107,7 @@ DC-REV  ✔  수정 정확. undefined 방어 패턴은 카카오페이 공식 �
 
 | 버전 | 바뀐 것 |
 |---|---|
+| **v3.0.2** | 사용자 package.json 을 건드리지 않음, 업데이트를 업데이트라고 알림, `npm i` 와 `npx` 구분 안내 |
 | **v3.0.1** | 루프가 보고 계약을 직접 실어, 루프 프로젝트에서도 진행 상황을 보고함 |
 | **v3.0.0** | 플래그 없는 한 명령이 실행 위치를 보고 설치, 자연어는 프로젝트 루프 · `/ceo` 는 하네스로 승격, 정책 자가학습, 한국어·영어 지원 |
 | **v2.3.2** | 단일 렌더러에서 문구 사전 분리 |
@@ -1265,15 +1299,46 @@ node scripts/loop.mjs help              # 전체 하위 명령
 
 ### 🚀 설치 · 업데이트
 
+> **설치하지 말고 실행하세요.** npm 페이지는 모든 패키지에 `npm i domangcha` 를 자동으로 띄우는데,
+> DOMANGCHA 는 가져다 쓰는 라이브러리가 아니라 실행하는 도구입니다. `npx` 를 쓰세요 — pnpm 이나
+> Yarn 프로젝트라면 `pnpm dlx` / `yarn dlx` 입니다. pnpm 워크스페이스에서 `npm i` 를 하면
+> `Cannot read properties of null (reading 'matches')` 로 실패하는데, 이는 npm 이 pnpm 의
+> `node_modules` 구조를 읽지 못해서이며 lockfile 이 어긋날 수 있습니다.
+
 명령은 하나이고 설치 방식을 고르는 플래그는 없습니다.
 
 ```bash
 npx domangcha                 # 프로젝트 안: 그 자리에 루프, 오프라인
                               # 프로젝트 밖: ~/.claude 에 하네스
+pnpm dlx domangcha            # pnpm 프로젝트에서 동일
+yarn dlx domangcha            # Yarn 프로젝트에서 동일
+
 npx domangcha --lang en       # 프로토콜 문서와 CLI 를 영어로 (기본은 한국어)
 npx domangcha --no-migrate    # 기존 CLAUDE.md 를 그 자리에 그대로 둠
 npx domangcha --agents        # AGENTS.md, GEMINI.md 를 LOOP.md 로 심볼릭 링크
 ```
+
+### 이미 설치했다면 — 업데이트
+
+같은 명령을 다시 실행하면 됩니다. 무엇을 했는지 알려줍니다.
+
+```
+[DOMANGCHA] 업데이트: scripts/loop.mjs 3.0.0 → 3.0.1
+[DOMANGCHA] 규정 파일(LOOP.md, CLAUDE.md)과 .loop/ 상태는 그대로 둡니다.
+            새 규정을 받으려면 그 파일을 지우고 다시 실행하세요.
+```
+
+- **CLI 는 항상 갱신됩니다.** `scripts/loop.mjs` 가 방금 받은 버전으로 교체됩니다.
+- **당신의 규정과 상태는 덮어쓰지 않습니다.** `LOOP.md`, `CLAUDE.md`, 슬래시 커맨드,
+  `.loop/` 아래 전부 그대로 둡니다 — 손대셨을 수 있으니까요. 새 판을 받고 싶은 파일만
+  지우고 다시 실행하세요.
+- **`package.json` 은 건드리지 않습니다.** `loop` 스크립트를 제안만 하고, 쓰는 건 당신 몫입니다.
+- **하네스는 따로 갱신합니다** — 프로젝트가 아니라 `~/.claude` 에 있기 때문입니다.
+  ```bash
+  curl -sSL https://raw.githubusercontent.com/DoCoreTeam/domangcha/main/domangcha/install.sh | bash
+  ```
+  또는 프로젝트 밖에서 `npx domangcha`. 레지스트리는 보존됩니다.
+- **내 버전이 뭔지 보려면** `node scripts/loop.mjs help` 를 실행하거나, 훅 출력 줄에 항상 찍힙니다.
 
 프로젝트 안에서 다시 실행하면 `scripts/loop.mjs` 만 최신으로 갱신하고, 당신이 손댄 규정 파일은
 그대로 둡니다. 루프는 Node 22.13 이상이 필요합니다 (`node:sqlite`, npm 의존성 없음).
