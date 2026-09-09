@@ -161,6 +161,16 @@ class LoopRuntimeTests(unittest.TestCase):
         self.loop("policy", "retire", "P001", "--reason", "구조 변경")
         self.assertNotIn("P001 i18n", self.loop("resume"))
 
+    def test_every_prompt_carries_the_reporting_contract(self):
+        """The global hook yields inside a loop project, so the loop must carry the contract."""
+        output = self.loop("hook", "prompt", stdin=json.dumps({"prompt": "로그인 만들어줘"}))
+        self.assertIn("진행 상황 보고 규칙", output)
+        self.assertIn("30초 이상", output)
+
+    def test_session_start_carries_the_contract_and_the_card(self):
+        output = self.loop("hook", "session", stdin=json.dumps({"source": "startup"}))
+        self.assertIn("진행 상황 보고 규칙", output)
+
     def test_a_ceo_prompt_offers_the_harness_instead_of_planning(self):
         output = self.loop("hook", "prompt", stdin=json.dumps({"prompt": "/ceo refactor everything"}))
         self.assertIn("/ceo", output)
@@ -227,6 +237,11 @@ class BilingualTests(unittest.TestCase):
         self.assertEqual(len(card), 1, self.loop("resume"))
         self.assertIn("items 0/1", card[0])
         self.assertIn("retries left", card[0])
+
+    def test_the_english_contract_carries_no_korean(self):
+        text = self.loop("hook", "prompt", stdin=json.dumps({"prompt": "add a login screen"}))
+        self.assertIn("DOMANGCHA reporting rules", text)
+        self.assertFalse(re.search(r"[가-힣]", text), text)
 
     def test_a_korean_plan_still_parses_after_switching_to_english(self):
         """The parser reads both editions, so an existing plan survives the switch."""

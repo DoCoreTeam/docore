@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// DOMANGCHA v3.0.0  scripts/loop.mjs
+// DOMANGCHA v3.0.1  scripts/loop.mjs
 // 프로젝트 자율개발 루프의 기록 CLI 겸 훅 핸들러 (Claude Code, Cursor 공용)
 // 이 파일은 npx domangcha 가 프로젝트에 설치하며 재설치 때마다 최신본으로 갱신됨
 // 요구 사항: Node 22.13 이상 (node:sqlite 내장, 추가 npm 의존성 없음)
@@ -18,7 +18,7 @@ let DatabaseSync;
 try { ({ DatabaseSync } = await import('node:sqlite')); }
 catch { console.error('[DOMANGCHA] node:sqlite unavailable / 사용 불가 — Node 22.13+ required'); process.exit(1); }
 
-const KIT_VERSION = "3.0.0";
+const KIT_VERSION = "3.0.1";
 
 // ---------- 경로 ----------
 function findRoot(start) {
@@ -585,6 +585,36 @@ function policyLines(prefix) {
   return lines;
 }
 
+// ---------- 보고 계약 / reporting contract ----------
+// 저장소 불변식: 진행 상황은 기본으로 보고한다. 하네스는 전역 훅이 이 계약을 주입하지만
+// 루프 프로젝트에서는 전역 훅이 물러나므로 루프가 직접 같은 계약을 준다.
+// Repository invariant: progress is reported by default. The harness injects this from the global
+// hook; inside a loop project that hook yields, so the loop carries the same contract itself.
+function reportingContract() {
+  if (EN()) {
+    return [
+      'DOMANGCHA reporting rules (on by default; turn them off only if the user asks):',
+      '1. Open your reply with the loop card above, verbatim, so the user sees where this stands before anything else.',
+      '2. Report every pass: run resume or start and show the returned card, then add one line saying what actually changed this pass. If you are circling the same item, say so.',
+      '3. Name the stage you are in — plan, item Ixx, self-audit 3-a..3-g, final audit — and the item id, never just "working on it".',
+      '4. Never go silent through a step over 30 seconds. Say what you started, where it is, and how it ended.',
+      '5. Before plan confirm, and before anything destructive or irreversible, explain in plain words what you are asking approval for, then stop and wait.',
+      '6. On a self-audit failure, say which of a..g failed and what the evidence was. On the second failure of one item, raise the policy question rather than quietly retrying.',
+      '7. Tone: the user\'s language, brief and plain. Gloss jargon in a few words. Never hide a failure — state it with the next action.',
+    ];
+  }
+  return [
+    '진행 상황 보고 규칙 (기본 활성 · 끄려면 사용자가 명시적으로 요청):',
+    '1. 응답 시작에 위 루프 카드를 그대로 보여준다. 사용자가 "지금 어디쯤인지"를 먼저 알게 한다.',
+    '2. 매 패스마다 보고한다. resume 또는 start 출력의 카드를 보여주고, 이번 패스에서 실제로 달라진 것 한 줄을 덧붙인다. 같은 항목을 맴돌고 있으면 그렇다고 말한다.',
+    '3. 지금 어느 단계인지 이름을 말한다 — 플랜 작성, 항목 Ixx 구현, 자가감사 3-a~3-g, 종합 감사. "작업 중"으로 뭉개지 않는다.',
+    '4. 30초 이상 걸리는 단계는 침묵하지 않는다. 시작·중간·끝을 짧게 알린다.',
+    '5. plan confirm 앞과 파괴적·되돌릴 수 없는 작업 앞에서는 무엇을·왜 승인받아야 하는지 사람의 말로 설명한 뒤 멈추고 기다린다.',
+    '6. 자가감사 실패 시 a~g 중 무엇이 왜 걸렸는지 근거와 함께 말한다. 같은 항목 2회째 실패면 조용히 재시도하지 말고 정책 승격 여부를 사용자에게 묻는다.',
+    '7. 톤: 사용자의 언어로 짧고 담백하게. 전문용어에는 짧은 풀이를 붙이고, 실패는 감추지 말고 있는 그대로 + 다음 조치를 함께 말한다.',
+  ];
+}
+
 // ---------- /ceo 승격 게이트 / escalation gate ----------
 // 기본은 이 루프다. /ceo 는 전체 하네스를 부르며, 없으면 그때 설치를 제안한다.
 // This loop is the default. /ceo calls the full harness and offers to install it on demand.
@@ -637,12 +667,13 @@ function progressCard(p) {
 }
 
 // ---------- 출력 도우미 ----------
-function resumeText() {
+function resumeText(withContract) {
   const p = readPlan(false);
   const name = getSetting('project_name');
   if (!p) {
     const head = [`[DOMANGCHA v${KIT_VERSION}] ${L('프로젝트', 'project')} ${name}, ${L('활성 플랜 없음 (.loop/PLAN.md 부재), 새 지시는 plan new 로 시작', 'no active plan (.loop/PLAN.md absent); start a new instruction with plan new')}`];
-    return head.concat(policyLines('[DOMANGCHA]')).join('\n');
+    const tail = withContract ? [''].concat(reportingContract()) : [];
+    return head.concat(policyLines('[DOMANGCHA]'), tail).join('\n');
   }
   const c = counts(p);
   const lines = [];
@@ -662,6 +693,7 @@ function resumeText() {
   lines.push(`[DOMANGCHA] ${L('감사 명령', 'audit commands')} ${cmds}`);
   lines.push(...policyLines('[DOMANGCHA]'));
   lines.push(L('[DOMANGCHA] 재개 규칙과 감사 기준은 LOOP.md 기준', '[DOMANGCHA] resume rules and audit criteria come from LOOP.md'));
+  if (withContract) lines.push('', ...reportingContract());
   return lines.join('\n');
 }
 function passesThisSession() {
@@ -722,7 +754,7 @@ cmds.status = (a) => {
   out(resumeText());
 };
 
-cmds.resume = () => out(resumeText());
+cmds.resume = (a) => out(resumeText(!a['no-contract']));
 
 cmds.hook = (a) => {
   const event = a._[0];
@@ -751,6 +783,7 @@ cmds.hook = (a) => {
       msg.push(L('[DOMANGCHA] 멈춤·중단 지시면 즉시 hold 또는 plan abort, 현재 플랜과 무관한 새 기능이면 완료 후 새 플랜으로 분리 제안',
         '[DOMANGCHA] on a stop instruction, hold or plan abort at once; for a feature unrelated to this plan, propose a separate plan after this one'));
       msg.push(...policyLines('[DOMANGCHA]'));
+      msg.push('', ...reportingContract());
       out(msg.join('\n'));
     } else {
       const id = nextId('instructions', 'ins');
@@ -765,6 +798,7 @@ cmds.hook = (a) => {
       msg.push(L('[DOMANGCHA] 단순 질문·조회·설명 요청이면 플랜 없이 바로 답변 (LOOP.md 1절 예외)',
         '[DOMANGCHA] a question, lookup or explanation is answered directly, with no plan (LOOP.md section 1 exception)'));
       msg.push(...policyLines('[DOMANGCHA]'));
+      msg.push('', ...reportingContract());
       out(msg.join('\n'));
     }
     return;
@@ -785,7 +819,7 @@ cmds.hook = (a) => {
   if (event === 'session') {
     snapshot('session', input.source || null);
     addEvent('session_start', input.source || (isCursor ? 'cursor' : null), sessionId);
-    out(resumeText());
+    out(resumeText(true));
     return;
   }
   die(L(`알 수 없는 훅 이벤트 ${event}`, `unknown hook event ${event}`));
