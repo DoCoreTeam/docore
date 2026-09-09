@@ -40,7 +40,7 @@
   "license": "MIT",
   "author": "Michael Dohyeon Kim <kko2349@gmail.com> (https://github.com/docore)",
   "bin": {
-    "domangcha": "./bin/domangcha.sh"
+    "domangcha": "bin/domangcha.sh"
   },
   "files": [
     "bin/",
