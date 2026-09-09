@@ -17,7 +17,7 @@ Then just say what you want — the loop plans, audits and reports, and calls fo
 
 *Your AI getaway car from development hell.*
 
-[![Version](https://img.shields.io/badge/version-3.0.4-brightgreen?style=for-the-badge&logo=github)](https://github.com/DoCoreTeam/domangcha/blob/main/domangcha/VERSION)
+[![Version](https://img.shields.io/badge/version-3.0.5-brightgreen?style=for-the-badge&logo=github)](https://github.com/DoCoreTeam/domangcha/blob/main/domangcha/VERSION)
 [![npm](https://img.shields.io/npm/v/domangcha?style=for-the-badge&logo=npm&color=CB3837)](https://www.npmjs.com/package/domangcha)
 [![License](https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge)](https://opensource.org/licenses/MIT)
 [![Runtimes](https://img.shields.io/badge/Runtimes-Claude%20Code%20%7C%20Codex-5865F2?style=for-the-badge)](#runtime-compatibility)
@@ -579,6 +579,7 @@ Complex feature requests still use the familiar PLANNER → BUILDER → EVALUATO
 
 | Version | What changed |
 |---|---|
+| **v3.0.5** | Terminal output paints English bright and Korean dim, so one language carries and the other confirms |
 | **v3.0.4** | No slash command is required: the loop asks the harness router itself; README usage cut to one block |
 | **v3.0.3** | Install-time output is bilingual, English first, everywhere |
 | **v3.0.2** | Never edits your package.json; an update says it is an update; `npm i` vs `npx` spelled out |
@@ -699,7 +700,7 @@ Nothing breaks and nothing was removed.
 
 *개발 지옥에서 도망쳐 — 돔황차🚗💨*
 
-[![Version](https://img.shields.io/badge/version-3.0.4-brightgreen?style=for-the-badge&logo=github)](https://github.com/DoCoreTeam/domangcha/blob/main/domangcha/VERSION)
+[![Version](https://img.shields.io/badge/version-3.0.5-brightgreen?style=for-the-badge&logo=github)](https://github.com/DoCoreTeam/domangcha/blob/main/domangcha/VERSION)
 [![npm](https://img.shields.io/npm/v/domangcha?style=for-the-badge&logo=npm&color=CB3837)](https://www.npmjs.com/package/domangcha)
 [![License](https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge)](https://opensource.org/licenses/MIT)
 [![Runtimes](https://img.shields.io/badge/런타임-Claude%20Code%20%7C%20Codex-5865F2?style=for-the-badge)](#runtime-compatibility)
@@ -1067,6 +1068,7 @@ DC-REV  ✔  수정 정확. undefined 방어 패턴은 카카오페이 공식 �
 
 | 버전 | 바뀐 것 |
 |---|---|
+| **v3.0.5** | 터미널 출력에서 영어는 또렷하게, 한글은 흐리게 — 한쪽만 읽어도 되게 |
 | **v3.0.4** | 슬래시 커맨드 불필요 — 루프가 하네스 라우터에 직접 질의, README 사용법 한 곳으로 압축 |
 | **v3.0.3** | 설치 시점 출력 전부 이중언어, 영어 우선 |
 | **v3.0.2** | 사용자 package.json 을 건드리지 않음, 업데이트를 업데이트라고 알림, `npm i` 와 `npx` 구분 안내 |

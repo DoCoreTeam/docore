@@ -1,4 +1,4 @@
-# DOMANGCHA v3.0.4 — LOOP 프로젝트 자율개발 루프 프로토콜
+# DOMANGCHA v3.0.5 — LOOP 프로젝트 자율개발 루프 프로토콜
 
 이 파일은 매 세션 로드되는 유일한 작업 규정
 이 프로젝트의 규정은 전역 규정(~/.claude/CLAUDE.md 의 DOMANGCHA 전체 설치본)보다 우선함

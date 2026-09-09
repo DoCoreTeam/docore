@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// DOMANGCHA v3.0.4  bin/domangcha-loop.mjs
+// DOMANGCHA v3.0.5  bin/domangcha-loop.mjs
 // 경량 설치기: 현재 작업 디렉터리에 자율개발 루프를 설치한다.
 // 하네스 설치는 domangcha.sh 가 프로젝트 밖에서 판단해 맡으며, 이 파일은 ~/.claude 를 건드리지 않는다.
 
@@ -25,10 +25,24 @@ const LANG = langArg || 'ko';
 
 // 설치 시점에는 사용자 언어를 알 수 없으므로 항상 영어를 먼저, 한국어를 이어서 보여준다.
 // The installer cannot know the reader's language yet, so it always shows English then Korean.
+// 영어는 또렷하게, 한국어는 흐리게 — 한 화면에 둘 다 있어도 눈은 한쪽만 따라가면 된다.
+// English reads bright, Korean dim: both are on screen, but the eye only follows one.
+const COLOR = process.stdout.isTTY && !process.env.NO_COLOR;
+const c = (code, text) => (COLOR ? `\x1b[${code}m${text}\x1b[0m` : text);
+const bright = (t) => c('1;37', t);
+const dim = (t) => c('2', t);
+const accent = (t) => c('0;36', t);
 const TAG = '[DOMANGCHA]';
 const PAD = ' '.repeat(TAG.length);
-const fail = (en, ko) => { console.error(`${TAG} ${en}`); if (ko) console.error(`${PAD} ${ko}`); process.exit(1); };
-const say = (en, ko) => { console.log(`${TAG} ${en}`); if (ko) console.log(`${PAD} ${ko}`); };
+const fail = (en, ko) => {
+  console.error(`${accent(TAG)} ${bright(en)}`);
+  if (ko) console.error(`${PAD} ${dim(ko)}`);
+  process.exit(1);
+};
+const say = (en, ko) => {
+  console.log(`${accent(TAG)} ${bright(en)}`);
+  if (ko) console.log(`${PAD} ${dim(ko)}`);
+};
 
 function readVersion() {
   const f = path.join(PKG_ROOT, 'domangcha', 'VERSION');
@@ -62,9 +76,9 @@ function copyAlways(rel) {
 }
 
 console.log('');
-console.log(`  DOMANGCHA v${VERSION} — installing the project autonomous dev loop`);
-console.log(`  ${' '.repeat(String(VERSION).length + 12)}프로젝트 자율개발 루프를 설치합니다`);
-console.log(`  target / 대상: ${ROOT}`);
+console.log(`  ${accent(`DOMANGCHA v${VERSION}`)} ${bright('— installing the project autonomous dev loop')}`);
+console.log(`  ${' '.repeat(String(VERSION).length + 11)}${dim('프로젝트 자율개발 루프를 설치합니다')}`);
+console.log(`  ${bright('target')}${dim(' / 대상')}: ${ROOT}`);
 console.log('');
 
 if (!fs.existsSync(path.join(ROOT, '.git'))) {

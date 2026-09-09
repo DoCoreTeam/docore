@@ -60,15 +60,15 @@ spin() {
 git_update_or_clone() {
     local repo="$1" dest="$2" label="$3"
     if [ -d "${dest}/.git" ]; then
-        echo -e "${YELLOW}  ⟳ ${label} — pulling latest / 최신 버전으로 업데이트${NC}"
+        echo -e "${YELLOW}  ⟳ ${label} — pulling latest${DIM} / 최신 버전으로 업데이트${NC}"
         git -C "$dest" fetch --depth 1 origin --quiet
         git -C "$dest" reset --hard origin/HEAD --quiet
     elif [ -d "$dest" ]; then
-        echo -e "${YELLOW}  ⟳ ${label} — re-cloning / 재클론 중${NC}"
+        echo -e "${YELLOW}  ⟳ ${label} — re-cloning${DIM} / 재클론 중${NC}"
         rm -rf "$dest"
         git clone --depth 1 "$repo" "$dest" --quiet
     else
-        echo -e "${GREEN}  ✅ ${label} — fresh install / 신규 설치${NC}"
+        echo -e "${GREEN}  ✅ ${label} — fresh install${DIM} / 신규 설치${NC}"
         git clone --depth 1 "$repo" "$dest" --quiet
     fi
 }
@@ -92,10 +92,10 @@ echo -e "  ${DIM}Escape hand-coding — an 18-agent AI crew builds for you${NC}"
 echo -e "  ${DIM}손코딩에서 도망쳐 — 18명 AI 크루가 대신 짭니다${NC}"
 echo ""
 echo -e "${DIM}  ──────────────────────────────────────────────────────${NC}"
-echo -e "  ${DIM}Reinstall / 재설치:${NC}  ${CYAN}curl -fsSL https://raw.githubusercontent.com/DoCoreTeam/domangcha/main/domangcha/install.sh | bash${NC}"
-echo -e "  ${DIM}or / 또는:${NC}  ${DIM}curl -sSL https://raw.githubusercontent.com/DoCoreTeam/domangcha/main/domangcha/install.sh | bash${NC}"
+echo -e "  ${WHITE}Reinstall${NC}${DIM} / 재설치${NC}:${NC}  ${CYAN}curl -fsSL https://raw.githubusercontent.com/DoCoreTeam/domangcha/main/domangcha/install.sh | bash${NC}"
+echo -e "  ${WHITE}or${NC}${DIM} / 또는${NC}:${NC}  ${DIM}curl -sSL https://raw.githubusercontent.com/DoCoreTeam/domangcha/main/domangcha/install.sh | bash${NC}"
 echo -e "${DIM}  ──────────────────────────────────────────────────────${NC}"
-echo -e "  ${DIM}Starting installation... / 설치를 시작합니다${NC}"
+echo -e "  ${WHITE}Starting installation...${NC}${DIM} / 설치를 시작합니다${NC}"
 echo ""
 ( git clone --depth 1 "$DOMANGCHA_REPO" "$TMP_DIR/domangcha-repo" --quiet ) & spin "Downloading DOMANGCHA... / DOMANGCHA 다운로드 중"
 SRC="${TMP_DIR}/domangcha-repo/domangcha"
@@ -200,9 +200,9 @@ except Exception:
         fi
         codex plugin add domangcha@domangcha-local --json >/dev/null
         echo -e "  ${GREEN}✔${NC}  Codex native plugin  ${DIM}skill + lifecycle hooks installed${NC}"
-        echo -e "  ${YELLOW}⚠${NC}  Codex에서 ${CYAN}/hooks${NC}를 열어 DOMANGCHA hooks를 최초 1회 신뢰하세요."
+        echo -e "  ${YELLOW}⚠${NC}  ${WHITE}Open ${CYAN}/hooks${NC}${WHITE} in Codex once and trust the DOMANGCHA hooks${NC}${DIM} / Codex 에서 /hooks 를 열어 최초 1회 신뢰${NC}"
     else
-        echo -e "  ${YELLOW}⚠${NC}  Codex CLI 미감지 — plugin bundle staged at ${CODEX_MARKETPLACE}"
+        echo -e "  ${YELLOW}⚠${NC}  ${WHITE}Codex CLI not detected — plugin bundle staged at ${CODEX_MARKETPLACE}${NC}${DIM} / Codex CLI 미감지, 번들만 준비됨${NC}"
     fi
 fi
 
@@ -218,7 +218,7 @@ fi
 step "CLAUDE.md 업데이트" "Updating CLAUDE.md"
 if [ -f "${CLAUDE_DIR}/CLAUDE.md" ]; then
     if grep -qE "^# (docrew|DOCORE|DOMANGCHA|CEO) v" "${CLAUDE_DIR}/CLAUDE.md" 2>/dev/null; then
-        echo -e "${YELLOW}  ⟳ CLAUDE.md — updating the DOMANGCHA section / DOMANGCHA 섹션 갱신${NC}"
+        echo -e "${YELLOW}  ⟳ CLAUDE.md — updating the DOMANGCHA section${DIM} / DOMANGCHA 섹션 갱신${NC}"
         python3 - "${CLAUDE_DIR}/CLAUDE.md" "${SRC}/CLAUDE.md" <<'PYEOF'
 import sys, re
 existing = open(sys.argv[1]).read()
@@ -231,13 +231,13 @@ with open(sys.argv[1], 'w') as out:
     out.write(existing.rstrip() + "\n\n" + docore_new)
 PYEOF
     else
-        echo -e "  ${YELLOW}⟳${NC}  updating existing CLAUDE.md / 기존 CLAUDE.md 갱신"
+        echo -e "  ${YELLOW}⟳${NC}  updating existing CLAUDE.md${DIM} / 기존 CLAUDE.md 갱신${NC}"
         echo "" >> "${CLAUDE_DIR}/CLAUDE.md"
         cat "${SRC}/CLAUDE.md" >> "${CLAUDE_DIR}/CLAUDE.md"
     fi
 else
     cp "${SRC}/CLAUDE.md" "${CLAUDE_DIR}/CLAUDE.md"
-    echo -e "  ${GREEN}✔${NC}  CLAUDE.md created / 생성 완료"
+    echo -e "  ${GREEN}✔${NC}  CLAUDE.md created${DIM} / 생성 완료${NC}"
 fi
 
 # ── 5. Memory sync (rule refresh) ────────────────
@@ -282,9 +282,9 @@ open(memory_md, 'w').write(content)
 PYEOF
         fi
     done
-    echo -e "  ${GREEN}✔${NC}  ${MEMORY_SYNCED}개 규칙 메모리 최신화 / ${MEMORY_SYNCED} rule memories refreshed"
+    echo -e "  ${GREEN}✔${NC}  ${WHITE}${MEMORY_SYNCED} rule memories refreshed${NC}${DIM} / 규칙 메모리 ${MEMORY_SYNCED}개 최신화${NC}"
 else
-    echo -e "  ${YELLOW}⚠${NC}  memory-templates missing, skipping / 없음, 건너뜀"
+    echo -e "  ${YELLOW}⚠${NC}  memory-templates missing, skipping${DIM} / 없음, 건너뜀${NC}"
 fi
 
 # ── 6. Registries ─────────────────────────────────
@@ -294,9 +294,9 @@ mkdir -p "${CLAUDE_DIR}/reports"
 KNW_REGISTRY="${SRC}/knowledge-registry"
 if [ ! -d "${KNW_REGISTRY}" ]; then
     mkdir -p "${KNW_REGISTRY}"/{error,pattern,decision,workflow,skill,.knw-queue}
-    echo -e "  ${GREEN}✔${NC}  knowledge-registry initialized / 초기화 완료"
+    echo -e "  ${GREEN}✔${NC}  knowledge-registry initialized${DIM} / 초기화 완료${NC}"
 else
-    echo -e "  ${DIM}·${NC}  knowledge-registry already exists / 이미 존재"
+    echo -e "  ${DIM}·${NC}  knowledge-registry already exists${DIM} / 이미 존재${NC}"
 fi
 for file in error-registry skill-registry project-registry decision-log; do
     if [ ! -f "${CLAUDE_DIR}/${file}.md" ]; then
@@ -312,7 +312,7 @@ done
 
 # ── 7. ECC ────────────────────────────────────────
 step "ECC 183개 스킬 설치" "Installing 183 ECC skills"
-echo -e "  ${DIM}commands excluded — use the /ceo-* orchestrators / 명령어 제외 — /ceo-* 오케스트레이터로 접근${NC}"
+echo -e "  ${WHITE}commands excluded — use the /ceo-* orchestrators${NC}${DIM} / 명령어 제외 — /ceo-* 오케스트레이터로 접근${NC}"
 
 ECC_TMP="${TMP_DIR}/ecc"
 git clone --depth 1 "$ECC_REPO" "$ECC_TMP" --quiet
@@ -331,7 +331,7 @@ for skill_dir in "${ECC_TMP}/skills"/*/; do
     mkdir -p "$dest"
     cp -r "${skill_dir}"* "$dest/" 2>/dev/null || true
 done
-echo -e "  ${GREEN}✔${NC}  ECC skills done / 스킬 완료: ${GREEN}${NEW_SKILLS} 신규(new)${NC}  ${YELLOW}${UPDATED_SKILLS} 업데이트(updated)${NC}"
+echo -e "  ${GREEN}✔${NC}  ECC skills done${DIM} / 스킬 완료${NC}: ${GREEN}${NEW_SKILLS} 신규(new)${NC}  ${YELLOW}${UPDATED_SKILLS} 업데이트(updated)${NC}"
 
 # ── 8. gstack ─────────────────────────────────────
 step "gstack 업데이트" "Updating gstack"
@@ -344,7 +344,7 @@ SUPERPOWERS_INSTALLED=false
 # Method 1: Claude Code plugin CLI
 if command -v claude &>/dev/null; then
     if claude plugin marketplace list 2>/dev/null | grep -q "obra/superpowers-marketplace"; then
-        echo -e "  ${YELLOW}⟳${NC}  superpowers-marketplace already registered / 이미 등록됨"
+        echo -e "  ${YELLOW}⟳${NC}  superpowers-marketplace already registered${DIM} / 이미 등록됨${NC}"
     else
         claude plugin marketplace add obra/superpowers-marketplace 2>/dev/null && \
             echo -e "${GREEN}  ✅ Marketplace registered: obra/superpowers-marketplace${NC}" || true
@@ -373,11 +373,11 @@ fi
 if [ "$SUPERPOWERS_INSTALLED" = false ]; then
     echo ""
     echo -e "${RED}  ╔══════════════════════════════════════════╗${NC}"
-    echo -e "${RED}  ║  ❌  SUPERPOWERS INSTALL FAILED / 설치 실패 ║${NC}"
-    echo -e "${RED}  ║  Required for CEO / CEO 작동에 필수    ║${NC}"
+    echo -e "${RED}  ║  ❌  SUPERPOWERS INSTALL FAILED${DIM} / 설치 실패 ║${NC}"
+    echo -e "${RED}  ║  Required for CEO${DIM} / CEO 작동에 필수    ║${NC}"
     echo -e "${RED}  ╚══════════════════════════════════════════╝${NC}"
     echo ""
-    echo -e "  Install manually inside Claude Code / Claude Code 내에서 수동 설치:"
+    echo -e "  Install manually inside Claude Code${DIM} / Claude Code 내에서 수동 설치:${NC}"
     echo -e "    \033[1;33m/plugin marketplace add obra/superpowers-marketplace\033[0m"
     echo -e "    \033[1;33m/plugin install superpowers@superpowers-marketplace\033[0m"
     exit 1
@@ -394,10 +394,10 @@ chmod +x "${CLAUDE_DIR}/hooks/domangcha-post-edit.sh"
 chmod +x "${CLAUDE_DIR}/hooks/domangcha-stop.sh"
 chmod +x "${CLAUDE_DIR}/hooks/domangcha-ceo-enforcer.py"
 chmod +x "${CLAUDE_DIR}/hooks/domangcha-ralph-loop.py"
-echo -e "  ${GREEN}✔${NC}  domangcha-post-edit.sh  ${DIM}auto-test + auto-fix / 자동 테스트·수정${NC}"
-echo -e "  ${GREEN}✔${NC}  domangcha-stop.sh        ${DIM}CEO quality review / CEO 품질 검토${NC}"
-echo -e "  ${GREEN}✔${NC}  domangcha-ceo-enforcer.py  ${DIM}CEO pipeline enforcer / CEO 파이프라인 강제${NC}"
-echo -e "  ${GREEN}✔${NC}  domangcha-ralph-loop.py  ${DIM}ralph loop engine / ralph 자율 루프 엔진${NC}"
+echo -e "  ${GREEN}✔${NC}  domangcha-post-edit.sh  ${DIM}auto-test + auto-fix${DIM} / 자동 테스트·수정${NC}"
+echo -e "  ${GREEN}✔${NC}  domangcha-stop.sh        ${DIM}CEO quality review${DIM} / CEO 품질 검토${NC}"
+echo -e "  ${GREEN}✔${NC}  domangcha-ceo-enforcer.py  ${DIM}CEO pipeline enforcer${DIM} / CEO 파이프라인 강제${NC}"
+echo -e "  ${GREEN}✔${NC}  domangcha-ralph-loop.py  ${DIM}ralph loop engine${DIM} / ralph 자율 루프 엔진${NC}"
 
 # ── 11. settings.json ─────────────────────────────
 step "settings.json 훅 주입" "Injecting hooks into settings.json"
@@ -514,10 +514,10 @@ HOOK_EOF
 
     chmod +x "${GIT_HOOKS_DIR}/post-merge"
     chmod +x "${GIT_HOOKS_DIR}/post-checkout"
-    echo -e "  ${GREEN}✔${NC}  post-merge  ${DIM}auto-reinstall on git pull / git pull 시 자동 재설치${NC}"
-    echo -e "  ${GREEN}✔${NC}  post-checkout  ${DIM}auto-install on git clone / git clone 시 자동 설치${NC}"
+    echo -e "  ${GREEN}✔${NC}  post-merge  ${DIM}auto-reinstall on git pull${DIM} / git pull 시 자동 재설치${NC}"
+    echo -e "  ${GREEN}✔${NC}  post-checkout  ${DIM}auto-install on git clone${DIM} / git clone 시 자동 설치${NC}"
 else
-    echo -e "  ${YELLOW}⚠${NC}  git repo root not found, skipping git hooks / git 레포 루트 없음, git 훅 건너뜀"
+    echo -e "  ${YELLOW}⚠${NC}  git repo root not found, skipping git hooks${DIM} / git 레포 루트 없음, git 훅 건너뜀${NC}"
 fi
 
 # ── 14. Mark installed version ────────────────────
@@ -554,9 +554,9 @@ if wide:
 else:
     print(f"\n{CB}  🚗💨 DOMANGCHA{NC}")
 
-print(f"{WH}{BD}  돔황차 — 개발 지옥에서 도망쳐  🚗💨{NC}")
-print(f"{DM}  Escape development hell. DOMANGCHA is your getaway car.{NC}")
-print(f"  {MG}{BD}AI 개발 자동화 도구{NC}  {DM}·{NC}  {MG}AI Development Automation Tool{NC}")
+print(f"{WH}{BD}  Escape development hell. DOMANGCHA is your getaway car.  🚗💨{NC}")
+print(f"{DM}  돔황차 — 개발 지옥에서 도망쳐{NC}")
+print(f"  {MG}{BD}AI Development Automation Tool{NC}  {DM}·  AI 개발 자동화 도구{NC}")
 print()
 
 # ── Version block (wide: big digits / narrow: inline) ──
@@ -580,11 +580,13 @@ else:
 
 # ── Info box (width-adaptive) ──
 rows = [
-    (CY, "18 역할(Agent Roles)  ·  19 명령어(Commands)  ·  적응형 실행(Adaptive Execution)"),
-    (DM, "DIRECT · LOOP · GRAPH → 검증  /  minimum reliable orchestration"),
+    (CY, "18 Agent Roles  ·  19 Commands  ·  Adaptive Execution"),
+    (DM, "18 역할 · 19 명령어 · 적응형 실행"),
+    (WH, "DIRECT · LOOP · GRAPH → validation  ·  minimum reliable orchestration"),
     (WH, "by docore  (Michael Dohyeon Kim · KDC CEO)"),
     (DM, "github.com/DoCoreTeam/domangcha"),
-    (GR, "하네스 갱신:  curl -fsSL .../install.sh | bash"),
+    (GR, "refresh the harness:  curl -fsSL .../install.sh | bash"),
+    (DM, "하네스 갱신"),
 ]
 max_content = max(dw(t) for _, t in rows)
 box_inner = min(max_content + 4, cols - 6)
@@ -600,14 +602,14 @@ print()
 
 # ── Installed items ──
 sep = "  " + "─" * min(cols - 6, 56)
-print(f"{WH}{BD}  What's installed / 설치된 항목{NC}")
+print(f"{WH}{BD}  What's installed{NC}{DM} / 설치된 항목{NC}")
 print(f"{DM}{sep}{NC}")
 items = [
-    ("~/.claude/agents/dc-*.md",   "18명 DC-* 에이전트 / 18 DC-* Worker Agents"),
+    ("~/.claude/agents/dc-*.md",   "18 DC-* worker agents"),
     ("~/.claude/commands/ceo*.md", "/ceo /ceo-init /ceo-ralph /ceo-status ..."),
     ("~/.claude/skills/",          "CEO 스킬 + 183 ECC + gstack + Superpowers"),
-    ("~/.claude/hooks/ + settings.json", "auto-test, CEO review, pipeline enforcer / 자동 테스트·CEO 검토·파이프라인 강제"),
-    ("~/.claude/CLAUDE.md",        "auto-loaded by Claude Code / Claude Code 자동 로드"),
+    ("~/.claude/hooks/ + settings.json", "auto-test, CEO review, pipeline enforcer"),
+    ("~/.claude/CLAUDE.md",        "auto-loaded by Claude Code"),
     ("~/.domangcha/codex-marketplace", "Codex plugin + skill + lifecycle hooks"),
 ]
 for path, desc in items:
@@ -617,26 +619,26 @@ print(f"{DM}{sep}{NC}")
 print()
 
 # ── Getting started ──
-print(f"{WH}{BD}  🚀 Getting Started / 시작하기{NC}")
-print(f"  {DM}1.{NC} Open Claude Code in any project  {DM}/ 아무 프로젝트에서 Claude Code 열기{NC}")
-print(f"  {DM}2.{NC} {CY}/ceo-init{NC}  {DM}Initialize the project / 프로젝트 초기화{NC}")
-print(f"  {DM}3.{NC} {CY}/ceo \"투두앱 만들어줘\"{NC}  {DM}→ DIRECT/LOOP/GRAPH 자동 선택{NC}")
+print(f"{WH}{BD}  🚀 Getting started{NC}{DM} / 시작하기{NC}")
+print(f"  {DM}1.{NC} {WH}Open Claude Code in any project{NC}{DM}  / 아무 프로젝트에서 Claude Code 열기{NC}")
+print(f"  {DM}2.{NC} {WH}Just say what you want — no slash command needed{NC}{DM}  / 하고 싶은 일을 그냥 말하면 됩니다{NC}")
+print(f"  {DM}3.{NC} {CY}\"Build me a todo app\"{NC}{DM}  → DIRECT/LOOP/GRAPH chosen for you / 자동 선택{NC}")
 print()
-print(f"  {WH}{BD}📦 Update / Reinstall / 업데이트·재설치{NC}")
+print(f"  {WH}{BD}📦 Update / Reinstall{NC}{DM} / 업데이트·재설치{NC}")
 print(f"  {GR}  npx domangcha{NC}  {DM}← inside a project / 프로젝트 안에서{NC}")
 print(f"  {DM}  curl -sSL https://raw.githubusercontent.com/DoCoreTeam/domangcha/main/domangcha/install.sh | bash{NC}")
 print()
-print(f"  {WH}{BD}📋 Key Commands / 주요 명령어{NC}")
+print(f"  {WH}{BD}📋 Optional shortcuts{NC}{DM} / 선택 사항인 단축키{NC}")
 cmds = [
-    ("/ceo \"업무\"", "DIRECT / LOOP / GRAPH 자동 라우팅"),
-    ("/ceo-ralph",    "autonomous loop / 자율 반복 루프"),
-    ("/ceo-init",     "harness setup / 프로젝트 하네스 셋업"),
-    ("/ceo-status",   "show status / 현황 조회"),
+    ("/ceo \"task\"", "explicit routing, never required"),
+    ("/ceo-ralph",    "autonomous loop"),
+    ("/ceo-init",     "harness setup"),
+    ("/ceo-status",   "show status"),
 ]
 for cmd, desc in cmds:
     print(f"  {CY}{cmd:<20}{NC}  {DM}{desc}{NC}")
 print()
-print(f"  {MG}{BD}개발 지옥에서 도망쳐. 🚗💨 돔황차가 데려다 줄게.{NC}")
+print(f"  {MG}{BD}Escape development hell. 🚗💨{NC}{DM}  개발 지옥에서 도망쳐, 돔황차가 데려다 줄게{NC}")
 print(f"  {DM}Escape development hell. DOMANGCHA is your getaway car.{NC}")
 print()
 PYEOF

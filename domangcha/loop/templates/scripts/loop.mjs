@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// DOMANGCHA v3.0.4  scripts/loop.mjs
+// DOMANGCHA v3.0.5  scripts/loop.mjs
 // 프로젝트 자율개발 루프의 기록 CLI 겸 훅 핸들러 (Claude Code, Cursor 공용)
 // 이 파일은 npx domangcha 가 프로젝트에 설치하며 재설치 때마다 최신본으로 갱신됨
 // 요구 사항: Node 22.13 이상 (node:sqlite 내장, 추가 npm 의존성 없음)
@@ -18,7 +18,7 @@ let DatabaseSync;
 try { ({ DatabaseSync } = await import('node:sqlite')); }
 catch { console.error('[DOMANGCHA] node:sqlite unavailable / 사용 불가 — Node 22.13+ required'); process.exit(1); }
 
-const KIT_VERSION = "3.0.4";
+const KIT_VERSION = "3.0.5";
 
 // ---------- 경로 ----------
 function findRoot(start) {
@@ -50,6 +50,11 @@ const readStdin = () => { try { return fs.readFileSync(0, 'utf8'); } catch { ret
 const readJsonStdin = () => { try { return JSON.parse(readStdin() || '{}'); } catch { return {}; } };
 process.stdout.on('error', (e) => { if (e && e.code === 'EPIPE') process.exit(0); });
 const out = (s) => process.stdout.write(s + '\n');
+// 영어는 또렷하게, 한국어는 흐리게 / English bright, Korean dim.
+const COLOR = process.stdout.isTTY && !process.env.NO_COLOR;
+const paint = (code, t) => (COLOR ? `\x1b[${code}m${t}\x1b[0m` : t);
+const bright = (t) => paint('1;37', t);
+const faint = (t) => paint('2', t);
 const die = (s) => { console.error('[DOMANGCHA] ' + s); process.exit(1); };
 
 function parseArgs(argv) {
@@ -761,11 +766,11 @@ cmds.init = (a) => {
   addEvent('init', KIT_VERSION);
   const files = `${path.relative(ROOT, DB_PATH)}, ${path.relative(ROOT, POLICY_PATH)}, ${hooksFile}${cursorFile ? ', ' + cursorFile : ''}`;
   const pad = ' '.repeat(`[DOMANGCHA v${KIT_VERSION}]`.length);
-  out(`[DOMANGCHA v${KIT_VERSION}] initialised: ${files}, registry ${REGISTRY_PATH}`);
-  out(`${pad} 초기화 완료: ${files}, 레지스트리 ${REGISTRY_PATH}`);
+  out(`[DOMANGCHA v${KIT_VERSION}] ${bright(`initialised: ${files}, registry ${REGISTRY_PATH}`)}`);
+  out(`${pad} ${faint(`초기화 완료: ${files}, 레지스트리 ${REGISTRY_PATH}`)}`);
   if (suggestScript) {
-    out('[DOMANGCHA] for a shorter command add this to package.json yourself: "loop": "node scripts/loop.mjs"');
-    out('            짧게 쓰려면 package.json 에 직접 추가하세요 (자동으로 고치지 않습니다)');
+    out(`[DOMANGCHA] ${bright('for a shorter command add this to package.json yourself: "loop": "node scripts/loop.mjs"')}`);
+    out(`            ${faint('짧게 쓰려면 package.json 에 직접 추가하세요 (자동으로 고치지 않습니다)')}`);
   }
   if (!a.quiet) out(resumeText());
 };
