@@ -17,7 +17,7 @@ Plain language runs a plan-first loop; `/ceo` raises the same work to all 18 spe
 
 *Your AI getaway car from development hell.*
 
-[![Version](https://img.shields.io/badge/version-3.0.2-brightgreen?style=for-the-badge&logo=github)](https://github.com/DoCoreTeam/domangcha/blob/main/domangcha/VERSION)
+[![Version](https://img.shields.io/badge/version-3.0.3-brightgreen?style=for-the-badge&logo=github)](https://github.com/DoCoreTeam/domangcha/blob/main/domangcha/VERSION)
 [![npm](https://img.shields.io/npm/v/domangcha?style=for-the-badge&logo=npm&color=CB3837)](https://www.npmjs.com/package/domangcha)
 [![License](https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge)](https://opensource.org/licenses/MIT)
 [![Runtimes](https://img.shields.io/badge/Runtimes-Claude%20Code%20%7C%20Codex-5865F2?style=for-the-badge)](#runtime-compatibility)
@@ -122,7 +122,7 @@ drives — except for `/ceo`, which is exactly how you ask for more:
 ```
 you  ▸ add a login screen
 
-hook ▸ [DOMANGCHA v3.0.2] instruction recorded ins_0001 · no active plan
+hook ▸ [DOMANGCHA v3.0.3] instruction recorded ins_0001 · no active plan
      ▸ next: for anything that changes the repository, write the plan before touching code
      ▸ a question, lookup or explanation is answered directly, with no plan
 ```
@@ -555,6 +555,7 @@ Complex feature requests still use the familiar PLANNER → BUILDER → EVALUATO
 
 | Version | What changed |
 |---|---|
+| **v3.0.3** | Install-time output is bilingual, English first, everywhere |
 | **v3.0.2** | Never edits your package.json; an update says it is an update; `npm i` vs `npx` spelled out |
 | **v3.0.1** | The loop carries the reporting contract itself, so progress is reported inside a loop project too |
 | **v3.0.0** | One flag-free command installs by location; plain language runs a project loop, `/ceo` raises it to the harness; policies self-learn; Korean and English |
@@ -762,7 +763,7 @@ Nothing breaks and nothing is removed.
 
 *개발 지옥에서 도망쳐 — 돔황차🚗💨*
 
-[![Version](https://img.shields.io/badge/version-3.0.2-brightgreen?style=for-the-badge&logo=github)](https://github.com/DoCoreTeam/domangcha/blob/main/domangcha/VERSION)
+[![Version](https://img.shields.io/badge/version-3.0.3-brightgreen?style=for-the-badge&logo=github)](https://github.com/DoCoreTeam/domangcha/blob/main/domangcha/VERSION)
 [![npm](https://img.shields.io/npm/v/domangcha?style=for-the-badge&logo=npm&color=CB3837)](https://www.npmjs.com/package/domangcha)
 [![License](https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge)](https://opensource.org/licenses/MIT)
 [![Runtimes](https://img.shields.io/badge/런타임-Claude%20Code%20%7C%20Codex-5865F2?style=for-the-badge)](#runtime-compatibility)
@@ -816,7 +817,7 @@ v3 는 기본값이 바뀌었습니다. `npx domangcha` 는 무조건 홈 디렉
 ```
 당신 ▸ 로그인 화면 만들어줘
 
-훅   ▸ [DOMANGCHA v3.0.2] 지시 기록 ins_0001 · 활성 플랜 없음
+훅   ▸ [DOMANGCHA v3.0.3] 지시 기록 ins_0001 · 활성 플랜 없음
      ▸ 다음 행동: 구현·수정·추가 지시면 코드에 손대기 전에 LOOP.md 1절대로 플랜부터 작성
      ▸ 단순 질문·조회·설명 요청이면 플랜 없이 바로 답변
 ```
@@ -1107,6 +1108,7 @@ DC-REV  ✔  수정 정확. undefined 방어 패턴은 카카오페이 공식 �
 
 | 버전 | 바뀐 것 |
 |---|---|
+| **v3.0.3** | 설치 시점 출력 전부 이중언어, 영어 우선 |
 | **v3.0.2** | 사용자 package.json 을 건드리지 않음, 업데이트를 업데이트라고 알림, `npm i` 와 `npx` 구분 안내 |
 | **v3.0.1** | 루프가 보고 계약을 직접 실어, 루프 프로젝트에서도 진행 상황을 보고함 |
 | **v3.0.0** | 플래그 없는 한 명령이 실행 위치를 보고 설치, 자연어는 프로젝트 루프 · `/ceo` 는 하네스로 승격, 정책 자가학습, 한국어·영어 지원 |

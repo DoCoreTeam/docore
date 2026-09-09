@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// DOMANGCHA v3.0.2  bin/domangcha-loop.mjs
+// DOMANGCHA v3.0.3  bin/domangcha-loop.mjs
 // 경량 설치기: 현재 작업 디렉터리에 자율개발 루프를 설치한다.
 // 하네스 설치는 domangcha.sh 가 프로젝트 밖에서 판단해 맡으며, 이 파일은 ~/.claude 를 건드리지 않는다.
 
@@ -22,14 +22,18 @@ if (langArg !== undefined && !LANGS.includes(langArg)) {
   process.exit(1);
 }
 const LANG = langArg || 'ko';
-const L = (ko, en) => (LANG === 'en' ? en : ko);
 
-const fail = (m) => { console.error(`[DOMANGCHA] ${m}`); process.exit(1); };
-const say = (m) => console.log(`[DOMANGCHA] ${m}`);
+// 설치 시점에는 사용자 언어를 알 수 없으므로 항상 영어를 먼저, 한국어를 이어서 보여준다.
+// The installer cannot know the reader's language yet, so it always shows English then Korean.
+const TAG = '[DOMANGCHA]';
+const PAD = ' '.repeat(TAG.length);
+const fail = (en, ko) => { console.error(`${TAG} ${en}`); if (ko) console.error(`${PAD} ${ko}`); process.exit(1); };
+const say = (en, ko) => { console.log(`${TAG} ${en}`); if (ko) console.log(`${PAD} ${ko}`); };
 
 function readVersion() {
   const f = path.join(PKG_ROOT, 'domangcha', 'VERSION');
-  if (!fs.existsSync(f)) fail(`버전 파일 없음: ${f}, 패키지가 손상되었으니 다시 설치할 것`);
+  if (!fs.existsSync(f)) fail(`version file missing: ${f} — the package is damaged, install it again`,
+    `버전 파일 없음: ${f} — 패키지가 손상되었으니 다시 설치하세요`);
   return fs.readFileSync(f, 'utf8').trim();
 }
 const VERSION = readVersion();
@@ -38,10 +42,11 @@ const VERSION = readVersion();
 {
   const [maj, min] = process.versions.node.split('.').map(Number);
   if (maj < 22 || (maj === 22 && min < 13)) {
-    fail(`Node 22.13 이상 필요, 현재 ${process.versions.node}. nvm install 22 로 올린 뒤 다시 실행`);
+    fail(`Node 22.13+ required, found ${process.versions.node} — run nvm install 22, then try again`,
+      `Node 22.13 이상 필요, 현재 ${process.versions.node} — nvm install 22 로 올린 뒤 다시 실행하세요`);
   }
 }
-if (!fs.existsSync(TEMPLATES)) fail(`템플릿 없음: ${TEMPLATES}`);
+if (!fs.existsSync(TEMPLATES)) fail(`templates missing: ${TEMPLATES}`, `템플릿 없음: ${TEMPLATES}`);
 
 function copyIfMissing(rel) {
   const dest = path.join(ROOT, rel);
@@ -57,13 +62,14 @@ function copyAlways(rel) {
 }
 
 console.log('');
-console.log(`  DOMANGCHA v${VERSION} — ${L('프로젝트 자율개발 루프 설치', 'installing the project autonomous dev loop')}`);
-console.log(`  ${L('대상', 'target')}: ${ROOT}`);
+console.log(`  DOMANGCHA v${VERSION} — installing the project autonomous dev loop`);
+console.log(`  ${' '.repeat(String(VERSION).length + 12)}프로젝트 자율개발 루프를 설치합니다`);
+console.log(`  target / 대상: ${ROOT}`);
 console.log('');
 
 if (!fs.existsSync(path.join(ROOT, '.git'))) {
   execSync('git init -q', { cwd: ROOT, stdio: 'ignore' });
-  say(L('git 저장소 초기화', 'initialised a git repository'));
+  say('initialised a git repository', 'git 저장소를 초기화했습니다');
 }
 
 // 기존 CLAUDE.md 자동 이관 (기본 동작, --no-migrate 로 끔)
@@ -114,24 +120,26 @@ if (has('--agents')) {
     if (fs.lstatSync(dest, { throwIfNoEntry: false })) fs.rmSync(dest, { force: true });
     fs.symlinkSync('LOOP.md', dest);
   }
-  say(L('AGENTS.md, GEMINI.md 심볼릭 링크 생성 (Codex, Gemini CLI 용)', 'symlinked AGENTS.md and GEMINI.md for Codex and Gemini CLI'));
+  say('symlinked AGENTS.md and GEMINI.md for Codex and Gemini CLI',
+    'Codex·Gemini CLI 용으로 AGENTS.md, GEMINI.md 심볼릭 링크를 만들었습니다');
 }
 
 if (previous && previous !== VERSION) {
-  say(L(`업데이트: scripts/loop.mjs ${previous} → ${VERSION}`, `updated: scripts/loop.mjs ${previous} → ${VERSION}`));
-  say(L('규정 파일(LOOP.md, CLAUDE.md)과 .loop/ 상태는 그대로 둡니다. 새 규정을 받으려면 그 파일을 지우고 다시 실행하세요.',
-    'your rule files (LOOP.md, CLAUDE.md) and .loop/ state are left alone; delete a rule file and re-run to take the new edition.'));
+  say(`updated: scripts/loop.mjs ${previous} → ${VERSION}`, `업데이트: scripts/loop.mjs ${previous} → ${VERSION}`);
+  say('your rule files (LOOP.md, CLAUDE.md) and .loop/ state are left alone — delete a rule file and re-run to take the new edition',
+    '규정 파일(LOOP.md, CLAUDE.md)과 .loop/ 상태는 그대로 둡니다 — 새 규정을 받으려면 그 파일을 지우고 다시 실행하세요');
 } else if (previous === VERSION) {
-  say(L(`이미 최신입니다 (${VERSION}). 바뀐 것 없음`, `already current (${VERSION}); nothing changed`));
+  say(`already current (${VERSION}), nothing changed`, `이미 최신입니다 (${VERSION}), 바뀐 것 없음`);
 } else {
-  say(L('scripts/loop.mjs 설치', 'installed scripts/loop.mjs'));
+  say('installed scripts/loop.mjs', 'scripts/loop.mjs 를 설치했습니다');
 }
-if (placed.length) say(L(`신규 ${placed.join(', ')}`, `added ${placed.join(', ')}`));
-else if (!previous) say(L('기존 규정 파일 보존', 'kept your existing rule files'));
-if (migrated) say(L(`기존 CLAUDE.md → ${migrated} 자동 이관 (LOOP.md 5절 중량 모드에서 읽음)`, `moved your CLAUDE.md to ${migrated}, read back for heavy items (LOOP.md section 5)`));
+if (placed.length) say(`added ${placed.join(', ')}`, `신규 ${placed.join(', ')}`);
+else if (!previous) say('kept your existing rule files', '기존 규정 파일을 그대로 두었습니다');
+if (migrated) say(`moved your CLAUDE.md to ${migrated}, read back for heavy items (LOOP.md section 5)`,
+  `기존 CLAUDE.md 를 ${migrated} 로 옮겼습니다 — 중량 항목에서 다시 읽습니다 (LOOP.md 5절)`);
 
 const name = path.basename(ROOT);
-execSync(`node scripts/loop.mjs init --project ${JSON.stringify(name)} --lang ${LANG} --cursor`, { cwd: ROOT, stdio: 'inherit' });
+execSync(`node scripts/loop.mjs init --project ${JSON.stringify(name)} --lang ${LANG} --cursor --quiet`, { cwd: ROOT, stdio: 'inherit' });
 
 try {
   execSync('git add -A', { cwd: ROOT, stdio: 'ignore' });
@@ -139,9 +147,9 @@ try {
 } catch { /* 변경 없음 또는 git author 미설정, 무시 */ }
 
 console.log('');
-say(L(`설치 완료 · 프로젝트 ${name}`, `installed · project ${name}`));
-say(L('다음 단계: Claude Code 를 열고 하고 싶은 일을 자연어로 그냥 말하면 됨 (슬래시 커맨드 불필요)',
-  'next: open Claude Code and just say what you want in plain language, no slash command needed'));
-say(L('더 큰 작업은 /ceo 로 시작하면 하네스로 올라갑니다 (필요할 때 설치를 제안합니다)',
-  'start a bigger request with /ceo to raise it to the harness, which offers to install itself when needed'));
+say(`installed · project ${name}`, `설치 완료 · 프로젝트 ${name}`);
+say('next: open Claude Code and just say what you want in plain language, no slash command needed',
+  '다음 단계: Claude Code 를 열고 하고 싶은 일을 자연어로 그냥 말하면 됩니다 (슬래시 커맨드 불필요)');
+say('start a bigger request with /ceo to raise it to the harness, which offers to install itself when needed',
+  '더 큰 작업은 /ceo 로 시작하면 하네스로 올라갑니다 (필요할 때 설치를 제안합니다)');
 console.log('');

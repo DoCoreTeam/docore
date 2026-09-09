@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// DOMANGCHA v3.0.2  scripts/loop.mjs
+// DOMANGCHA v3.0.3  scripts/loop.mjs
 // 프로젝트 자율개발 루프의 기록 CLI 겸 훅 핸들러 (Claude Code, Cursor 공용)
 // 이 파일은 npx domangcha 가 프로젝트에 설치하며 재설치 때마다 최신본으로 갱신됨
 // 요구 사항: Node 22.13 이상 (node:sqlite 내장, 추가 npm 의존성 없음)
@@ -18,7 +18,7 @@ let DatabaseSync;
 try { ({ DatabaseSync } = await import('node:sqlite')); }
 catch { console.error('[DOMANGCHA] node:sqlite unavailable / 사용 불가 — Node 22.13+ required'); process.exit(1); }
 
-const KIT_VERSION = "3.0.2";
+const KIT_VERSION = "3.0.3";
 
 // ---------- 경로 ----------
 function findRoot(start) {
@@ -733,10 +733,15 @@ cmds.init = (a) => {
   registerProject(getSetting('project_name'));
   renderPolicyFile();
   addEvent('init', KIT_VERSION);
-  out(`[DOMANGCHA v${KIT_VERSION}] ${L('초기화 완료', 'initialised')}: ${path.relative(ROOT, DB_PATH)}, ${path.relative(ROOT, POLICY_PATH)}, ${hooksFile}${cursorFile ? ', ' + cursorFile : ''}, ${L('레지스트리', 'registry')} ${REGISTRY_PATH}`);
-  if (suggestScript) out(`[DOMANGCHA] ${L('짧게 쓰려면 package.json 에 직접 추가: "loop": "node scripts/loop.mjs" (자동으로 고치지 않음)',
-    'for a shorter command add this to package.json yourself: "loop": "node scripts/loop.mjs" (nothing is written for you)')}`);
-  out(resumeText());
+  const files = `${path.relative(ROOT, DB_PATH)}, ${path.relative(ROOT, POLICY_PATH)}, ${hooksFile}${cursorFile ? ', ' + cursorFile : ''}`;
+  const pad = ' '.repeat(`[DOMANGCHA v${KIT_VERSION}]`.length);
+  out(`[DOMANGCHA v${KIT_VERSION}] initialised: ${files}, registry ${REGISTRY_PATH}`);
+  out(`${pad} 초기화 완료: ${files}, 레지스트리 ${REGISTRY_PATH}`);
+  if (suggestScript) {
+    out('[DOMANGCHA] for a shorter command add this to package.json yourself: "loop": "node scripts/loop.mjs"');
+    out('            짧게 쓰려면 package.json 에 직접 추가하세요 (자동으로 고치지 않습니다)');
+  }
+  if (!a.quiet) out(resumeText());
 };
 
 cmds.status = (a) => {

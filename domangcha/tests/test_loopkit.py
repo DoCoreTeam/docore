@@ -55,6 +55,33 @@ class TemplatePayloadTests(unittest.TestCase):
         self.assertNotIn("homedir", source)
 
 
+class InstallerLanguageTests(unittest.TestCase):
+    """Install-time output cannot know the reader's language, so it carries both."""
+
+    HANGUL = re.compile(r"[가-힣]")
+
+    def test_the_loop_installer_pairs_every_korean_line_with_english(self):
+        source = (ROOT / "bin" / "domangcha-loop.mjs").read_text()
+        # say()/fail() take (en, ko); a bare Korean first argument would be Korean-only output.
+        for call in re.findall(r"\b(?:say|fail)\(([^\n]*)", source):
+            first = call.split(",")[0]
+            self.assertFalse(self.HANGUL.search(first), call)
+
+    def test_the_entrypoint_help_covers_both_languages(self):
+        help_text = (ROOT / "bin" / "domangcha.sh").read_text()
+        self.assertIn("USAGE / 사용법", help_text)
+        self.assertIn("UPDATING / 업데이트", help_text)
+
+    def test_the_harness_installer_prints_english_before_korean(self):
+        source = (ROOT / "domangcha" / "install.sh").read_text()
+        self.assertIn('"$label_en" "$label_ko"', source)
+        reversed_labels = [
+            line for line in source.splitlines()
+            if re.search(r'[가-힣][^"]*/ [A-Za-z]', line)
+        ]
+        self.assertEqual(reversed_labels, [])
+
+
 class VersionSurfaceTests(unittest.TestCase):
     def test_loop_cli_constant_matches_the_version_file(self):
         version = (ROOT / "domangcha" / "VERSION").read_text().strip()
