@@ -12,12 +12,12 @@
 ### 🚗💨 DOMANGCHA — Adaptive Engineering for Claude Code & OpenAI Codex
 
 **Your coding agent is powerful. DOMANGCHA gives it the right amount of orchestration.**
-One command, no install-mode flag: `npx domangcha` reads where you are and installs what that place needs.
-Plain language runs a plan-first loop; `/ceo` raises the same work to all 18 specialists.
+One command, nothing to memorise: `npx domangcha` reads where you are and installs what that place needs.
+Then just say what you want — the loop plans, audits and reports, and calls for the 18 specialists on its own.
 
 *Your AI getaway car from development hell.*
 
-[![Version](https://img.shields.io/badge/version-3.0.3-brightgreen?style=for-the-badge&logo=github)](https://github.com/DoCoreTeam/domangcha/blob/main/domangcha/VERSION)
+[![Version](https://img.shields.io/badge/version-3.0.4-brightgreen?style=for-the-badge&logo=github)](https://github.com/DoCoreTeam/domangcha/blob/main/domangcha/VERSION)
 [![npm](https://img.shields.io/npm/v/domangcha?style=for-the-badge&logo=npm&color=CB3837)](https://www.npmjs.com/package/domangcha)
 [![License](https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge)](https://opensource.org/licenses/MIT)
 [![Runtimes](https://img.shields.io/badge/Runtimes-Claude%20Code%20%7C%20Codex-5865F2?style=for-the-badge)](#runtime-compatibility)
@@ -42,8 +42,8 @@ Build a Stripe invoicing tool for freelancers — invoices, email, paid/overdue 
 ```
 
 ```bash
-# Want the 18-agent harness for one request? Ask for it. It installs itself if missing.
-/ceo "Refactor payments end to end and ship it"
+# Nothing else to learn. Say it however you like.
+Refactor payments end to end and ship it
 ```
 
 </div>
@@ -97,77 +97,101 @@ You press Enter
 
 ---
 
-## 🪶 One command, no install-mode flag
+## 🚀 Getting started
 
-v3 changes the default. `npx domangcha` no longer installs into your home directory as a matter of
-course — it reads where you are and installs what that place needs.
-
-| Where you run it | What it installs | Cost |
-|---|---|---|
-| **inside a project** | the loop, right there: `LOOP.md`, `CLAUDE.md`, `scripts/loop.mjs`, `.claude/`, `.cursor/`, `.loop/` | offline, seconds, never writes to `~/.claude` |
-| **outside a project** | the harness into `~/.claude` and `~/.domangcha` | network, the full 18 agents and skills |
-| **`/ceo` with no harness** | offers to install the harness, then runs your request | only when you ask for it |
-
-A project is a directory carrying `.git`, `package.json`, `pyproject.toml`, `go.mod`, `Cargo.toml`,
-`pom.xml`, `build.gradle`, `Gemfile`, `composer.json`, `Makefile` or `CMakeLists.txt`.
-
-The two never share a path, so **an existing global install keeps working**. Run `npx domangcha`
-inside a project you already use and only that project gains the loop.
-
-### Natural language runs the loop; `/ceo` raises it
-
-There is one authority at a time. Inside a loop project the global router steps aside and `LOOP.md`
-drives — except for `/ceo`, which is exactly how you ask for more:
-
-```
-you  ▸ add a login screen
-
-hook ▸ [DOMANGCHA v3.0.3] instruction recorded ins_0001 · no active plan
-     ▸ next: for anything that changes the repository, write the plan before touching code
-     ▸ a question, lookup or explanation is answered directly, with no plan
+```bash
+npx domangcha
 ```
 
-```
-you  ▸ /ceo refactor payments end to end and ship it
-
-hook ▸ [DOMANGCHA] /ceo needs the full harness and it is not on this machine yet.
-     ▸ Ask the user first and run this only after they approve:
-     ▸   curl -fsSL .../install.sh | bash
-     ▸ If they decline, handle the request through LOOP.md as usual.
-```
-
-Read-only requests — questions, lookups, explanations — are answered without a plan. Anything that
-changes the repository goes through PLAN → item → self-audit → pass, and every pass reports where it is:
+That is the whole setup. Run it inside your project and say what you want in plain
+language — no slash command, no flag, nothing to memorise.
 
 ```
-🔁 DOMANGCHA · P0001 v0.3.0 ▓▓▓▓▓▓░░░░ 60% · items 3/5 · retries left 2/3 · policies 1 · next I04
+you  ▸ add a login screen with email and password
+
+     ▸ 🔁 DOMANGCHA · P0001 v0.2.0 ▓▓▓▓▓▓░░░░ 60% · items 3/5 · next I04
+     ▸ writing the plan first (LOOP.md section 1), then item by item
 ```
+
+Questions and lookups are answered directly. Anything that changes the repository goes
+through plan → item → self-audit → pass, and every pass reports where it stands.
+
+**Run it again to update.** The CLI is refreshed; your `LOOP.md`, `CLAUDE.md` and `.loop/`
+state are never overwritten.
+
+<details>
+<summary><b>Details — where it installs, other package managers, options</b></summary>
+
+<br/>
+
+`npx domangcha` reads where you are:
+
+| Where you run it | What it installs |
+|---|---|
+| inside a project | the loop, right there — offline, never writes to `~/.claude` |
+| outside a project | the 18-agent harness into `~/.claude` and `~/.domangcha` |
+
+A project is a directory carrying `.git`, `package.json`, `pyproject.toml`, `go.mod`,
+`Cargo.toml`, `pom.xml`, `build.gradle`, `Gemfile`, `composer.json`, `Makefile` or
+`CMakeLists.txt`. The two never share a path, so an existing global install keeps working.
+
+> **Run it, do not add it as a dependency.** npm shows `npm i domangcha` on every package
+> page; this is a tool you run. Use `npx`, or `pnpm dlx` / `yarn dlx`. `npm i` inside a
+> pnpm workspace fails with `Cannot read properties of null (reading 'matches')` — that is
+> npm choking on pnpm's `node_modules`, and it can desynchronise your lockfile.
+
+```bash
+pnpm dlx domangcha            # pnpm project
+yarn dlx domangcha            # Yarn project
+npx domangcha --lang en       # English documents and CLI (default is Korean)
+npx domangcha --no-migrate    # keep an existing CLAUDE.md where it is
+npx domangcha --agents        # also symlink AGENTS.md and GEMINI.md to LOOP.md
+```
+
+Requires Node 22.13+ for the loop (`node:sqlite`, no dependencies). The harness needs
+Python 3.10+, bash and git, and installs from the network.
+
+To update the harness: `curl -sSL https://raw.githubusercontent.com/DoCoreTeam/domangcha/main/domangcha/install.sh | bash`,
+or run `npx domangcha` from outside any project. Your registries are preserved.
+
+</details>
+
+### It decides when to escalate — you do not
+
+Inside a loop project the global router steps aside and `LOOP.md` drives. When a request
+is genuinely graph-scale, the loop asks the harness router and tells you, rather than
+waiting for a magic word:
+
+```
+you  ▸ rewrite auth and run the migration
+
+     ▸ harness router says: GRAPH (hard graph invariant: security)
+     ▸ the loop can carry this as usual; if the 18 agents and gates would genuinely
+       help, offer that to the user and escalate only once they agree
+```
+
+`/ceo` still forces the escalation if you want it, and installs the harness on demand.
+It is a shortcut, never a requirement.
 
 ### Policies the agent writes for itself
 
-A context reset normally erases "you already told me that." The loop turns repeated mistakes into
-durable rules instead:
+A context reset normally erases "you already told me that." Repeated audit failures
+become durable rules instead:
 
 ```
 fail I01 ▸ hardcoded the strings again
-         ▸ self-audit: I01 has failed 2 times (promotion threshold 2); the same mistake is repeating
-         ▸ if the cause is a general rule that would recur elsewhere, record it with policy add
-
+         ▸ self-audit: I01 has failed 2 times; the same mistake is repeating
 policy add ▸ P001 i18n keys
 ```
 
-`P001` is then re-injected on **every later prompt**, in `resume` after a context reset, and in the
-`policy check` step of every item's self-audit — three independent paths, so a compaction cannot
-lose it. A rule broken three times is treated as badly written: the CLI tells you to retire and
-rewrite it rather than repeat it. Rules must be judgeable from a diff or a command output —
-"be careful about i18n" is rejected in favour of "adding a user-facing string means editing the ko
-and en message files in the same commit."
+`P001` is re-injected on every later prompt, in `resume` after a context reset, and in
+every item's self-audit — three paths, so a compaction cannot lose it. A rule broken three
+times is retired and rewritten rather than repeated. Rules must be judgeable from a diff:
+"be careful about i18n" is rejected in favour of "adding a user-facing string means editing
+the ko and en message files in the same commit."
 
-### Korean and English
-
-The loop speaks both. `--lang en` at install time, or `loop config set lang en` later, switches every
-message, the plan template and the protocol document. The parser reads both editions, so a plan
-written in one language still opens after the switch.
+The loop speaks Korean and English; `--lang en` at install or `loop config set lang en` later
+switches messages, the plan template and the protocol document.
 
 ---
 
@@ -555,6 +579,7 @@ Complex feature requests still use the familiar PLANNER → BUILDER → EVALUATO
 
 | Version | What changed |
 |---|---|
+| **v3.0.4** | No slash command is required: the loop asks the harness router itself; README usage cut to one block |
 | **v3.0.3** | Install-time output is bilingual, English first, everywhere |
 | **v3.0.2** | Never edits your package.json; an update says it is an update; `npm i` vs `npx` spelled out |
 | **v3.0.1** | The loop carries the reporting contract itself, so progress is reported inside a loop project too |
@@ -595,50 +620,17 @@ Version check failures (offline, etc.) are silently ignored — your task is nev
 
 ## 🖥️ Commands
 
-### Project loop (`npx domangcha` inside a project)
+**Every command here is optional.** Plain language does the same work; these are shortcuts.
 
-Optional — natural language triggers the same protocol through the prompt hook.
+In a loop project: `/plan` writes the plan for a new instruction, `/loop` resumes the next
+item, `/policy` checks active policies against your diff. The CLI behind them is
+`node scripts/loop.mjs` — run `help` for every subcommand, `resume` for what to do next,
+`status --all` for every registered project.
 
-| Command | What it does |
-|---|---|
-| `/plan "[task]"` | 🗺️ Write `.loop/PLAN.md` for a new instruction and pass `plan check` |
-| `/loop` | 🔁 Resume from the next pending item and self-audit it |
-| `/policy` | 📌 Check active policies against the current diff, or promote a repeated mistake |
-
-The CLI behind them, if you want to drive it directly:
-
-```bash
-node scripts/loop.mjs resume            # what to do next, survives a context reset
-node scripts/loop.mjs status --all      # every registered loop project
-node scripts/loop.mjs policy check      # the self-audit checklist
-node scripts/loop.mjs help              # every subcommand
-```
-
-### Full harness (`/ceo`, or `npx domangcha` outside a project)
-
-Commands are intent adapters into the same TaskRouter. They do not create independent orchestration systems.
-
-| Command | What it does |
-|---|---|
-| `/ceo "[task]"` | 🧭 Automatic DIRECT / LOOP / GRAPH routing |
-| `/ceo-ralph "[task]"` | 🔁 Force minimum LOOP; safety may still escalate to GRAPH |
-| `/ceo-clarify` | 💬 Clarify intent, scope, and completion criteria |
-| `/ceo-design` | 🧭 Architecture/design intent routed by actual complexity |
-| `/ceo-doc` | 📝 Documentation workflow |
-| `/ceo-feature` | ✨ Feature implementation routed by scope |
-| `/ceo-init` | 🔧 Project harness setup |
-| `/ceo-debug "[bug]"` | 🐛 Investigate → fix → verify |
-| `/ceo-plan` | 🗺️ Planning workflow |
-| `/ceo-quality` | 📏 Deterministic quality checks |
-| `/ceo-review` | 🔍 Independent quality and PR review |
-| `/ceo-security` | 🔐 Security workflow; GRAPH where safety requires |
-| `/ceo-test` | ✅ TDD + unit + E2E + browser QA |
-| `/ceo-ship` | 📦 Gate → review → build → deploy |
-| `/ceo-status` | 📊 DIRECT status lookup |
-| `/ceo-update` | ⬆️ Guarded installer update |
-| `/ceo-version` | 🏷️ Deterministic version consistency check |
-| `/ceo-knowledge "[query]"` | 🧠 Search knowledge registry by ID or keyword |
-| `/ceo-learn "[pattern]"` | 📝 Stage new knowledge entry to review queue |
+With the harness: `/ceo "task"` routes explicitly, and 18 more `/ceo-*` intents
+(`-ralph -debug -test -review -security -ship -plan -design -feature -doc -clarify -init
+-quality -status -update -version -knowledge -learn`) name a workflow. They are adapters
+into the same TaskRouter, which already reads plain prompts — so none of them is required.
 
 ---
 
@@ -669,74 +661,18 @@ DOMANGCHA is a runtime-aware developer harness for Claude Code and OpenAI Codex.
 
 ---
 
-## 🚀 Install · Update
+## 🔀 Coming from v2.x
 
-> **Run it, do not add it as a dependency.** npm shows `npm i domangcha` on every package
-> page; DOMANGCHA is a tool you run, not a library you import. Use `npx` — or `pnpm dlx` /
-> `yarn dlx` in a pnpm or Yarn project. Running `npm i` inside a pnpm workspace fails with
-> `Cannot read properties of null (reading 'matches')`, which is npm choking on pnpm's
-> `node_modules`, and it can desynchronise your lockfile.
+Nothing breaks and nothing was removed.
 
-There is one command and it has no install-mode flag.
-
-```bash
-npx domangcha                 # inside a project: the loop, here, offline
-                              # outside a project: the harness into ~/.claude
-pnpm dlx domangcha            # same thing in a pnpm project
-yarn dlx domangcha            # same thing in a Yarn project
-
-npx domangcha --lang en       # English protocol documents and CLI (default is Korean)
-npx domangcha --no-migrate    # keep an existing CLAUDE.md where it is
-npx domangcha --agents        # also symlink AGENTS.md and GEMINI.md to LOOP.md
-```
-
-### Already installed? Updating
-
-Run the same command again. It tells you what it did:
-
-```
-[DOMANGCHA] updated: scripts/loop.mjs 3.0.0 → 3.0.1
-[DOMANGCHA] your rule files (LOOP.md, CLAUDE.md) and .loop/ state are left alone;
-            delete a rule file and re-run to take the new edition.
-```
-
-- **The CLI is always refreshed.** `scripts/loop.mjs` is replaced with the version you just pulled.
-- **Your rules and state are never overwritten.** `LOOP.md`, `CLAUDE.md`, the slash commands and
-  everything under `.loop/` survive, because you may have edited them. To take a new edition of a
-  rule file, delete that file and run again.
-- **Nothing is written to `package.json`.** The installer suggests a `loop` script and leaves the
-  writing to you.
-- **The harness updates separately** — it lives in `~/.claude`, not in your project:
-  ```bash
-  curl -sSL https://raw.githubusercontent.com/DoCoreTeam/domangcha/main/domangcha/install.sh | bash
-  ```
-  or run `npx domangcha` from outside any project. Your registries are preserved.
-- **Which version am I on?** `node scripts/loop.mjs help` prints it, and every hook line carries it.
-
-Re-running inside a project refreshes `scripts/loop.mjs` and leaves every rule file you have edited
-alone. The loop needs Node 22.13+ (`node:sqlite`, no npm dependencies).
-
-**The harness** installs when you run the command outside a project, when `/ceo` asks for it, or
-directly:
-
-```bash
-curl -sSL https://raw.githubusercontent.com/DoCoreTeam/domangcha/main/domangcha/install.sh | bash
-```
-
-Re-running always pulls the latest. Your registries (errors, instincts, history) are preserved.
-
-### Upgrading from v2.x
-
-Nothing breaks and nothing is removed.
-
-- **Keep everything as-is** — your harness is untouched. Refresh it with the curl one-liner above,
-  or by running `npx domangcha` from outside any project.
-- **Try the loop on one project** — `cd` into it and run `npx domangcha`. Your global install is
-  untouched; inside that project the router yields to `LOOP.md`, and `/ceo` brings it straight back.
-- **Already have a project `CLAUDE.md`?** It moves to `.claude/heavy/CEO.md` automatically and is
-  read back for items marked heavy. Pass `--no-migrate` to keep it in place.
-- **Going back** — delete `LOOP.md`, `scripts/loop.mjs`, and `.loop/`, then restore `CLAUDE.md`
-  from `.claude/heavy/CEO.md`. The global harness resumes immediately.
+- **Keep everything as-is** — your harness is untouched. Refresh it with the curl one-liner
+  above, or by running `npx domangcha` from outside any project.
+- **Try the loop on one project** — `cd` into it and run `npx domangcha`. Your global install
+  stays; inside that project the router yields to `LOOP.md`, and `/ceo` brings it straight back.
+- **An existing project `CLAUDE.md`** moves to `.claude/heavy/CEO.md` and is read back for
+  items marked heavy. Pass `--no-migrate` to keep it in place.
+- **Going back** — delete `LOOP.md`, `scripts/loop.mjs` and `.loop/`, then restore `CLAUDE.md`
+  from `.claude/heavy/CEO.md`.
 
 **Codex first run:** restart Codex, open `/hooks`, and trust the DOMANGCHA plugin hooks once. Start a new thread; routing and task state are then attached automatically. Use `$domangcha` explicitly when you want to force skill selection.
 
@@ -758,12 +694,12 @@ Nothing breaks and nothing is removed.
 ### 🚗💨 돔황차 — Claude Code와 OpenAI Codex를 위한 적응형 엔지니어링
 
 **강력한 코딩 에이전트에 필요한 만큼의 오케스트레이션만 더합니다.**
-명령 하나, 설치 방식 플래그 없음: `npx domangcha` 가 실행한 자리를 보고 필요한 것을 설치합니다.
-자연어는 계획 우선 루프를 돌리고, `/ceo` 는 같은 일을 18명 크루로 올립니다.
+명령 하나, 외울 것 없음: `npx domangcha` 가 실행한 자리를 보고 필요한 것을 설치합니다.
+그다음엔 그냥 말하면 됩니다 — 루프가 계획하고 감사하고 보고하며, 필요하면 18명 크루를 스스로 부릅니다.
 
 *개발 지옥에서 도망쳐 — 돔황차🚗💨*
 
-[![Version](https://img.shields.io/badge/version-3.0.3-brightgreen?style=for-the-badge&logo=github)](https://github.com/DoCoreTeam/domangcha/blob/main/domangcha/VERSION)
+[![Version](https://img.shields.io/badge/version-3.0.4-brightgreen?style=for-the-badge&logo=github)](https://github.com/DoCoreTeam/domangcha/blob/main/domangcha/VERSION)
 [![npm](https://img.shields.io/npm/v/domangcha?style=for-the-badge&logo=npm&color=CB3837)](https://www.npmjs.com/package/domangcha)
 [![License](https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge)](https://opensource.org/licenses/MIT)
 [![Runtimes](https://img.shields.io/badge/런타임-Claude%20Code%20%7C%20Codex-5865F2?style=for-the-badge)](#runtime-compatibility)
@@ -786,85 +722,108 @@ npx domangcha
 ```
 
 ```bash
-# 이번 작업만 18 에이전트로 올리고 싶으면 그렇게 말하면 됩니다 (없으면 설치를 제안합니다)
-/ceo "결제 전체 리팩터링하고 배포까지"
+# 더 배울 것 없습니다. 편한 대로 말하면 됩니다.
+결제 전체 리팩터링하고 배포까지
 ```
 
 ---
 
-### 🪶 명령 하나, 설치 방식 플래그 없음
+### 🚀 시작하기
 
-v3 는 기본값이 바뀌었습니다. `npx domangcha` 는 무조건 홈 디렉터리에 설치하지 않고,
-**실행한 자리를 보고 그 자리에 필요한 것을 설치합니다.**
-
-| 어디서 실행했나 | 무엇을 설치하나 | 비용 |
-|---|---|---|
-| **프로젝트 안** | 그 자리에 루프: `LOOP.md`, `CLAUDE.md`, `scripts/loop.mjs`, `.claude/`, `.cursor/`, `.loop/` | 오프라인, 수 초, `~/.claude` 무접촉 |
-| **프로젝트 밖** | `~/.claude` 와 `~/.domangcha` 에 하네스 | 네트워크 필요, 18 에이전트와 스킬 전부 |
-| **`/ceo` 인데 하네스 없음** | 설치 여부를 물어보고, 승인하면 설치 후 요청 실행 | 요청했을 때만 |
-
-프로젝트로 인정하는 기준은 `.git`, `package.json`, `pyproject.toml`, `go.mod`, `Cargo.toml`,
-`pom.xml`, `build.gradle`, `Gemfile`, `composer.json`, `Makefile`, `CMakeLists.txt` 중 하나가 있는 디렉터리입니다.
-
-두 방식은 경로를 전혀 공유하지 않으므로 **기존 전역 설치가 그대로 살아 있습니다.**
-이미 쓰던 프로젝트에서 `npx domangcha` 를 실행해도 그 프로젝트만 루프를 갖게 됩니다.
-
-### 자연어는 루프, `/ceo` 는 승격
-
-한 번에 하나의 권위만 말합니다. 루프 프로젝트 안에서는 전역 라우터가 물러나고 `LOOP.md` 가 주도하는데,
-`/ceo` 만은 예외입니다 — 더 큰 것이 필요하다고 말하는 방법이 바로 그것입니다.
-
-```
-당신 ▸ 로그인 화면 만들어줘
-
-훅   ▸ [DOMANGCHA v3.0.3] 지시 기록 ins_0001 · 활성 플랜 없음
-     ▸ 다음 행동: 구현·수정·추가 지시면 코드에 손대기 전에 LOOP.md 1절대로 플랜부터 작성
-     ▸ 단순 질문·조회·설명 요청이면 플랜 없이 바로 답변
+```bash
+npx domangcha
 ```
 
-```
-당신 ▸ /ceo 결제 전체 리팩터링하고 배포까지
-
-훅   ▸ [DOMANGCHA] /ceo 는 전체 하네스를 요구하는데 이 머신에는 아직 없습니다.
-     ▸ 사용자에게 설치 여부를 묻고 승인받은 뒤에만 아래를 실행할 것:
-     ▸   curl -fsSL .../install.sh | bash
-     ▸ 거절하면 이 요청을 LOOP.md 절차로 그대로 진행할 것
-```
-
-질문, 조회, 설명처럼 저장소를 바꾸지 않는 요청은 플랜 없이 바로 답합니다.
-저장소를 바꾸는 일만 플랜 → 항목 → 자가감사 → 통과를 거치고, 매 패스마다 지금 어디인지 보고합니다.
+세팅은 이게 전부입니다. 프로젝트 안에서 실행하고, 하고 싶은 일을 그냥 말하면 됩니다 —
+슬래시 커맨드도, 플래그도, 외울 것도 없습니다.
 
 ```
-🔁 DOMANGCHA · P0001 v0.3.0 ▓▓▓▓▓▓░░░░ 60% · 항목 3/5 · 재시도 여유 2/3 · 정책 1 · 다음 I04
+당신 ▸ 이메일·비밀번호로 로그인 화면 만들어줘
+
+     ▸ 🔁 DOMANGCHA · P0001 v0.2.0 ▓▓▓▓▓▓░░░░ 60% · 항목 3/5 · 다음 I04
+     ▸ 먼저 플랜을 씁니다 (LOOP.md 1절), 그다음 항목 하나씩
 ```
+
+질문이나 조회는 바로 답합니다. 저장소를 바꾸는 일만 플랜 → 항목 → 자가감사 → 통과를
+거치고, 매 패스마다 지금 어디쯤인지 보고합니다.
+
+**업데이트도 같은 명령입니다.** CLI 만 갱신되고 `LOOP.md`, `CLAUDE.md`, `.loop/` 상태는
+덮어쓰지 않습니다.
+
+<details>
+<summary><b>자세히 — 어디에 설치되는지, 다른 패키지 매니저, 옵션</b></summary>
+
+<br/>
+
+`npx domangcha` 는 실행한 자리를 보고 판단합니다.
+
+| 어디서 실행했나 | 무엇을 설치하나 |
+|---|---|
+| 프로젝트 안 | 그 자리에 루프 — 오프라인, `~/.claude` 무접촉 |
+| 프로젝트 밖 | `~/.claude` 와 `~/.domangcha` 에 18 에이전트 하네스 |
+
+프로젝트로 인정하는 기준은 `.git`, `package.json`, `pyproject.toml`, `go.mod`,
+`Cargo.toml`, `pom.xml`, `build.gradle`, `Gemfile`, `composer.json`, `Makefile`,
+`CMakeLists.txt` 중 하나가 있는 디렉터리입니다. 두 방식은 경로를 공유하지 않으므로
+기존 전역 설치가 그대로 살아 있습니다.
+
+> **설치하지 말고 실행하세요.** npm 페이지는 모든 패키지에 `npm i domangcha` 를 자동으로
+> 띄우지만 이건 실행하는 도구입니다. `npx`, 또는 `pnpm dlx` / `yarn dlx` 를 쓰세요.
+> pnpm 워크스페이스에서 `npm i` 를 하면 `Cannot read properties of null (reading 'matches')`
+> 로 실패하는데, npm 이 pnpm 의 `node_modules` 를 읽지 못해서이며 lockfile 이 어긋날 수 있습니다.
+
+```bash
+pnpm dlx domangcha            # pnpm 프로젝트
+yarn dlx domangcha            # Yarn 프로젝트
+npx domangcha --lang en       # 문서와 CLI 를 영어로 (기본은 한국어)
+npx domangcha --no-migrate    # 기존 CLAUDE.md 를 그 자리에 그대로 둠
+npx domangcha --agents        # AGENTS.md, GEMINI.md 를 LOOP.md 로 심볼릭 링크
+```
+
+루프는 Node 22.13 이상이 필요합니다 (`node:sqlite`, 의존성 없음). 하네스는 Python 3.10 이상,
+bash, git 이 필요하고 네트워크로 설치됩니다.
+
+하네스 갱신: `curl -sSL https://raw.githubusercontent.com/DoCoreTeam/domangcha/main/domangcha/install.sh | bash`
+또는 프로젝트 밖에서 `npx domangcha`. 레지스트리는 보존됩니다.
+
+</details>
+
+### 언제 올릴지는 도구가 판단합니다
+
+루프 프로젝트 안에서는 전역 라우터가 물러나고 `LOOP.md` 가 주도합니다. 그러다 요청이
+정말 그래프 규모면, 루프가 하네스 라우터에게 직접 물어보고 알려줍니다 — 매직 워드를
+기다리지 않습니다.
+
+```
+당신 ▸ 인증 갈아엎고 마이그레이션 돌려줘
+
+     ▸ 하네스 라우터 분류: GRAPH (hard graph invariant: security)
+     ▸ 루프로 그대로 진행해도 됩니다. 18 에이전트와 게이트가 정말 도움이 되겠다 싶으면
+       사용자에게 제안하고 승인받은 뒤에만 올리세요
+```
+
+`/ceo` 로 직접 올릴 수도 있고, 하네스가 없으면 그때 설치를 제안합니다.
+어디까지나 단축키이지 필수가 아닙니다.
 
 ### 에이전트가 스스로 쓰는 정책
 
-컨텍스트가 초기화되면 "아까 말했잖아"가 사라집니다.
-루프는 반복된 실수를 그때그때 지속되는 규칙으로 바꿔 둡니다.
+컨텍스트가 초기화되면 "아까 말했잖아"가 사라집니다. 반복된 감사 실패를 지속되는
+규칙으로 바꿔 둡니다.
 
 ```
 fail I01 ▸ 또 하드코딩
-         ▸ 자체감사: I01 감사 실패 2회 누적 (승격 기준 2회), 같은 실수가 반복되고 있음
-         ▸ 일반 규칙이면 policy add 로 정책에 기록할 것
-
+         ▸ 자체감사: I01 감사 실패 2회 누적, 같은 실수가 반복되고 있음
 policy add ▸ P001 i18n 키 강제
 ```
 
-한 번 등록된 `P001` 은 **이후 모든 프롬프트**, 컨텍스트 초기화 후의 `resume`,
-그리고 매 항목 자가감사의 `policy check` 세 경로로 다시 주입됩니다.
-경로가 셋이라 컨텍스트가 정리돼도 정책은 사라지지 않습니다.
-같은 정책을 3회 어기면 규칙 문구가 실행 가능하지 않다는 뜻이므로,
-반복하는 대신 폐기하고 더 구체적으로 다시 쓰라고 CLI 가 알려 줍니다.
-규칙은 diff 나 명령 출력으로 위반 여부를 판정할 수 있어야 하며,
-"i18n 을 잘 지킨다" 대신 "사용자 노출 문자열을 추가하면 같은 커밋에서 ko en 메시지 파일을 함께 수정한다"
-같은 형태만 인정합니다.
+`P001` 은 이후 모든 프롬프트, 컨텍스트 초기화 후의 `resume`, 매 항목 자가감사
+세 경로로 다시 주입됩니다. 같은 정책을 3회 어기면 반복하는 대신 폐기하고 더 구체적으로
+다시 씁니다. 규칙은 diff 로 위반 여부를 판정할 수 있어야 하며, "i18n 을 잘 지킨다" 대신
+"사용자 노출 문자열을 추가하면 같은 커밋에서 ko en 메시지 파일을 함께 수정한다" 같은
+형태만 인정합니다.
 
-### 한국어와 영어
-
-루프는 두 언어를 다 씁니다. 설치할 때 `--lang en`, 또는 나중에 `loop config set lang en` 으로
-모든 메시지·플랜 템플릿·프로토콜 문서가 바뀝니다. 파서는 두 언어판을 모두 읽으므로
-한 언어로 쓴 플랜도 전환 후 그대로 열립니다.
+루프는 한국어와 영어를 모두 씁니다. 설치할 때 `--lang en`, 또는 나중에
+`loop config set lang en` 으로 메시지·플랜 템플릿·프로토콜 문서가 함께 바뀝니다.
 
 ---
 
@@ -1108,6 +1067,7 @@ DC-REV  ✔  수정 정확. undefined 방어 패턴은 카카오페이 공식 �
 
 | 버전 | 바뀐 것 |
 |---|---|
+| **v3.0.4** | 슬래시 커맨드 불필요 — 루프가 하네스 라우터에 직접 질의, README 사용법 한 곳으로 압축 |
 | **v3.0.3** | 설치 시점 출력 전부 이중언어, 영어 우선 |
 | **v3.0.2** | 사용자 package.json 을 건드리지 않음, 업데이트를 업데이트라고 알림, `npm i` 와 `npx` 구분 안내 |
 | **v3.0.1** | 루프가 보고 계약을 직접 실어, 루프 프로젝트에서도 진행 상황을 보고함 |
@@ -1229,48 +1189,18 @@ join 전략을 보여주고, 승인 게이트 앞에서 무엇을 왜 승인받�
 
 ### 🖥️ 명령어
 
-#### 프로젝트 루프 (프로젝트 안에서 `npx domangcha`)
+**여기 있는 명령은 전부 선택 사항입니다.** 자연어로 말해도 같은 일을 하고, 이건 단축키입니다.
 
-선택 사항입니다 — 자연어로 말해도 프롬프트 훅이 같은 프로토콜을 주입합니다.
+루프 프로젝트에서는 `/plan` 이 새 지시의 플랜을 쓰고, `/loop` 가 다음 항목부터 재개하고,
+`/policy` 가 활성 정책을 현재 변경분에 대조합니다. 그 뒤의 CLI 는 `node scripts/loop.mjs` 이고,
+`help` 로 전체 하위 명령, `resume` 으로 다음에 할 일, `status --all` 로 등록된 모든 프로젝트를
+볼 수 있습니다.
 
-| 명령어 | 하는 일 |
-|---|---|
-| `/plan "[업무]"` | 🗺️ 새 지시로 `.loop/PLAN.md` 작성 후 `plan check` 통과 |
-| `/loop` | 🔁 다음 대기 항목부터 재개하고 자가감사 |
-| `/policy` | 📌 활성 정책을 현재 변경분에 대조하거나 반복 실수를 정책으로 승격 |
-
-직접 CLI 를 쓰고 싶다면:
-
-```bash
-node scripts/loop.mjs resume            # 다음에 할 일, 컨텍스트가 초기화돼도 남음
-node scripts/loop.mjs status --all      # 등록된 모든 루프 프로젝트
-node scripts/loop.mjs policy check      # 자가감사 대조 목록
-node scripts/loop.mjs help              # 전체 하위 명령
-```
-
-#### 하네스 (`/ceo`, 또는 프로젝트 밖에서 `npx domangcha`)
-
-| 명령어 | 동작 |
-|---|---|
-| `/ceo "[업무]"` | 🧭 DIRECT / LOOP / GRAPH 자동 라우팅 |
-| `/ceo-ralph "[업무]"` | 🔁 최소 LOOP 강제, 안전상 필요하면 GRAPH 승격 |
-| `/ceo-clarify` | 💬 의도·범위·완료 기준 명확화 |
-| `/ceo-design` | 🧭 실제 복잡도에 따른 설계 워크플로 |
-| `/ceo-doc` | 📝 문서 워크플로 |
-| `/ceo-feature` | ✨ 범위에 따라 라우팅되는 기능 구현 |
-| `/ceo-init` | 🔧 프로젝트 하네스 초기화 |
-| `/ceo-debug "[버그]"` | 🐛 조사 → 수정 → 검증 |
-| `/ceo-plan` | 🗺️ 계획 워크플로 |
-| `/ceo-quality` | 📏 결정론적 품질 검사 |
-| `/ceo-review` | 🔍 독립 품질·PR 리뷰 |
-| `/ceo-security` | 🔐 보안 워크플로, 필요 시 GRAPH |
-| `/ceo-test` | ✅ TDD + 단위 + E2E + 브라우저 QA |
-| `/ceo-ship` | 📦 게이트 → 리뷰 → 빌드 → 배포 |
-| `/ceo-status` | 📊 DIRECT 현황 조회 |
-| `/ceo-update` | ⬆️ 보호된 인스톨러 업데이트 |
-| `/ceo-version` | 🏷️ 결정론적 버전 일관성 검사 |
-| `/ceo-knowledge "[검색어]"` | 🧠 ID 또는 키워드로 지식 레지스트리 검색 |
-| `/ceo-learn "[패턴]"` | 📝 새 지식 항목을 검토 큐에 등록 |
+하네스가 있으면 `/ceo "업무"` 로 명시 라우팅을 하고, 18개 `/ceo-*` 인텐트
+(`-ralph -debug -test -review -security -ship -plan -design -feature -doc -clarify -init
+-quality -status -update -version -knowledge -learn`) 가 워크플로를 지정합니다. 전부 같은
+TaskRouter 로 들어가는 어댑터이고, 그 라우터는 이미 평범한 프롬프트를 읽습니다 —
+그래서 어느 것도 필수가 아닙니다.
 
 ---
 
@@ -1299,68 +1229,18 @@ node scripts/loop.mjs help              # 전체 하위 명령
 
 ---
 
-### 🚀 설치 · 업데이트
-
-> **설치하지 말고 실행하세요.** npm 페이지는 모든 패키지에 `npm i domangcha` 를 자동으로 띄우는데,
-> DOMANGCHA 는 가져다 쓰는 라이브러리가 아니라 실행하는 도구입니다. `npx` 를 쓰세요 — pnpm 이나
-> Yarn 프로젝트라면 `pnpm dlx` / `yarn dlx` 입니다. pnpm 워크스페이스에서 `npm i` 를 하면
-> `Cannot read properties of null (reading 'matches')` 로 실패하는데, 이는 npm 이 pnpm 의
-> `node_modules` 구조를 읽지 못해서이며 lockfile 이 어긋날 수 있습니다.
-
-명령은 하나이고 설치 방식을 고르는 플래그는 없습니다.
-
-```bash
-npx domangcha                 # 프로젝트 안: 그 자리에 루프, 오프라인
-                              # 프로젝트 밖: ~/.claude 에 하네스
-pnpm dlx domangcha            # pnpm 프로젝트에서 동일
-yarn dlx domangcha            # Yarn 프로젝트에서 동일
-
-npx domangcha --lang en       # 프로토콜 문서와 CLI 를 영어로 (기본은 한국어)
-npx domangcha --no-migrate    # 기존 CLAUDE.md 를 그 자리에 그대로 둠
-npx domangcha --agents        # AGENTS.md, GEMINI.md 를 LOOP.md 로 심볼릭 링크
-```
-
-### 이미 설치했다면 — 업데이트
-
-같은 명령을 다시 실행하면 됩니다. 무엇을 했는지 알려줍니다.
-
-```
-[DOMANGCHA] 업데이트: scripts/loop.mjs 3.0.0 → 3.0.1
-[DOMANGCHA] 규정 파일(LOOP.md, CLAUDE.md)과 .loop/ 상태는 그대로 둡니다.
-            새 규정을 받으려면 그 파일을 지우고 다시 실행하세요.
-```
-
-- **CLI 는 항상 갱신됩니다.** `scripts/loop.mjs` 가 방금 받은 버전으로 교체됩니다.
-- **당신의 규정과 상태는 덮어쓰지 않습니다.** `LOOP.md`, `CLAUDE.md`, 슬래시 커맨드,
-  `.loop/` 아래 전부 그대로 둡니다 — 손대셨을 수 있으니까요. 새 판을 받고 싶은 파일만
-  지우고 다시 실행하세요.
-- **`package.json` 은 건드리지 않습니다.** `loop` 스크립트를 제안만 하고, 쓰는 건 당신 몫입니다.
-- **하네스는 따로 갱신합니다** — 프로젝트가 아니라 `~/.claude` 에 있기 때문입니다.
-  ```bash
-  curl -sSL https://raw.githubusercontent.com/DoCoreTeam/domangcha/main/domangcha/install.sh | bash
-  ```
-  또는 프로젝트 밖에서 `npx domangcha`. 레지스트리는 보존됩니다.
-- **내 버전이 뭔지 보려면** `node scripts/loop.mjs help` 를 실행하거나, 훅 출력 줄에 항상 찍힙니다.
-
-프로젝트 안에서 다시 실행하면 `scripts/loop.mjs` 만 최신으로 갱신하고, 당신이 손댄 규정 파일은
-그대로 둡니다. 루프는 Node 22.13 이상이 필요합니다 (`node:sqlite`, npm 의존성 없음).
-
-**하네스**는 프로젝트 밖에서 명령을 실행하거나, `/ceo` 가 요청하거나, 아래를 직접 실행할 때 설치됩니다.
-
-```bash
-curl -sSL https://raw.githubusercontent.com/DoCoreTeam/domangcha/main/domangcha/install.sh | bash
-```
-
-인스톨러를 다시 실행하면 항상 최신 버전을 가져옵니다. 레지스트리(에러, 본능, 히스토리)는 보존됩니다. `~/.claude/projects/*/memory/`의 규칙 메모리는 최신 버전 정의로 자동 갱신되며, 사용자 피드백/프로젝트 컨텍스트는 절대 덮어쓰지 않습니다.
-
-### v2.x 에서 올라오기
+### 🔀 v2.x 에서 올라오기
 
 깨지는 것도, 없어지는 것도 없습니다.
 
-- **지금 그대로 쓰고 싶다** — 하네스는 건드려지지 않았습니다. 위 curl 명령이나, 프로젝트 밖에서 `npx domangcha` 로 갱신하세요.
-- **한 프로젝트에서만 루프를 써 보고 싶다** — 그 폴더에서 `npx domangcha` 를 실행하세요. 전역 설치는 그대로 있고, 그 프로젝트 안에서만 라우터가 `LOOP.md` 에 자리를 내주며 `/ceo` 로 바로 되돌아옵니다.
-- **프로젝트에 이미 `CLAUDE.md` 가 있다면?** 자동으로 `.claude/heavy/CEO.md` 로 옮겨지고 중량 항목에서 다시 읽힙니다. 그 자리에 두려면 `--no-migrate` 를 붙이세요.
-- **되돌리려면** — `LOOP.md`, `scripts/loop.mjs`, `.loop/` 를 지우고 `.claude/heavy/CEO.md` 를 `CLAUDE.md` 로 복원하면 전역 하네스가 즉시 다시 동작합니다.
+- **지금 그대로 쓰고 싶다** — 하네스는 건드려지지 않았습니다. 위 curl 명령이나, 프로젝트 밖에서
+  `npx domangcha` 로 갱신하세요.
+- **한 프로젝트에서만 루프를 써 보고 싶다** — 그 폴더에서 `npx domangcha`. 전역 설치는 그대로
+  있고, 그 프로젝트 안에서만 라우터가 `LOOP.md` 에 자리를 내줍니다.
+- **프로젝트에 이미 `CLAUDE.md` 가 있다면** 자동으로 `.claude/heavy/CEO.md` 로 옮겨지고 중량
+  항목에서 다시 읽힙니다. 그 자리에 두려면 `--no-migrate`.
+- **되돌리려면** `LOOP.md`, `scripts/loop.mjs`, `.loop/` 를 지우고 `.claude/heavy/CEO.md` 를
+  `CLAUDE.md` 로 복원하면 됩니다.
 
 **Codex 최초 실행:** Codex를 재시작하고 `/hooks`에서 DOMANGCHA plugin hook을 최초 1회 신뢰하세요. 새 스레드부터 라우팅과 작업 상태가 자동으로 붙습니다. skill 선택을 명시하려면 `$domangcha`를 사용합니다.
 

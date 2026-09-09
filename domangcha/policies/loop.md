@@ -56,6 +56,11 @@ The same discipline applies to work on this repository, not only to projects tha
   failure classes, `domangcha/policies/` for execution rules.
 - When the same mistake appears twice in one change, stop and record it as an `ERR-` row rather
   than fixing both instances silently.
+- `ERR-012` came from the same discipline: a patch script printed "ok" for three edits and
+  then hit a bad anchor, exiting before its single write at the end, so the file on disk
+  kept none of them. It happened twice in one session — the second time the missing code
+  only surfaced as a runtime `is not defined`. The rule is that an edit is not done because
+  the runner said so; confirm it landed in the file.
 - A recorded rule must be judgeable from a diff. `ERR-011` was added this way: two JSON files were
   rewritten wholesale by a formatter to change one value each, and the reformatting — not the value
   — dominated the diff. The rule is that a config edit whose diff touches untouched keys is a failed

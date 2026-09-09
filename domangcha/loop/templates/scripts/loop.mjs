@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// DOMANGCHA v3.0.3  scripts/loop.mjs
+// DOMANGCHA v3.0.4  scripts/loop.mjs
 // 프로젝트 자율개발 루프의 기록 CLI 겸 훅 핸들러 (Claude Code, Cursor 공용)
 // 이 파일은 npx domangcha 가 프로젝트에 설치하며 재설치 때마다 최신본으로 갱신됨
 // 요구 사항: Node 22.13 이상 (node:sqlite 내장, 추가 npm 의존성 없음)
@@ -12,13 +12,13 @@ import fs from 'node:fs';
 import path from 'node:path';
 import os from 'node:os';
 import crypto from 'node:crypto';
-import { execSync } from 'node:child_process';
+import { execSync, execFileSync } from 'node:child_process';
 
 let DatabaseSync;
 try { ({ DatabaseSync } = await import('node:sqlite')); }
 catch { console.error('[DOMANGCHA] node:sqlite unavailable / 사용 불가 — Node 22.13+ required'); process.exit(1); }
 
-const KIT_VERSION = "3.0.3";
+const KIT_VERSION = "3.0.4";
 
 // ---------- 경로 ----------
 function findRoot(start) {
@@ -628,6 +628,32 @@ function reportingContract() {
 // 기본은 이 루프다. /ceo 는 전체 하네스를 부르며, 없으면 그때 설치를 제안한다.
 // This loop is the default. /ceo calls the full harness and offers to install it on demand.
 const CEO_RE = /^\s*\/ceo\b/i;
+
+// 슬래시 커맨드를 외우게 하지 않는다. 하네스가 있으면 그 라우터에게 직접 물어본다.
+// No magic word to memorise: when the harness is here, ask its router directly.
+// 프롬프트는 셸을 거치지 않으므로 명령어 주입이 불가능하다.
+// The prompt never touches a shell, so it cannot be injected.
+function routeViaHarness(prompt) {
+  if (!fs.existsSync(HARNESS)) return null;
+  try {
+    const raw = execFileSync('python3', [HARNESS, 'route', prompt, '--format', 'json'],
+      { encoding: 'utf8', timeout: 5000, stdio: ['ignore', 'pipe', 'ignore'] });
+    const r = JSON.parse(raw);
+    return r && r.route ? r : null;
+  } catch { return null; }
+}
+
+// 엔진이 그래프 규모라고 본 요청은 가로채지 않고 선택지만 알린다.
+// A graph-scale verdict is surfaced as an option, never as a hijack.
+function harnessHintLines(routed) {
+  const why = (routed.reasons || []).join(', ') || routed.route;
+  return [
+    L(`[DOMANGCHA] 하네스 라우터 분류: ${routed.route} (${why})`,
+      `[DOMANGCHA] harness router says: ${routed.route} (${why})`),
+    L('[DOMANGCHA] 루프로 그대로 진행해도 됩니다. 18 에이전트와 게이트가 정말 도움이 되겠다 싶으면 사용자에게 제안하고 승인받은 뒤에만 올리세요.',
+      '[DOMANGCHA] the loop can carry this as usual; if the 18 agents and gates would genuinely help, offer that to the user and escalate only once they agree.'),
+  ];
+}
 const HARNESS = path.join(os.homedir(), '.domangcha', 'domangcha', 'engine.py');
 const HARNESS_INSTALL = 'curl -fsSL https://raw.githubusercontent.com/DoCoreTeam/domangcha/main/domangcha/install.sh | bash';
 function escalationLines() {
@@ -787,12 +813,14 @@ cmds.hook = (a) => {
       const card = progressCard(p);
       if (card) msg.push(card);
       if (CEO_RE.test(prompt)) { msg.push(...escalationLines()); out(msg.join('\n')); return; }
+      const routedIv = routeViaHarness(prompt);
       msg.push(L('[DOMANGCHA] 다음 행동: 이 개입이 플랜을 바꾸는지 판단 (LOOP.md 2절 개입 처리)',
         '[DOMANGCHA] next: decide whether this intervention changes the plan (LOOP.md section 2)'));
       msg.push(L(`[DOMANGCHA] 바꾸면 plan revise --level patch|minor --note "무엇을 왜" --ref ${id} 후 계속, 안 바꾸면 답변 후 현재 항목 계속`,
         `[DOMANGCHA] if it does: plan revise --level patch|minor --note "what and why" --ref ${id}, then continue; if not, answer and stay on the current item`));
       msg.push(L('[DOMANGCHA] 멈춤·중단 지시면 즉시 hold 또는 plan abort, 현재 플랜과 무관한 새 기능이면 완료 후 새 플랜으로 분리 제안',
         '[DOMANGCHA] on a stop instruction, hold or plan abort at once; for a feature unrelated to this plan, propose a separate plan after this one'));
+      if (routedIv && routedIv.route === 'GRAPH') msg.push(...harnessHintLines(routedIv));
       msg.push(...policyLines('[DOMANGCHA]'));
       msg.push('', ...reportingContract());
       out(msg.join('\n'));
@@ -802,12 +830,14 @@ cmds.hook = (a) => {
       if (isCursor) { out('{"continue":true}'); return; }
       const msg = [`[DOMANGCHA v${KIT_VERSION}] ${L('지시 기록', 'instruction recorded')} ${id} · ${L('활성 플랜 없음', 'no active plan')}`];
       if (CEO_RE.test(prompt)) { msg.push(...escalationLines()); out(msg.join('\n')); return; }
+      const routedNew = routeViaHarness(prompt);
       msg.push(L('[DOMANGCHA] 다음 행동: 구현·수정·추가 지시면 코드에 손대기 전에 LOOP.md 1절대로 플랜부터 작성',
         '[DOMANGCHA] next: for anything that changes the repository, write the plan before touching code (LOOP.md section 1)'));
       msg.push(L(`[DOMANGCHA] plan new --title "제목" --instruction ${id} --target vX.Y.Z → PLAN.md 작성 → plan check 통과 → plan confirm`,
         `[DOMANGCHA] plan new --title "title" --instruction ${id} --target vX.Y.Z → write PLAN.md → plan check → plan confirm`));
       msg.push(L('[DOMANGCHA] 단순 질문·조회·설명 요청이면 플랜 없이 바로 답변 (LOOP.md 1절 예외)',
         '[DOMANGCHA] a question, lookup or explanation is answered directly, with no plan (LOOP.md section 1 exception)'));
+      if (routedNew && routedNew.route === 'GRAPH') msg.push(...harnessHintLines(routedNew));
       msg.push(...policyLines('[DOMANGCHA]'));
       msg.push('', ...reportingContract());
       out(msg.join('\n'));

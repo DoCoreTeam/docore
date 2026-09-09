@@ -15,5 +15,6 @@ The registry stores recurring failure classes; executable prevention belongs to 
 | ERR-009 | Approval path bypass | graph path validation + HUMAN_GATE state |
 | ERR-010 | Secret/path leakage in state | allowlisted state, redaction, workspace containment |
 | ERR-011 | Whole-file rewrite for a one-value edit | edit config in place; a reformatted diff is a failed edit |
+| ERR-012 | Patch script aborts before its write | verify the edit landed, never trust the runner's log alone |
 
 New failures are recorded as structured evidence first and curated after validation. A worker must not mutate this registry repeatedly during retries.

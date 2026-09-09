@@ -1,6 +1,6 @@
 {
   "name": "domangcha",
-  "version": "3.0.3",
+  "version": "3.0.4",
   "description": "Lightweight per-project autonomous dev loop for Claude Code, Cursor, and Codex, with the full 18-agent DIRECT/LOOP/GRAPH harness one flag away.",
   "keywords": [
     "harness",

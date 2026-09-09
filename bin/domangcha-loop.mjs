@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// DOMANGCHA v3.0.3  bin/domangcha-loop.mjs
+// DOMANGCHA v3.0.4  bin/domangcha-loop.mjs
 // 경량 설치기: 현재 작업 디렉터리에 자율개발 루프를 설치한다.
 // 하네스 설치는 domangcha.sh 가 프로젝트 밖에서 판단해 맡으며, 이 파일은 ~/.claude 를 건드리지 않는다.
 

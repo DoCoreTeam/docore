@@ -1,4 +1,4 @@
-# DOMANGCHA v3.0.3
+# DOMANGCHA v3.0.4
 
 This project runs on the DOMANGCHA project autonomous dev loop
 The whole rulebook is the one file below, and in this project it takes precedence over any global rules
