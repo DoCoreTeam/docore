@@ -1,7 +1,7 @@
 {
   "name": "domangcha",
-  "version": "2.3.2",
-  "description": "Adaptive DIRECT, LOOP, and GRAPH engineering for Claude Code and OpenAI Codex.",
+  "version": "3.0.0",
+  "description": "Lightweight per-project autonomous dev loop for Claude Code, Cursor, and Codex, with the full 18-agent DIRECT/LOOP/GRAPH harness one flag away.",
   "keywords": [
     "harness",
     "agent-harness",
@@ -52,7 +52,7 @@
     "LICENSE"
   ],
   "engines": {
-    "node": ">=14.0.0"
+    "node": ">=22.13.0"
   },
   "scripts": {
     "test": "python3 -m unittest discover -s domangcha/tests && python3 domangcha/engine.py validate && bash -n domangcha/install.sh bin/domangcha.sh domangcha/hooks/*.sh",

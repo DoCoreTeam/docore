@@ -12,16 +12,18 @@
 ### 🚗💨 DOMANGCHA — Adaptive Engineering for Claude Code & OpenAI Codex
 
 **Your coding agent is powerful. DOMANGCHA gives it the right amount of orchestration.**
-One command selects DIRECT, LOOP, or GRAPH—then coordinates up to 18 logical specialists only when the task needs them.
+`npx domangcha` drops a plan-first autonomous loop into the project you are standing in.
+Need the full crew? `npx domangcha --full` installs all 18 specialists, DIRECT/LOOP/GRAPH routing, and the gates.
 
 *Your AI getaway car from development hell.*
 
-[![Version](https://img.shields.io/badge/version-2.3.2-brightgreen?style=for-the-badge&logo=github)](https://github.com/DoCoreTeam/domangcha/blob/main/domangcha/VERSION)
+[![Version](https://img.shields.io/badge/version-3.0.0-brightgreen?style=for-the-badge&logo=github)](https://github.com/DoCoreTeam/domangcha/blob/main/domangcha/VERSION)
 [![npm](https://img.shields.io/npm/v/domangcha?style=for-the-badge&logo=npm&color=CB3837)](https://www.npmjs.com/package/domangcha)
 [![License](https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge)](https://opensource.org/licenses/MIT)
 [![Runtimes](https://img.shields.io/badge/Runtimes-Claude%20Code%20%7C%20Codex-5865F2?style=for-the-badge)](#runtime-compatibility)
 [![Agents](https://img.shields.io/badge/Agents-18-FF6B6B?style=for-the-badge)](https://github.com/DoCoreTeam/domangcha#the-18-agents)
 [![Gates](https://img.shields.io/badge/Gates-5-orange?style=for-the-badge)](https://github.com/DoCoreTeam/domangcha#the-5-gates)
+[![Node](https://img.shields.io/badge/Node-22.13%2B-339933?style=for-the-badge&logo=nodedotjs)](https://nodejs.org)
 
 <br/>
 
@@ -30,13 +32,18 @@ One command selects DIRECT, LOOP, or GRAPH—then coordinates up to 18 logical s
 > *— Michael Dohyeon Kim, KDC CEO · builder of DOMANGCHA*
 
 ```bash
-# Install (30 seconds)
+# New in v3 — installs into THIS project, not your home directory
 npx domangcha
 ```
 
 ```bash
-# Then, inside Claude Code or a Codex-enabled project:
-/ceo "Build a Stripe invoicing tool for freelancers — invoices, email, paid/overdue dashboard"
+# Then just say what you want. No slash command needed.
+Build a Stripe invoicing tool for freelancers — invoices, email, paid/overdue dashboard
+```
+
+```bash
+# Prefer the full 18-agent harness? It is unchanged, one flag away.
+npx domangcha --full
 ```
 
 </div>
@@ -87,6 +94,64 @@ You press Enter
 | Mistakes → permanent patterns | ✅ error-registry | ❌ None |
 | Checkpoint / resume | ✅ LOOP and GRAPH | ❌ Context-window dependent |
 | Claude + Codex policy parity | ✅ Shared policy source | ❌ Runtime-specific drift |
+
+---
+
+## 🪶 Two install shapes
+
+v3 changes the default. `npx domangcha` no longer installs into your home directory —
+it installs a self-contained loop into the project you are standing in.
+
+| | `npx domangcha` (default) | `npx domangcha --full` |
+|---|---|---|
+| **Scope** | current project | `~/.claude`, `~/.domangcha` |
+| **Writes** | `LOOP.md`, `CLAUDE.md`, `scripts/loop.mjs`, `.claude/`, `.cursor/`, `.loop/` | 18 agents, 19 commands, skills, hooks, adaptive engine |
+| **Protocol** | plan → item → self-audit, one file to read | DIRECT / LOOP / GRAPH routing with gates |
+| **State** | `.loop/loop.db`, `.loop/PLAN.md`, `.loop/POLICY.md` | `~/.claude/knowledge-registry/` |
+| **Requires** | Node 22.13+ (`node:sqlite`) | bash, Python 3, git |
+| **Offline** | yes — templates ship in the package | no — pulls `install.sh` from GitHub |
+
+The two never share a path, so **an existing global v2 install keeps working**. When you open a
+project that has `.loop/` and `scripts/loop.mjs`, the global router steps aside and the project's
+`LOOP.md` takes over — one protocol reaches the model at a time, never both.
+
+### No slash command required
+
+`/plan`, `/loop`, and `/policy` are installed, but they are optional. The project's
+`UserPromptSubmit` hook records every prompt as an instruction or an intervention and prints the
+next action alongside it, so plain natural language drives the loop:
+
+```
+you  ▸ add a login screen
+
+hook ▸ [DOMANGCHA v3.0.0] 지시 기록 ins_0001 · 활성 플랜 없음
+     ▸ 다음 행동: 구현·수정·추가 지시면 코드에 손대기 전에 LOOP.md 1절대로 플랜부터 작성
+     ▸ 단순 질문·조회·설명 요청이면 플랜 없이 바로 답변
+```
+
+Read-only requests — questions, lookups, explanations — are answered without a plan. Anything that
+changes the repository goes through PLAN → item → self-audit → pass.
+
+### Policies the agent writes for itself
+
+A context reset normally erases "you already told me that." The loop turns repeated mistakes into
+durable rules instead:
+
+```
+fail I01 ▸ i18n 키 없이 하드코딩
+fail I01 ▸ 또 i18n 키 없이 하드코딩
+         ▸ 자체감사: I01 감사 실패 2회 누적, 같은 실수가 반복되고 있음
+         ▸ 일반 규칙이면 policy add --origin audit:I01 로 정책에 기록할 것
+
+policy add ▸ P001 i18n 키 강제
+```
+
+`P001` is then re-injected on **every later prompt**, in `resume` after a context reset, and in the
+`policy check` step of every item's self-audit — three independent paths, so a compaction cannot
+lose it. A rule broken three times is treated as badly written: the CLI tells you to retire and
+rewrite it rather than repeat it. Rules must be judgeable from a diff or a command output —
+"be careful about i18n" is rejected in favour of "adding a user-facing string means editing the ko
+and en message files in the same commit."
 
 ---
 
@@ -185,7 +250,7 @@ Runtime behavior is capability-based—not hard-coded to provider model names. M
 
 #### Codex-native attachment
 
-`npx domangcha` installs the bundled DOMANGCHA plugin into a local Codex marketplace and enables its native skill. After installation, open `/hooks` once and trust the DOMANGCHA hook definition. From the next new Codex thread:
+`npx domangcha --full` installs the bundled DOMANGCHA plugin into a local Codex marketplace and enables its native skill. After installation, open `/hooks` once and trust the DOMANGCHA hook definition. From the next new Codex thread:
 
 - `UserPromptSubmit` automatically creates a canonical task and injects its route and task ID.
 - the `domangcha` skill tells Codex how to execute and report through that same state.
@@ -474,6 +539,7 @@ Complex feature requests still use the familiar PLANNER → BUILDER → EVALUATO
 
 | Version | Feature |
 |---|---|
+| **v3.0.0** | **The default install is now per-project, not global** — `npx domangcha` used to `curl \| bash` a remote installer that wrote 18 agents, 183 skills, and hooks into `~/.claude`, which is a lot of machinery to accept before you know whether you want it, and it made the shipped npm payload dead weight. The default now installs a self-contained loop into the current directory (`LOOP.md`, `scripts/loop.mjs`, `.claude/`, `.cursor/`, `.loop/`) straight from the package, so it works offline and touches nothing outside the project. The full harness is unchanged behind `npx domangcha --full`, and the two never share a path — an existing global v2 install keeps working. A project holding `.loop/` and `scripts/loop.mjs` owns its protocol: the global `UserPromptSubmit` hook detects the pair and yields, so a route card and a `LOOP.md` protocol never both reach the model. An existing `CLAUDE.md` is moved to `.claude/heavy/CEO.md` and read back only for items marked heavy. **Slash commands became optional** — the prompt hook records every prompt as an instruction or intervention and prints the next action, so plain natural language drives the loop; read-only requests skip the plan. **New: policy self-learning** — two audit failures on one item surface a promotion prompt, a promoted rule lands in `.loop/POLICY.md`, and it is re-injected on every prompt, in `resume`, and in each item's `policy check`, so a context reset cannot lose it; a rule broken three times is retired and rewritten rather than repeated. Requires Node 22.13+ for the loop CLI (`node:sqlite`); `--full` is unaffected. |
 | **v2.3.2** | **The single renderer stops carrying the phrasebook** — `orchestration/status.py` had reached 296 of its 300-line budget, so the next card would have broken `validate_line_limits`. The bilingual vocabulary (`LABELS`, `PLAN`, `NEXT`, `LANGS`) moved to `orchestration/wording.py`, leaving status.py at 226 lines with layout logic only. No behavior change: every card renders byte-identically and the same 86 tests pass. |
 | **v2.3.1** | **Hooks stop misfiring on unrelated projects, and stale deployments become visible** — the Stop hook identified this repository by `domangcha/VERSION` + `package.json` alone, so any project that happens to keep its own `domangcha/VERSION` was validated as if it were the framework source and crashed on the missing manifest every turn; the manifest itself is now the identifier. The post-edit hook's `find_root()` walked past `$HOME` and ran `npm test` in whatever monorepo lived there, blocking edits to files outside any project; it now stops at `$HOME`. `RepositoryValidator` reported a missing or malformed manifest as a raw traceback instead of a validation error, so a broken repository looked like a crashed engine — missing, unreadable, and invalid JSON are now ordinary entries in `errors`. New `engine.py drift` compares the installed `~/.domangcha` runtime against this repository by content hash and reports stale files in `/ceo-status`: both VERSION files agree while the code differs, so a version check cannot see this, and a fix that never shipped stays silent until the stale path is reached. |
 | **v2.3.0** | **Progress reporting is on by default** — the engine used to record route, loop, and branch state into checkpoints and `events.jsonl` with nothing rendering it, so a running engine looked like a stalled one. `orchestration/status.py` is now the single renderer for route, loop, graph, and parallel-branch cards (Korean by default, `--lang en`, secrets redacted). `engine.py route\|status` prints a card by default (`--format json` keeps the raw state), the Claude `UserPromptSubmit` hook injects the card plus a reporting contract, the Ralph `Stop` hook injects the live loop card every iteration, and the Codex control plane renders the same cards. Announce the route and why, report iteration and budget every pass, show branch results and join strategy at fan-in, explain gates in plain language, and never go silent through a long step. |
@@ -514,7 +580,7 @@ Complex feature requests still use the familiar PLANNER → BUILDER → EVALUATO
 
 Files are installed to `~/.claude/` on first run. They do **not** auto-update while a project is in progress — the version at install time is what runs.
 
-**To update:** re-run `npx domangcha`. Your error registry and project registries are preserved. Rule memories in `~/.claude/projects/*/memory/` are automatically refreshed with the latest version's rule definitions — user feedback and project context are never overwritten.
+**To update:** re-run `npx domangcha --full` (v3 renamed this path; the bare command now installs the project loop). Your error registry and project registries are preserved. Rule memories in `~/.claude/projects/*/memory/` are automatically refreshed with the latest version's rule definitions — user feedback and project context are never overwritten.
 
 **Auto-update prompt (built-in):** Every `/ceo` call silently checks the npm registry for a newer version. If one exists, you'll see:
 
@@ -523,7 +589,7 @@ Files are installed to `~/.claude/` on first run. They do **not** auto-update wh
 Update before continuing? (y/n):
 ```
 
-- `y` → runs `npx domangcha`, updates in-place, then continues with your task
+- `y` → runs `npx domangcha --full`, updates in-place, then continues with your task
 - `n` / Enter → skips and continues without updating
 
 Version check failures (offline, etc.) are silently ignored — your task is never blocked.
@@ -531,6 +597,27 @@ Version check failures (offline, etc.) are silently ignored — your task is nev
 ---
 
 ## 🖥️ Commands
+
+### Lightweight loop (`npx domangcha`)
+
+Optional — natural language triggers the same protocol through the prompt hook.
+
+| Command | What it does |
+|---|---|
+| `/plan "[task]"` | 🗺️ Write `.loop/PLAN.md` for a new instruction and pass `plan check` |
+| `/loop` | 🔁 Resume from the next pending item and self-audit it |
+| `/policy` | 📌 Check active policies against the current diff, or promote a repeated mistake |
+
+The CLI behind them, if you want to drive it directly:
+
+```bash
+node scripts/loop.mjs resume            # what to do next, survives a context reset
+node scripts/loop.mjs status --all      # every registered loop project
+node scripts/loop.mjs policy check      # the self-audit checklist
+node scripts/loop.mjs help              # every subcommand
+```
+
+### Full harness (`npx domangcha --full`)
 
 Commands are intent adapters into the same TaskRouter. They do not create independent orchestration systems.
 
@@ -575,33 +662,52 @@ Non-negotiable. Gate 1 enforces on every file.
 
 DOMANGCHA is a runtime-aware developer harness for Claude Code and OpenAI Codex. It uses native capabilities when available and preserves the same routing, safety, state, and reviewer-separation guarantees across runtimes.
 
-| | |
-|---|---|
-| Claude Code or OpenAI Codex | At least one supported coding-agent runtime |
-| Python | 3.10+ for the deterministic orchestration engine |
-| Node.js | 14+ for npm installation |
-| `git` | Installer, repository checks, and reviewable diffs |
+| | Lightweight loop (default) | Full harness (`--full`) |
+|---|---|---|
+| Coding agent | Claude Code, or Cursor | Claude Code, or OpenAI Codex |
+| Node.js | **22.13+** — `node:sqlite`, no npm dependencies | 14+ for npm installation |
+| Python | not used | 3.10+ for the deterministic orchestration engine |
+| `git` | commits each passing item | installer, repository checks, reviewable diffs |
+| Network | not required — templates ship in the package | required — pulls `install.sh` from GitHub |
 
 ---
 
 ## 🚀 Install · Update
 
-**Option 1 — npx (recommended)**
+**Lightweight loop — the v3 default.** Run it inside the project you want it in.
+
 ```bash
-npx domangcha
+npx domangcha                 # install into the current project
+npx domangcha --no-migrate    # keep an existing CLAUDE.md where it is
+npx domangcha --agents        # also symlink AGENTS.md and GEMINI.md to LOOP.md
 ```
 
-**Option 2 — curl**
+Re-running refreshes `scripts/loop.mjs` and leaves every rule file you have edited alone.
+Requires Node 22.13+ (`node:sqlite`, no npm dependencies).
+
+**Full 18-agent harness — the v2 behaviour, unchanged.**
+
 ```bash
+npx domangcha --full
+# or
 curl -sSL https://raw.githubusercontent.com/DoCoreTeam/domangcha/main/domangcha/install.sh | bash
-```
-
-**Option 3 — global install**
-```bash
-npm install -g domangcha && domangcha
+# or
+npm install -g domangcha && domangcha --full
 ```
 
 Re-running always pulls the latest. Your registries (errors, instincts, history) are preserved.
+
+### Upgrading from v2.x
+
+Nothing breaks and nothing is removed.
+
+- **Keep everything as-is** — run `npx domangcha --full`. Identical to `npx domangcha` on v2.x.
+- **Try the loop on one project** — `cd` into it and run `npx domangcha`. Your global install is
+  untouched; the global router yields inside that project only.
+- **Already have a project `CLAUDE.md`?** It moves to `.claude/heavy/CEO.md` automatically and is
+  read back for items marked heavy. Pass `--no-migrate` to keep it in place.
+- **Going back** — delete `LOOP.md`, `scripts/loop.mjs`, and `.loop/`, then restore `CLAUDE.md`
+  from `.claude/heavy/CEO.md`. The global harness resumes immediately.
 
 **Codex first run:** restart Codex, open `/hooks`, and trust the DOMANGCHA plugin hooks once. Start a new thread; routing and task state are then attached automatically. Use `$domangcha` explicitly when you want to force skill selection.
 
@@ -623,32 +729,97 @@ Re-running always pulls the latest. Your registries (errors, instincts, history)
 ### 🚗💨 돔황차 — Claude Code와 OpenAI Codex를 위한 적응형 엔지니어링
 
 **강력한 코딩 에이전트에 필요한 만큼의 오케스트레이션만 더합니다.**
-명령 하나가 DIRECT, LOOP, GRAPH 중 최소 복잡도를 선택하고, 필요할 때만 최대 18개 논리 역할을 조율합니다.
+`npx domangcha` 는 지금 서 있는 프로젝트에 계획 우선 자율개발 루프를 설치합니다.
+18명 전체 크루가 필요하면 `npx domangcha --full` 한 줄이면 됩니다.
 
 *개발 지옥에서 도망쳐 — 돔황차🚗💨*
 
-[![Version](https://img.shields.io/badge/version-2.3.2-brightgreen?style=for-the-badge&logo=github)](https://github.com/DoCoreTeam/domangcha/blob/main/domangcha/VERSION)
+[![Version](https://img.shields.io/badge/version-3.0.0-brightgreen?style=for-the-badge&logo=github)](https://github.com/DoCoreTeam/domangcha/blob/main/domangcha/VERSION)
 [![npm](https://img.shields.io/npm/v/domangcha?style=for-the-badge&logo=npm&color=CB3837)](https://www.npmjs.com/package/domangcha)
 [![License](https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge)](https://opensource.org/licenses/MIT)
 [![Runtimes](https://img.shields.io/badge/런타임-Claude%20Code%20%7C%20Codex-5865F2?style=for-the-badge)](#runtime-compatibility)
 [![Agents](https://img.shields.io/badge/에이전트-18명-FF6B6B?style=for-the-badge)](https://github.com/DoCoreTeam/domangcha)
 [![Gates](https://img.shields.io/badge/게이트-5개-orange?style=for-the-badge)](https://github.com/DoCoreTeam/domangcha)
+[![Node](https://img.shields.io/badge/Node-22.13%2B-339933?style=for-the-badge&logo=nodedotjs)](https://nodejs.org)
 
 > **명령 하나 쳤더니 인증, 결제, 대시보드가 돌아왔다. 테스트 통과, 보안 감사 완료, 코드 리뷰까지.**
 >
 > *— Michael Dohyeon Kim, KDC CEO · DOMANGCHA 제작자*
 
 ```bash
-# 방법 1 — npx (권장)
+# v3 신규 — 홈 디렉터리가 아니라 지금 이 프로젝트에 설치됩니다
 npx domangcha
-
-# 방법 2 — curl
-curl -sSL https://raw.githubusercontent.com/DoCoreTeam/domangcha/main/domangcha/install.sh | bash
 ```
 
 ```bash
-/ceo "프리랜서용 Stripe 인보이스 툴 만들어줘 — 인보이스 생성, 이메일 발송, 미납/완납 대시보드"
+# 그다음엔 그냥 하고 싶은 일을 말하면 됩니다. 슬래시 커맨드 불필요.
+프리랜서용 Stripe 인보이스 툴 만들어줘 — 인보이스 생성, 이메일 발송, 미납/완납 대시보드
 ```
+
+```bash
+# 기존 18 에이전트 전체 설치가 필요하면 그대로 남아 있습니다
+npx domangcha --full
+```
+
+---
+
+### 🪶 두 가지 설치 방식
+
+v3 는 기본값이 바뀌었습니다. `npx domangcha` 는 더 이상 홈 디렉터리에 설치하지 않고,
+지금 서 있는 프로젝트 안에 자립형 루프를 설치합니다.
+
+| | `npx domangcha` (기본) | `npx domangcha --full` |
+|---|---|---|
+| **설치 범위** | 현재 프로젝트 | `~/.claude`, `~/.domangcha` |
+| **생성 파일** | `LOOP.md`, `CLAUDE.md`, `scripts/loop.mjs`, `.claude/`, `.cursor/`, `.loop/` | 18 에이전트, 19 커맨드, 스킬, 훅, 적응형 엔진 |
+| **프로토콜** | 플랜 → 항목 → 자가감사, 읽을 파일 하나 | DIRECT / LOOP / GRAPH 라우팅 + 게이트 |
+| **상태 저장** | `.loop/loop.db`, `.loop/PLAN.md`, `.loop/POLICY.md` | `~/.claude/knowledge-registry/` |
+| **요구 사항** | Node 22.13 이상 (`node:sqlite`) | bash, Python 3, git |
+| **오프라인** | 가능 — 템플릿이 패키지에 동봉됨 | 불가 — GitHub 에서 `install.sh` 를 받아옴 |
+
+두 방식은 경로를 전혀 공유하지 않으므로 **기존 v2 전역 설치가 그대로 살아 있습니다.**
+`.loop/` 와 `scripts/loop.mjs` 가 있는 프로젝트를 열면 전역 라우터가 스스로 물러나고
+그 프로젝트의 `LOOP.md` 가 주도합니다. 두 프로토콜이 동시에 모델에 닿는 일은 없습니다.
+
+### 슬래시 커맨드 없이 자연어로
+
+`/plan`, `/loop`, `/policy` 가 설치되지만 전부 선택 사항입니다.
+프로젝트의 `UserPromptSubmit` 훅이 매 프롬프트를 지시 또는 개입으로 기록하고
+다음 행동을 함께 출력하므로, 그냥 자연어로 말하면 루프가 돕니다.
+
+```
+당신 ▸ 로그인 화면 만들어줘
+
+훅   ▸ [DOMANGCHA v3.0.0] 지시 기록 ins_0001 · 활성 플랜 없음
+     ▸ 다음 행동: 구현·수정·추가 지시면 코드에 손대기 전에 LOOP.md 1절대로 플랜부터 작성
+     ▸ 단순 질문·조회·설명 요청이면 플랜 없이 바로 답변
+```
+
+질문, 조회, 설명처럼 저장소를 바꾸지 않는 요청은 플랜 없이 바로 답합니다.
+저장소를 바꾸는 일만 플랜 → 항목 → 자가감사 → 통과를 거칩니다.
+
+### 에이전트가 스스로 쓰는 정책
+
+컨텍스트가 초기화되면 "아까 말했잖아"가 사라집니다.
+루프는 반복된 실수를 그때그때 지속되는 규칙으로 바꿔 둡니다.
+
+```
+fail I01 ▸ i18n 키 없이 하드코딩
+fail I01 ▸ 또 i18n 키 없이 하드코딩
+         ▸ 자체감사: I01 감사 실패 2회 누적, 같은 실수가 반복되고 있음
+         ▸ 일반 규칙이면 policy add --origin audit:I01 로 정책에 기록할 것
+
+policy add ▸ P001 i18n 키 강제
+```
+
+한 번 등록된 `P001` 은 **이후 모든 프롬프트**, 컨텍스트 초기화 후의 `resume`,
+그리고 매 항목 자가감사의 `policy check` 세 경로로 다시 주입됩니다.
+경로가 셋이라 컨텍스트가 정리돼도 정책은 사라지지 않습니다.
+같은 정책을 3회 어기면 규칙 문구가 실행 가능하지 않다는 뜻이므로,
+반복하는 대신 폐기하고 더 구체적으로 다시 쓰라고 CLI 가 알려 줍니다.
+규칙은 diff 나 명령 출력으로 위반 여부를 판정할 수 있어야 하며,
+"i18n 을 잘 지킨다" 대신 "사용자 노출 문자열을 추가하면 같은 커밋에서 ko en 메시지 파일을 함께 수정한다"
+같은 형태만 인정합니다.
 
 ---
 
@@ -892,6 +1063,7 @@ DC-REV  ✔  수정 정확. undefined 방어 패턴은 카카오페이 공식 �
 
 | 버전 | 기능 |
 |---|---|
+| **v3.0.0** | **기본 설치가 전역이 아니라 프로젝트 단위로 바뀜** — 기존 `npx domangcha` 는 원격 인스톨러를 `curl \| bash` 로 받아 `~/.claude` 에 18 에이전트, 183 스킬, 훅을 한꺼번에 설치했습니다. 써 볼지 결정하기도 전에 받아들여야 하는 양이 너무 컸고, 정작 npm 에 실린 패키지 본체는 쓰이지 않는 짐이었습니다. 이제 기본 동작은 패키지에 동봉된 템플릿으로 현재 디렉터리에 자립형 루프(`LOOP.md`, `scripts/loop.mjs`, `.claude/`, `.cursor/`, `.loop/`)를 설치합니다. 네트워크 없이 동작하고 프로젝트 밖은 건드리지 않습니다. 전체 하네스는 `npx domangcha --full` 뒤로 그대로 보존했고, 두 방식은 경로를 공유하지 않으므로 **기존 v2 전역 설치가 계속 동작합니다.** `.loop/` 와 `scripts/loop.mjs` 를 가진 프로젝트는 자기 프로토콜을 소유합니다. 전역 `UserPromptSubmit` 훅이 이 둘을 감지하면 스스로 물러나므로 라우트 카드와 `LOOP.md` 프로토콜이 동시에 모델에 닿지 않습니다. 기존 `CLAUDE.md` 는 `.claude/heavy/CEO.md` 로 자동 이관되어 중량 항목에서만 다시 읽힙니다. **슬래시 커맨드는 선택 사항이 됐습니다** — 프롬프트 훅이 매 입력을 지시 또는 개입으로 기록하고 다음 행동을 출력하므로 자연어만으로 루프가 돌고, 저장소를 바꾸지 않는 요청은 플랜을 건너뜁니다. **신규: 정책 자가학습** — 한 항목이 2회 감사 실패하면 승격 후보로 알리고, 승격된 규칙은 `.loop/POLICY.md` 에 남아 매 프롬프트·`resume`·항목별 `policy check` 세 경로로 재주입되므로 컨텍스트가 초기화돼도 사라지지 않습니다. 같은 정책을 3회 어기면 반복하는 대신 폐기하고 다시 쓰도록 안내합니다. 루프 CLI 는 `node:sqlite` 때문에 Node 22.13 이상이 필요하며, `--full` 은 영향받지 않습니다. |
 | **v2.3.2** | **단일 렌더러에서 문구 사전 분리** — `orchestration/status.py`가 300줄 제한 중 296줄까지 차서, 카드를 하나만 더 추가해도 `validate_line_limits`가 깨지는 상태였습니다. 이중 언어 문구 테이블(`LABELS`, `PLAN`, `NEXT`, `LANGS`)을 `orchestration/wording.py`로 옮겨 status.py는 레이아웃 로직만 남은 226줄이 됐습니다. 동작 변화 없음 — 모든 카드가 이전과 동일하게 렌더링되고 같은 86개 테스트가 통과합니다. |
 | **v2.3.1** | **훅 오탐 제거 + 배포 누락 가시화** — Stop 훅이 `domangcha/VERSION` + `package.json`만 보고 이 저장소를 식별해서, 자기 앱 버전을 우연히 `domangcha/VERSION`에 두는 프로젝트를 프레임워크 소스로 오인하고 매 턴 없는 매니페스트를 찾다 크래시했습니다. 이제 매니페스트 자체가 식별자입니다. post-edit 훅의 `find_root()`는 `$HOME` 위로 올라가 거기 있는 모노레포에서 `npm test`를 돌려 프로젝트 밖 파일 편집을 차단했습니다. 이제 `$HOME`에서 멈춥니다. `RepositoryValidator`는 매니페스트가 없거나 깨졌을 때 검증 오류 대신 raw 트레이스백으로 죽어서, 망가진 저장소가 죽은 엔진처럼 보였습니다. 이제 없음·읽기 실패·잘못된 JSON 모두 평범한 `errors` 항목입니다. 신규 `engine.py drift`는 설치된 `~/.domangcha` 런타임을 이 저장소와 내용 해시로 비교해 오래된 파일을 `/ceo-status`에 보고합니다. 양쪽 VERSION이 같은데 코드만 다른 상황은 버전 비교로 잡을 수 없고, 배포되지 않은 수정은 그 경로에 도달할 때까지 조용하기 때문입니다. |
 | **v2.3.0** | **진행 상황 보고 기본 활성화** — 엔진은 라우트·루프·브랜치 상태를 체크포인트와 `events.jsonl`에 기록만 하고 **렌더링하는 코드가 없었습니다**. 그래서 돌고 있는 엔진이 멈춘 엔진처럼 보였습니다. 이제 `orchestration/status.py`가 라우트·루프·그래프·병렬 브랜치 카드를 렌더링하는 단일 지점입니다(한국어 기본, `--lang en`, secret 자동 마스킹). `engine.py route\|status`는 기본이 카드 출력이고(`--format json`으로 원시 상태 유지), Claude `UserPromptSubmit` 훅이 카드와 **보고 규칙**을 주입하며, Ralph `Stop` 훅이 매 회차 실제 루프 카드를 주입하고, Codex 컨트롤 플레인도 같은 카드를 씁니다. 라우트와 이유를 먼저 알리고, 매 반복마다 회차·예산·실제 변화를 보고하고, 조인 시점에 브랜치 결과와 join 전략을 보여주고, 게이트를 사람의 말로 설명하고, 긴 단계에서 침묵하지 않습니다. |
@@ -1032,6 +1204,27 @@ join 전략을 보여주고, 승인 게이트 앞에서 무엇을 왜 승인받�
 
 ### 🖥️ 명령어
 
+#### 경량 루프 (`npx domangcha`)
+
+선택 사항입니다 — 자연어로 말해도 프롬프트 훅이 같은 프로토콜을 주입합니다.
+
+| 명령어 | 하는 일 |
+|---|---|
+| `/plan "[업무]"` | 🗺️ 새 지시로 `.loop/PLAN.md` 작성 후 `plan check` 통과 |
+| `/loop` | 🔁 다음 대기 항목부터 재개하고 자가감사 |
+| `/policy` | 📌 활성 정책을 현재 변경분에 대조하거나 반복 실수를 정책으로 승격 |
+
+직접 CLI 를 쓰고 싶다면:
+
+```bash
+node scripts/loop.mjs resume            # 다음에 할 일, 컨텍스트가 초기화돼도 남음
+node scripts/loop.mjs status --all      # 등록된 모든 루프 프로젝트
+node scripts/loop.mjs policy check      # 자가감사 대조 목록
+node scripts/loop.mjs help              # 전체 하위 명령
+```
+
+#### 전체 하네스 (`npx domangcha --full`)
+
 | 명령어 | 동작 |
 |---|---|
 | `/ceo "[업무]"` | 🧭 DIRECT / LOOP / GRAPH 자동 라우팅 |
@@ -1071,33 +1264,49 @@ join 전략을 보여주고, 승인 게이트 앞에서 무엇을 왜 승인받�
 
 ### 📦 요구사항
 
-| | |
-|---|---|
-| Claude Code 또는 OpenAI Codex | 지원 코딩 에이전트 런타임 하나 이상 |
-| Python | 결정론적 엔진용 3.10 이상 |
-| Node.js | npm 설치용 14 이상 |
-| `git` | 설치·저장소 검사·리뷰 가능한 diff |
+| | 경량 루프 (기본) | 전체 하네스 (`--full`) |
+|---|---|---|
+| 코딩 에이전트 | Claude Code 또는 Cursor | Claude Code 또는 OpenAI Codex |
+| Node.js | **22.13 이상** — `node:sqlite`, npm 의존성 없음 | npm 설치용 14 이상 |
+| Python | 사용 안 함 | 결정론적 엔진용 3.10 이상 |
+| `git` | 항목이 통과할 때마다 커밋 | 설치·저장소 검사·리뷰 가능한 diff |
+| 네트워크 | 불필요 — 템플릿이 패키지에 동봉됨 | 필요 — GitHub 에서 `install.sh` 를 받아옴 |
 
 ---
 
 ### 🚀 설치 · 업데이트
 
-**방법 1 — npx (권장)**
+**경량 루프 — v3 기본값.** 설치하고 싶은 프로젝트 안에서 실행합니다.
+
 ```bash
-npx domangcha
+npx domangcha                 # 현재 프로젝트에 설치
+npx domangcha --no-migrate    # 기존 CLAUDE.md 를 그 자리에 그대로 둠
+npx domangcha --agents        # AGENTS.md, GEMINI.md 를 LOOP.md 로 심볼릭 링크
 ```
 
-**방법 2 — curl**
+다시 실행하면 `scripts/loop.mjs` 만 최신으로 갱신하고, 당신이 손댄 규정 파일은 그대로 둡니다.
+Node 22.13 이상이 필요합니다 (`node:sqlite`, npm 의존성 없음).
+
+**전체 18 에이전트 하네스 — 기존 v2 동작 그대로.**
+
 ```bash
+npx domangcha --full
+# 또는
 curl -sSL https://raw.githubusercontent.com/DoCoreTeam/domangcha/main/domangcha/install.sh | bash
-```
-
-**방법 3 — 전역 설치**
-```bash
-npm install -g domangcha && domangcha
+# 또는
+npm install -g domangcha && domangcha --full
 ```
 
 인스톨러를 다시 실행하면 항상 최신 버전을 가져옵니다. 레지스트리(에러, 본능, 히스토리)는 보존됩니다. `~/.claude/projects/*/memory/`의 규칙 메모리는 최신 버전 정의로 자동 갱신되며, 사용자 피드백/프로젝트 컨텍스트는 절대 덮어쓰지 않습니다.
+
+### v2.x 에서 올라오기
+
+깨지는 것도, 없어지는 것도 없습니다.
+
+- **지금 그대로 쓰고 싶다** — `npx domangcha --full` 을 실행하세요. v2.x 의 `npx domangcha` 와 완전히 동일합니다.
+- **한 프로젝트에서만 루프를 써 보고 싶다** — 그 폴더에서 `npx domangcha` 를 실행하세요. 전역 설치는 그대로 있고, 그 프로젝트 안에서만 전역 라우터가 물러납니다.
+- **프로젝트에 이미 `CLAUDE.md` 가 있다면?** 자동으로 `.claude/heavy/CEO.md` 로 옮겨지고 중량 항목에서 다시 읽힙니다. 그 자리에 두려면 `--no-migrate` 를 붙이세요.
+- **되돌리려면** — `LOOP.md`, `scripts/loop.mjs`, `.loop/` 를 지우고 `.claude/heavy/CEO.md` 를 `CLAUDE.md` 로 복원하면 전역 하네스가 즉시 다시 동작합니다.
 
 **Codex 최초 실행:** Codex를 재시작하고 `/hooks`에서 DOMANGCHA plugin hook을 최초 1회 신뢰하세요. 새 스레드부터 라우팅과 작업 상태가 자동으로 붙습니다. skill 선택을 명시하려면 `$domangcha`를 사용합니다.
 

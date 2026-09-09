@@ -1,6 +1,12 @@
-# DOMANGCHA v2.3.2 — Claude Code Adapter
+# DOMANGCHA v3.0.0 — Claude Code Adapter
 
 This file contains Claude-specific integration only. Shared execution policy lives in `policies/` and deterministic control lives in `engine.py`.
+
+## Two install shapes
+
+- `npx domangcha` installs the lightweight loop into the current project only (`loop/templates/` → project root). It never writes to `~/.claude`.
+- `npx domangcha --full` runs `install.sh` and installs everything below into `~/.claude` and `~/.domangcha`.
+- `hooks/domangcha-ceo-enforcer.py` yields when the project carries `.loop/` and `scripts/loop.mjs`, so a global install and a loop project never both speak.
 
 ## Claude integration
 
@@ -13,4 +19,4 @@ This file contains Claude-specific integration only. Shared execution policy liv
 
 Do not reconstruct the legacy mandatory CEO/FULL PIPELINE from prompts. Follow DIRECT, LOOP, or GRAPH returned by `engine.py`.
 
-Official version source: `VERSION` = 2.3.2.
+Official version source: `VERSION` = 3.0.0.

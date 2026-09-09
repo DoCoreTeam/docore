@@ -22,7 +22,7 @@ def load_engine(root: Path):
             sys.path.insert(0, str(candidate))
             from domangcha.orchestration.execution import ExecutionCoordinator
             return ExecutionCoordinator
-    raise RuntimeError("DOMANGCHA engine is not installed; run npx domangcha")
+    raise RuntimeError("DOMANGCHA engine is not installed; run npx domangcha --full")
 
 
 def coordinator(root: Path):

@@ -92,7 +92,7 @@ echo -e "  ${DIM}손코딩에서 도망쳐 — 18명 AI 크루가 대신 짭니�
 echo -e "  ${DIM}Escape hand-coding — a 18-agent AI crew builds for you${NC}"
 echo ""
 echo -e "${DIM}  ──────────────────────────────────────────────────────${NC}"
-echo -e "  ${DIM}재설치 / Reinstall:${NC}  ${CYAN}npx domangcha${NC}"
+echo -e "  ${DIM}재설치 / Reinstall:${NC}  ${CYAN}npx domangcha --full${NC}"
 echo -e "  ${DIM}또는 / or:${NC}  ${DIM}curl -sSL https://raw.githubusercontent.com/DoCoreTeam/domangcha/main/domangcha/install.sh | bash${NC}"
 echo -e "${DIM}  ──────────────────────────────────────────────────────${NC}"
 echo -e "  ${DIM}설치를 시작합니다 / Starting installation...${NC}"
@@ -584,7 +584,7 @@ rows = [
     (DM, "DIRECT · LOOP · GRAPH → 검증  /  minimum reliable orchestration"),
     (WH, "by docore  (Michael Dohyeon Kim · KDC CEO)"),
     (DM, "github.com/DoCoreTeam/domangcha"),
-    (GR, "설치/업데이트:  npx domangcha"),
+    (GR, "설치/업데이트:  npx domangcha --full"),
 ]
 max_content = max(dw(t) for _, t in rows)
 box_inner = min(max_content + 4, cols - 6)
@@ -623,7 +623,7 @@ print(f"  {DM}2.{NC} {CY}/ceo-init{NC}  {DM}프로젝트 초기화 / Initialize 
 print(f"  {DM}3.{NC} {CY}/ceo \"투두앱 만들어줘\"{NC}  {DM}→ DIRECT/LOOP/GRAPH 자동 선택{NC}")
 print()
 print(f"  {WH}{BD}📦 재설치 / Update / Reinstall{NC}")
-print(f"  {GR}  npx domangcha{NC}  {DM}← 권장 / recommended{NC}")
+print(f"  {GR}  npx domangcha --full{NC}  {DM}← 권장 / recommended{NC}")
 print(f"  {DM}  curl -sSL https://raw.githubusercontent.com/DoCoreTeam/domangcha/main/domangcha/install.sh | bash{NC}")
 print()
 print(f"  {WH}{BD}📋 주요 명령어 / Key Commands{NC}")

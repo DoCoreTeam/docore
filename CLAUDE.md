@@ -1,6 +1,19 @@
-# DOMANGCHA v2.3.2 — Adaptive Execution
+# DOMANGCHA v3.0.0 — Adaptive Execution
 
-DOMANGCHA has one orchestration authority: `domangcha/engine.py`.
+DOMANGCHA ships two install shapes. The default is a per-project loop; the full
+18-agent harness is one flag away, and neither overwrites the other.
+
+## Install shapes
+
+| Command | Scope | What it installs |
+|---|---|---|
+| `npx domangcha` | current project | `LOOP.md`, `CLAUDE.md`, `scripts/loop.mjs`, `.claude/`, `.cursor/`, `.loop/` |
+| `npx domangcha --full` | `~/.claude`, `~/.domangcha` | the 18 agents, commands, skills, hooks, and the adaptive engine |
+
+A project holding `.loop/` and `scripts/loop.mjs` owns its protocol: the global
+`UserPromptSubmit` hook yields to it instead of emitting a route card, so one protocol
+reaches the model at a time. Everything below describes the full harness.
+Loop policy is in `domangcha/policies/loop.md`.
 
 ## Request flow
 
@@ -30,6 +43,9 @@ Shared policy is under `domangcha/policies/`. Claude-specific agents and hooks a
 
 ## Commands
 
+Loop projects need no slash command — the prompt hook injects the protocol and the
+active policies on every prompt. The commands below belong to the full harness.
+
 - `/ceo "task"`: automatic route
 - `/ceo-ralph "task"`: minimum LOOP route
 - `/ceo-debug`, `/ceo-test`, `/ceo-review`, `/ceo-security`, `/ceo-ship`: preserved workflow intents routed through the same engine
@@ -42,4 +58,4 @@ python3 -m unittest discover -s domangcha/tests
 python3 domangcha/engine.py validate
 ```
 
-Official version source: `domangcha/VERSION` = 2.3.2.
+Official version source: `domangcha/VERSION` = 3.0.0.

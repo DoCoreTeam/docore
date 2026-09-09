@@ -12,13 +12,15 @@ Canonical installer의 guarded update workflow다. Managed adapter만 교체하�
 
 ```bash
 # 1순위: npm 레지스트리 경유 (권장)
-npx domangcha
+npx domangcha --full
 
 # 위 실패 시 fallback: GitHub raw 직접
 # curl -fsSL https://raw.githubusercontent.com/DoCoreTeam/domangcha/main/domangcha/install.sh | bash
 ```
 
-> ⚠️ `npx domangcha` 실패 시 fallback 명령어의 `#`을 제거하여 수동 실행하세요.
+> ⚠️ v3.0.0부터 `--full` 이 전체 하네스 설치·업데이트 플래그다. 인자 없는 `npx domangcha` 는
+> 현재 프로젝트에 경량 루프를 설치하며 `~/.claude` 를 갱신하지 않는다.
+> `npx domangcha --full` 실패 시 fallback 명령어의 `#`을 제거하여 수동 실행하세요.
 
 ## 업데이트 항목 / What Gets Updated
 

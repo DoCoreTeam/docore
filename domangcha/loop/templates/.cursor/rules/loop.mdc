@@ -1,0 +1,6 @@
+---
+description: DOMANGCHA v3.0.0 경량 자율개발 루프 프로토콜
+alwaysApply: true
+---
+작업 규정은 @LOOP.md 하나이고 Cursor 에서는 세션 시작 자동 주입을 전제하지 않으므로 매 작업 첫 행동으로 node scripts/loop.mjs resume 을 직접 실행
+활성 정책은 node scripts/loop.mjs policy check 로 확인하고 항목 자가감사 3-g 에서 전 줄 대조

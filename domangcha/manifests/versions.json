@@ -6,6 +6,9 @@
     {"file":"CLAUDE.md","kind":"header"},
     {"file":"domangcha/CLAUDE.md","kind":"header"},
     {"file":"README.md","kind":"badge"},
-    {"file":"plugins/domangcha/.codex-plugin/plugin.json","kind":"json","key":"version"}
+    {"file":"plugins/domangcha/.codex-plugin/plugin.json","kind":"json","key":"version"},
+    {"file":"domangcha/loop/templates/LOOP.md","kind":"header"},
+    {"file":"domangcha/loop/templates/CLAUDE.md","kind":"header"},
+    {"file":"domangcha/loop/templates/scripts/loop.mjs","kind":"js","key":"KIT_VERSION"}
   ]
 }

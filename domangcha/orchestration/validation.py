@@ -61,6 +61,8 @@ class RepositoryValidator:
                 content = path.read_text()
                 if kind == "shell":
                     pattern = r'^' + re.escape(surface["key"]) + r'="' + re.escape(version) + r'"$'
+                elif kind == "js":
+                    pattern = r'^const ' + re.escape(surface["key"]) + r' = "' + re.escape(version) + r'";$'
                 elif kind == "header":
                     pattern = r"^# DOMANGCHA v" + re.escape(version) + r"\b"
                 else:

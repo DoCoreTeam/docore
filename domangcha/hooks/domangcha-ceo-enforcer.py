@@ -42,6 +42,10 @@ REPORTING_CONTRACT = """진행 상황 보고 규칙 (기본 활성 · 끄려면 
 7. 카드 문법은 `python3 <engine.py> route|status --format card` 출력과 동일하게 유지한다.
    상세 상태가 필요하면 `engine.py status <task_id>`를 실행해 그 카드를 보여준다."""
 
+YIELD_MESSAGE = """[DOMANGCHA] 이 프로젝트는 v3 경량 루프로 운영됩니다 (.loop/ 감지).
+전역 라우터는 물러나고 프로젝트 규정인 LOOP.md 가 우선합니다.
+지시 기록과 다음 행동은 프로젝트 훅(scripts/loop.mjs)이 이어서 출력합니다."""
+
 LOOP_EXAMPLE = "🔁 LOOP 3/12 ▓▓░░░░░░░░ 25% · 재시도 여유 5 · 정체 0/3 · 예산 model 5/12"
 WAVE_EXAMPLE = "🌿 병렬 3 브랜치 · join=ALL · ✅ be | ✅ fe | ❌ sec"
 
@@ -67,11 +71,23 @@ Do not use legacy SMALL/MEDIUM/FULL-PIPELINE prose to override this decision.
     )
 
 
+def _project_loop_root() -> Path | None:
+    """A project running the v3 lightweight loop owns its own protocol."""
+    root = Path(os.environ.get("CLAUDE_PROJECT_DIR", os.getcwd()))
+    if (root / ".loop").is_dir() and (root / "scripts" / "loop.mjs").exists():
+        return root
+    return None
+
+
 def main() -> int:
     try:
         payload = json.load(sys.stdin)
         prompt = payload.get("prompt", "")
         if not prompt:
+            return 0
+        loop_root = _project_loop_root()
+        if loop_root is not None:
+            print(YIELD_MESSAGE)
             return 0
         route_request, reporter = _load_engine()
         result = route_request(prompt)
